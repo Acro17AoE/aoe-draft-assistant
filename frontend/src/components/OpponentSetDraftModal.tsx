@@ -10,6 +10,12 @@ function optionIcon(event: OpponentDraftEvent, kind: 'map' | 'civ') {
   return <img src={civIconUrl(event.name)} alt="" />
 }
 
+function eventToneClass(event: OpponentDraftEvent): string {
+  if (event.isTeam) return 'is-team'
+  if (event.side && event.side.toUpperCase() !== 'NONE') return 'is-foe'
+  return 'is-neutral'
+}
+
 function Timeline({
   title,
   events,
@@ -34,13 +40,13 @@ function Timeline({
         {events.map((event, index) => (
           <li
             key={`${event.action}-${event.optionId}-${index}`}
-            className={`opponent-set-event action-${event.action}${event.isTeam ? ' is-team' : ''}`}
+            className={`opponent-set-event action-${event.action} ${eventToneClass(event)}`}
           >
             <span className="opponent-set-action">{event.action}</span>
             {optionIcon(event, kind)}
             <span>{event.name}</span>
             {event.order != null ? <span className="hint">#{event.order}</span> : null}
-            {event.isTeam ? <em>team</em> : null}
+            {event.isTeam ? <em>team</em> : event.side?.toUpperCase() !== 'NONE' ? <em>opp</em> : null}
           </li>
         ))}
       </ol>
@@ -79,11 +85,6 @@ export function OpponentSetDraftModal({ set, teamName, onClose }: OpponentSetDra
           </button>
         </header>
 
-        <div className="opponent-set-modal-grid">
-          <Timeline title="Map draft" events={set.mapTimeline} kind="map" />
-          <Timeline title="Civ draft" events={set.civTimeline} kind="civ" />
-        </div>
-
         {(set.games ?? []).length ? (
           <section className="opponent-set-games">
             <h4>Games</h4>
@@ -110,6 +111,11 @@ export function OpponentSetDraftModal({ set, teamName, onClose }: OpponentSetDra
             </ul>
           </section>
         ) : null}
+
+        <div className="opponent-set-modal-grid">
+          <Timeline title="Map draft" events={set.mapTimeline} kind="map" />
+          <Timeline title="Civ draft" events={set.civTimeline} kind="civ" />
+        </div>
 
         <p className="hint opponent-set-links">
           {set.mapDraftUrl ? (

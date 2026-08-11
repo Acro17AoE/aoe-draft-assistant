@@ -1337,18 +1337,30 @@ def list_tournament_teams(db: Session, slug: str) -> dict[str, Any]:
     }
 
 
-def _side_from_draft(draft: dict[str, Any], team_name: str) -> str | None:
+def _side_from_draft(
+    draft: dict[str, Any],
+    team_name: str,
+    *,
+    foe_name: str | None = None,
+) -> str | None:
     host = (draft.get("nameHost") or "").strip()
     guest = (draft.get("nameGuest") or "").strip()
     if team_names_match(host, team_name):
         return "HOST"
     if team_names_match(guest, team_name):
         return "GUEST"
+    # If only the foe name matches a draft seat, the analyzed team is the other seat.
+    if foe_name:
+        if team_names_match(host, foe_name):
+            return "GUEST"
+        if team_names_match(guest, foe_name):
+            return "HOST"
     return None
 
 
 def _foe_side(side: str) -> str:
     return "GUEST" if side.upper() == "HOST" else "HOST"
+
 
 def _option_label(draft: dict[str, Any], option_id: str) -> str:
     for option in (draft.get("preset") or {}).get("draftOptions") or []:
@@ -1359,6 +1371,22 @@ def _option_label(draft: dict[str, Any], option_id: str) -> str:
         if str(option.get("name") or "") == option_id:
             return str(option.get("name") or option_id)
     return option_id
+
+
+def _relabel_map_counts(draft: dict[str, Any], counts: dict[str, Any] | None) -> dict[str, int]:
+    labeled: Counter[str] = Counter()
+    for key, value in (counts or {}).items():
+        label = _normalize_map_name(_option_label(draft, str(key))) or str(key)
+        labeled[label] += int(value)
+    return dict(labeled)
+
+
+def _relabel_map_avgs(draft: dict[str, Any], avgs: dict[str, Any] | None) -> dict[str, float]:
+    labeled: dict[str, float] = {}
+    for key, value in (avgs or {}).items():
+        label = _normalize_map_name(_option_label(draft, str(key))) or str(key)
+        labeled[label] = float(value)
+    return labeled
 
 
 def _draft_event_timeline(draft: dict[str, Any], *, team_side: str | None) -> list[dict[str, Any]]:
@@ -1395,7 +1423,6 @@ def _draft_event_timeline(draft: dict[str, Any], *, team_side: str | None) -> li
             }
         )
     return timeline
-
 
 def _merge_order_avgs(
     order_sum: dict[str, float],
@@ -1465,7 +1492,7 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
     match_rows = [
         row
         for row in db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all()
-        if _team_matches_row(row, needle) is not None
+        if _team_matches_row(row, needle) is not None and _match_has_result(row)
     ]
 
     # Confirmed = actions by the analyzed team.
@@ -1544,95 +1571,110 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
         civ_timeline: list[dict[str, Any]] = []
         map_draft_id = extract_draft_id(row.map_draft_id) if row.map_draft_id else None
         civ_draft_id = extract_draft_id(row.civ_draft_id) if row.civ_draft_id else None
+        map_draft: dict[str, Any] | None = None
+        civ_draft: dict[str, Any] | None = None
+        foe_label = str(foe or "")
 
         if map_draft_id:
             try:
-                draft = await fetch_draft(map_draft_id)
-                side = _side_from_draft(draft, needle)
-                map_timeline = _draft_event_timeline(draft, team_side=side)
-                if side:
-                    analysis = analyze_map_draft_events(list(draft.get("events") or []), side)
-                    map_pick_counts.update(analysis.get("pickCounts") or {})
-                    map_ban_counts.update(analysis.get("banCounts") or {})
-                    _merge_order_avgs(
-                        map_pick_order_sum,
-                        map_pick_order_weight,
-                        analysis.get("pickOrderAvg") or {},
-                        analysis.get("pickCounts") or {},
-                    )
-                    _merge_order_avgs(
-                        map_ban_order_sum,
-                        map_ban_order_weight,
-                        analysis.get("banOrderAvg") or {},
-                        analysis.get("banCounts") or {},
-                    )
-                    foe_analysis = analyze_map_draft_events(
-                        list(draft.get("events") or []), _foe_side(side)
-                    )
-                    foe_map_ban_counts.update(foe_analysis.get("banCounts") or {})
-                    foe_map_pick_counts.update(foe_analysis.get("pickCounts") or {})
-                    _merge_order_avgs(
-                        foe_map_ban_order_sum,
-                        foe_map_ban_order_weight,
-                        foe_analysis.get("banOrderAvg") or {},
-                        foe_analysis.get("banCounts") or {},
-                    )
-                    _merge_order_avgs(
-                        foe_map_pick_order_sum,
-                        foe_map_pick_order_weight,
-                        foe_analysis.get("pickOrderAvg") or {},
-                        foe_analysis.get("pickCounts") or {},
-                    )
-                    map_draft_n += 1
+                map_draft = await fetch_draft(map_draft_id)
             except Exception as exc:
                 logger.warning("map draft %s for team analysis failed: %s", map_draft_id, exc)
 
         if civ_draft_id:
             try:
-                draft = await fetch_draft(civ_draft_id)
-                side = _side_from_draft(draft, needle)
-                civ_timeline = _draft_event_timeline(draft, team_side=side)
-                if side:
-                    analysis = analyze_civ_draft_events(list(draft.get("events") or []), side)
-                    picks = {
-                        civ_display_name(str(k)) or str(k): int(v)
-                        for k, v in (analysis.get("pickCounts") or {}).items()
-                    }
-                    bans = {
-                        civ_display_name(str(k)) or str(k): int(v)
-                        for k, v in (analysis.get("banCounts") or {}).items()
-                    }
-                    pick_avgs = {
-                        civ_display_name(str(k)) or str(k): float(v)
-                        for k, v in (analysis.get("pickOrderAvg") or {}).items()
-                    }
-                    ban_avgs = {
-                        civ_display_name(str(k)) or str(k): float(v)
-                        for k, v in (analysis.get("banOrderAvg") or {}).items()
-                    }
-                    civ_pick_counts.update(picks)
-                    civ_ban_counts.update(bans)
-                    _merge_order_avgs(civ_pick_order_sum, civ_pick_order_weight, pick_avgs, picks)
-                    _merge_order_avgs(civ_ban_order_sum, civ_ban_order_weight, ban_avgs, bans)
-
-                    foe_analysis = analyze_civ_draft_events(
-                        list(draft.get("events") or []), _foe_side(side)
-                    )
-                    foe_bans = {
-                        civ_display_name(str(k)) or str(k): int(v)
-                        for k, v in (foe_analysis.get("banCounts") or {}).items()
-                    }
-                    foe_ban_avgs = {
-                        civ_display_name(str(k)) or str(k): float(v)
-                        for k, v in (foe_analysis.get("banOrderAvg") or {}).items()
-                    }
-                    foe_civ_ban_counts.update(foe_bans)
-                    _merge_order_avgs(
-                        foe_civ_ban_order_sum, foe_civ_ban_order_weight, foe_ban_avgs, foe_bans
-                    )
-                    civ_draft_n += 1
+                civ_draft = await fetch_draft(civ_draft_id)
             except Exception as exc:
                 logger.warning("civ draft %s for team analysis failed: %s", civ_draft_id, exc)
+
+        side = None
+        for draft in (map_draft, civ_draft):
+            if not draft:
+                continue
+            side = _side_from_draft(draft, needle, foe_name=foe_label)
+            if side:
+                break
+        if not side and (map_draft or civ_draft):
+            sample = map_draft or civ_draft or {}
+            logger.warning(
+                "Could not resolve draft side for %s vs %s (host=%r guest=%r)",
+                needle,
+                foe_label,
+                sample.get("nameHost"),
+                sample.get("nameGuest"),
+            )
+
+        if map_draft:
+            map_timeline = _draft_event_timeline(map_draft, team_side=side)
+            if side:
+                analysis = analyze_map_draft_events(list(map_draft.get("events") or []), side)
+                picks = _relabel_map_counts(map_draft, analysis.get("pickCounts") or {})
+                bans = _relabel_map_counts(map_draft, analysis.get("banCounts") or {})
+                pick_avgs = _relabel_map_avgs(map_draft, analysis.get("pickOrderAvg") or {})
+                ban_avgs = _relabel_map_avgs(map_draft, analysis.get("banOrderAvg") or {})
+                map_pick_counts.update(picks)
+                map_ban_counts.update(bans)
+                _merge_order_avgs(map_pick_order_sum, map_pick_order_weight, pick_avgs, picks)
+                _merge_order_avgs(map_ban_order_sum, map_ban_order_weight, ban_avgs, bans)
+
+                foe_analysis = analyze_map_draft_events(
+                    list(map_draft.get("events") or []), _foe_side(side)
+                )
+                foe_picks = _relabel_map_counts(map_draft, foe_analysis.get("pickCounts") or {})
+                foe_bans = _relabel_map_counts(map_draft, foe_analysis.get("banCounts") or {})
+                foe_pick_avgs = _relabel_map_avgs(map_draft, foe_analysis.get("pickOrderAvg") or {})
+                foe_ban_avgs = _relabel_map_avgs(map_draft, foe_analysis.get("banOrderAvg") or {})
+                foe_map_pick_counts.update(foe_picks)
+                foe_map_ban_counts.update(foe_bans)
+                _merge_order_avgs(
+                    foe_map_pick_order_sum, foe_map_pick_order_weight, foe_pick_avgs, foe_picks
+                )
+                _merge_order_avgs(
+                    foe_map_ban_order_sum, foe_map_ban_order_weight, foe_ban_avgs, foe_bans
+                )
+                map_draft_n += 1
+
+        if civ_draft:
+            civ_timeline = _draft_event_timeline(civ_draft, team_side=side)
+            if side:
+                analysis = analyze_civ_draft_events(list(civ_draft.get("events") or []), side)
+                picks = {
+                    civ_display_name(str(k)) or str(k): int(v)
+                    for k, v in (analysis.get("pickCounts") or {}).items()
+                }
+                bans = {
+                    civ_display_name(str(k)) or str(k): int(v)
+                    for k, v in (analysis.get("banCounts") or {}).items()
+                }
+                pick_avgs = {
+                    civ_display_name(str(k)) or str(k): float(v)
+                    for k, v in (analysis.get("pickOrderAvg") or {}).items()
+                }
+                ban_avgs = {
+                    civ_display_name(str(k)) or str(k): float(v)
+                    for k, v in (analysis.get("banOrderAvg") or {}).items()
+                }
+                civ_pick_counts.update(picks)
+                civ_ban_counts.update(bans)
+                _merge_order_avgs(civ_pick_order_sum, civ_pick_order_weight, pick_avgs, picks)
+                _merge_order_avgs(civ_ban_order_sum, civ_ban_order_weight, ban_avgs, bans)
+
+                foe_analysis = analyze_civ_draft_events(
+                    list(civ_draft.get("events") or []), _foe_side(side)
+                )
+                foe_bans = {
+                    civ_display_name(str(k)) or str(k): int(v)
+                    for k, v in (foe_analysis.get("banCounts") or {}).items()
+                }
+                foe_ban_avgs = {
+                    civ_display_name(str(k)) or str(k): float(v)
+                    for k, v in (foe_analysis.get("banOrderAvg") or {}).items()
+                }
+                foe_civ_ban_counts.update(foe_bans)
+                _merge_order_avgs(
+                    foe_civ_ban_order_sum, foe_civ_ban_order_weight, foe_ban_avgs, foe_bans
+                )
+                civ_draft_n += 1
 
         sets.append(
             {

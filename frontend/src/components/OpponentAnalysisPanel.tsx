@@ -69,7 +69,7 @@ export function OpponentAnalysisPanel({ analysis, busy, error }: OpponentAnalysi
         <h2>Opponent analysis</h2>
         {analysis?.team ? (
           <p className="hint">
-            {analysis.team} · {analysis.matchCount ?? 0} set(s) they played
+            {analysis.team} · {analysis.matchCount ?? 0} played set(s)
             {analysis.mapDraftCount != null ? ` · ${analysis.mapDraftCount} map drafts` : ''}
             {analysis.civDraftCount != null ? ` · ${analysis.civDraftCount} civ drafts` : ''}
           </p>

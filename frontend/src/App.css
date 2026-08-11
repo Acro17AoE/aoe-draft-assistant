@@ -6267,7 +6267,19 @@ td {
 }
 
 .opponent-set-event.is-team {
-  background: rgba(255, 255, 255, 0.04);
+  background: color-mix(in srgb, #3d9e6a 32%, transparent);
+}
+
+.opponent-set-event.is-foe {
+  background: color-mix(in srgb, #9aa3ad 28%, transparent);
+}
+
+.opponent-set-event.is-neutral {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.opponent-set-games {
+  margin-bottom: 0.75rem;
 }
 
 .opponent-set-action {
@@ -6275,10 +6287,6 @@ td {
   font-size: 0.62rem;
   opacity: 0.75;
   min-width: 2.4rem;
-}
-
-.opponent-set-games {
-  margin-top: 0.75rem;
 }
 
 .opponent-set-games ul {
