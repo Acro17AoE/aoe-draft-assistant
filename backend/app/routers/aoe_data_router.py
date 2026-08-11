@@ -75,6 +75,19 @@ async def aoe_data_civ_similarity(
         raise HTTPException(status_code=502, detail=f"Game data unavailable: {exc}") from exc
 
 
+@router.get("/civ-similarity-matrix")
+async def aoe_data_civ_similarity_matrix(
+    mode: str = Query("overall", description="overall | military | eco"),
+) -> dict:
+    normalized = mode.lower().strip()
+    if normalized not in {"overall", "military", "eco"}:
+        raise HTTPException(status_code=400, detail="mode must be overall, military, or eco")
+    try:
+        return await game_data.civ_similarity_matrix(mode=normalized)  # type: ignore[arg-type]
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Game data unavailable: {exc}") from exc
+
+
 @router.get("/synergies")
 async def aoe_data_synergies(
     category: str | None = Query(None),

@@ -432,6 +432,43 @@ async def civ_similarity(
     }
 
 
+async def civ_similarity_matrix(*, mode: DnaMode = "overall") -> dict[str, Any]:
+    """Return pairwise similarity for all civs (upper triangle as edge list)."""
+    data = await _load_techtree()
+    sets = _sets_for_mode(data, mode)
+    weights = data["entityWeights"]
+    civs = list(data["civNames"])
+    edges: list[dict[str, Any]] = []
+    for i, left_name in enumerate(civs):
+        left = sets.get(left_name)
+        if left is None:
+            continue
+        for right_name in civs[i + 1 :]:
+            right = sets.get(right_name)
+            if right is None:
+                continue
+            score = _weighted_jaccard(left, right, weights)
+            edges.append(
+                {
+                    "a": left_name,
+                    "b": right_name,
+                    "similarity": round(score * 100, 1),
+                }
+            )
+    edges.sort(key=lambda item: (-item["similarity"], item["a"], item["b"]))
+    return {
+        "mode": mode,
+        "civs": civs,
+        "edges": edges,
+        "patchLabel": data["patchLabel"],
+        "method": {
+            "overall": "Overall tech-tree access (Jaccard)",
+            "military": "Military DNA — units, military buildings & combat tech",
+            "eco": "Eco DNA — economy tech, farms, trade & civilian buildings",
+        }.get(mode, "Overall tech-tree access (Jaccard)"),
+    }
+
+
 async def list_synergies(*, category: str | None = None) -> list[dict[str, Any]]:
     rows = _load_synergies()
     if category:

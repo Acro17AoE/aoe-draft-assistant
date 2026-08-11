@@ -113,7 +113,31 @@ export async function fetchAoeDataSimilarity(
     `/api/aoe-data/civ-similarity/${encodeURIComponent(civ)}?mode=${encodeURIComponent(mode)}`,
   )
   if (!response.ok) throw new Error(await readError(response, 'Similarity failed'))
-  return response.json()
+  return response.json() as Promise<AoeDataSimilarityResponse>
+}
+
+export interface AoeDataSimilarityEdge {
+  a: string
+  b: string
+  similarity: number
+}
+
+export interface AoeDataSimilarityMatrixResponse {
+  mode: AoeDataDnaMode
+  civs: string[]
+  edges: AoeDataSimilarityEdge[]
+  patchLabel?: string
+  method?: string
+}
+
+export async function fetchAoeDataSimilarityMatrix(
+  mode: AoeDataDnaMode = 'overall',
+): Promise<AoeDataSimilarityMatrixResponse> {
+  const response = await fetch(
+    `/api/aoe-data/civ-similarity-matrix?mode=${encodeURIComponent(mode)}`,
+  )
+  if (!response.ok) throw new Error(await readError(response, 'Similarity matrix failed'))
+  return response.json() as Promise<AoeDataSimilarityMatrixResponse>
 }
 
 export async function fetchAoeDataSynergies(category?: string): Promise<AoeDataSynergy[]> {
@@ -124,7 +148,15 @@ export async function fetchAoeDataSynergies(category?: string): Promise<AoeDataS
   return parsed.synergies ?? []
 }
 
-export type AoeDataSection = 'overview' | 'tech' | 'dna' | 'synergies' | 'meta'
+export type AoeDataSection =
+  | 'overview'
+  | 'tech'
+  | 'dna'
+  | 'atlas'
+  | 'orbit'
+  | 'constellation'
+  | 'synergies'
+  | 'meta'
 
 export const AOE_DATA_SECTIONS: { id: AoeDataSection; label: string; blurb: string }[] = [
   {
@@ -141,6 +173,21 @@ export const AOE_DATA_SECTIONS: { id: AoeDataSection; label: string; blurb: stri
     id: 'dna',
     label: 'Civilization DNA',
     blurb: 'Overall, military, or eco similarity from tech-tree access (Jaccard).',
+  },
+  {
+    id: 'atlas',
+    label: 'Civ Atlas',
+    blurb: 'Interactive world map of civilizations by historical region.',
+  },
+  {
+    id: 'orbit',
+    label: 'Draft Orbit',
+    blurb: 'Ban rate vs pick rate scatter from tournament meta.',
+  },
+  {
+    id: 'constellation',
+    label: 'Similarity Constellation',
+    blurb: 'Force graph of civ DNA similarity — drag nodes, tune the edge threshold.',
   },
   {
     id: 'synergies',

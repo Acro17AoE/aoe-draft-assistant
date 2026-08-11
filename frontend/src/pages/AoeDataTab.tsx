@@ -9,6 +9,9 @@ import {
 import { fetchMetaEvents, fetchMetaOverview } from '../lib/tournamentMeta'
 import { TechExplorerPanel } from '../components/aoeData/TechExplorerPanel'
 import { CivDnaPanel } from '../components/aoeData/CivDnaPanel'
+import { CivAtlasPanel } from '../components/aoeData/CivAtlasPanel'
+import { DraftOrbitPanel } from '../components/aoeData/DraftOrbitPanel'
+import { SimilarityConstellationPanel } from '../components/aoeData/SimilarityConstellationPanel'
 import { SynergiesPanel } from '../components/aoeData/SynergiesPanel'
 import { MetaExplorerPanel } from '../components/aoeData/MetaExplorerPanel'
 
@@ -230,6 +233,9 @@ export function AoeDataTab() {
         ) : null}
         {section === 'tech' ? <TechExplorerPanel /> : null}
         {section === 'dna' ? <CivDnaPanel /> : null}
+        {section === 'atlas' ? <CivAtlasPanel /> : null}
+        {section === 'orbit' ? <DraftOrbitPanel /> : null}
+        {section === 'constellation' ? <SimilarityConstellationPanel /> : null}
         {section === 'synergies' ? <SynergiesPanel /> : null}
         {section === 'meta' ? <MetaExplorerPanel /> : null}
       </main>

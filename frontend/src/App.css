@@ -5752,14 +5752,255 @@ td {
   margin-top: 0.65rem;
 }
 
+.aoe-viz-detail {
+  padding: 0.75rem 0.85rem;
+  min-width: 0;
+}
+
+.aoe-viz-detail-empty h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+}
+
+.aoe-viz-detail-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin-bottom: 0.65rem;
+}
+
+.aoe-viz-detail-title {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.aoe-viz-detail-title img {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+}
+
+.aoe-viz-detail-title h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.aoe-viz-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+}
+
+.aoe-viz-detail-stats div {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.35rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+}
+
+.aoe-viz-detail-stats dt {
+  font-size: 0.68rem;
+  opacity: 0.7;
+}
+
+.aoe-viz-detail-stats dd {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.aoe-viz-detail h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+}
+
+.aoe-viz-detail-neighbors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.aoe-viz-detail-neighbors button {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.2rem 0;
+  font-size: 0.8rem;
+}
+
+.aoe-viz-detail-neighbors img {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+}
+
+.aoe-viz-detail-neighbors em {
+  margin-left: auto;
+  font-style: normal;
+  opacity: 0.75;
+  font-size: 0.72rem;
+}
+
+.aoe-atlas-toolbar,
+.aoe-orbit-toolbar,
+.aoe-constellation-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 0.55rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.aoe-atlas-body,
+.aoe-orbit-body,
+.aoe-constellation-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.9fr);
+  gap: 0.65rem;
+  align-items: start;
+}
+
+.aoe-atlas-map-wrap,
+.aoe-orbit-plot,
+.aoe-constellation-plot {
+  padding: 0.55rem;
+  overflow: hidden;
+}
+
+.aoe-atlas-map,
+.aoe-orbit-svg,
+.aoe-constellation-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  touch-action: none;
+}
+
+.aoe-atlas-land {
+  fill: color-mix(in srgb, #6f8f6a 42%, transparent);
+  stroke: color-mix(in srgb, #c9d5b8 35%, transparent);
+  stroke-width: 1.2;
+}
+
+.aoe-atlas-land-ice {
+  fill: color-mix(in srgb, #a8c4d8 35%, transparent);
+}
+
+.aoe-atlas-marker-ring {
+  fill: color-mix(in srgb, #0d1520 70%, transparent);
+  stroke: color-mix(in srgb, var(--laca-yellow, #c9a227) 55%, transparent);
+  stroke-width: 1.5;
+}
+
+.aoe-atlas-marker.is-active .aoe-atlas-marker-ring {
+  stroke: var(--laca-yellow, #c9a227);
+  stroke-width: 2.2;
+}
+
+.aoe-atlas-marker-label,
+.aoe-constellation-label {
+  fill: currentColor;
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.aoe-atlas-hover-hint,
+.aoe-orbit-tooltip {
+  margin: 0.4rem 0 0;
+  min-height: 1.2em;
+}
+
+.aoe-orbit-plot-bg {
+  fill: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+.aoe-orbit-grid {
+  stroke: color-mix(in srgb, currentColor 10%, transparent);
+  stroke-width: 1;
+}
+
+.aoe-orbit-axis,
+.aoe-orbit-axis-title {
+  fill: color-mix(in srgb, currentColor 65%, transparent);
+  font-size: 10px;
+}
+
+.aoe-orbit-axis-title {
+  font-size: 11px;
+}
+
+.aoe-orbit-point circle {
+  stroke: color-mix(in srgb, #0d1520 60%, transparent);
+  stroke-width: 1;
+}
+
+.aoe-orbit-point.is-active circle {
+  stroke: var(--laca-yellow, #c9a227);
+  stroke-width: 2;
+}
+
+.aoe-constellation-edge {
+  stroke: color-mix(in srgb, var(--laca-yellow, #c9a227) 70%, transparent);
+  stroke-width: 1.2;
+}
+
+.aoe-constellation-edge.is-dim,
+.aoe-constellation-node.is-dim {
+  opacity: 0.18;
+}
+
+.aoe-constellation-synergy {
+  stroke: color-mix(in srgb, #7eb6ff 70%, transparent);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 4;
+  opacity: 0.55;
+}
+
+.aoe-constellation-node circle {
+  fill: color-mix(in srgb, #0d1520 75%, transparent);
+  stroke: color-mix(in srgb, currentColor 35%, transparent);
+  stroke-width: 1.2;
+}
+
+.aoe-constellation-node.is-active circle {
+  stroke: var(--laca-yellow, #c9a227);
+  stroke-width: 2;
+}
+
+.aoe-constellation-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+}
+
 @media (max-width: 900px) {
   .aoe-data-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .aoe-data-tech-layout,
-  .aoe-data-dna-grid {
+  .aoe-data-dna-grid,
+  .aoe-atlas-body,
+  .aoe-orbit-body,
+  .aoe-constellation-body {
     grid-template-columns: 1fr;
+  }
+
+  .aoe-viz-detail-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
