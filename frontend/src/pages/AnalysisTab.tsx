@@ -177,12 +177,7 @@ export function AnalysisTab({ tournaments }: AnalysisTabProps) {
               ))}
             </ul>
           )
-        ) : (
-          <p className="hint">
-            Liquipedia + aoe2cm meta for The League Qualifiers and Warlords 5. Use Refresh to force a
-            full re-sync (LPDB quota applies).
-          </p>
-        )}
+        ) : null}
       </aside>
 
       <main className="panel results-main">

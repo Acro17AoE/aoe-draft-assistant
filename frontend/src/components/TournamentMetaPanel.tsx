@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { civIconUrl } from '../lib/civs'
 import { resolveMapDisplay } from '../lib/maps'
-import { syncTournamentStats } from '../lib/tournamentStats'
+import { syncTournamentStats, formatTournamentDatasetStatus } from '../lib/tournamentStats'
 import {
   fetchMetaEvents,
   fetchMetaOverview,
@@ -94,17 +94,21 @@ function needsAutoSync(overview: TournamentMetaOverview | null): boolean {
   if (!overview?.found) return true
   const status = overview.status?.status
   if (status === 'idle' || status === 'error') return true
-  return (overview.status?.matchCount ?? 0) === 0
+  if ((overview.status?.matchCount ?? 0) === 0) return true
+  if ((overview.status?.pendingDraftCount ?? 0) > 0) return true
+  if (overview.status?.statusDetail?.includes('Partial sync')) return true
+  return false
 }
 
-function formatSyncLabel(event: MetaEventSummary | null, overview: TournamentMetaOverview | null) {
-  const status = overview?.status?.status ?? event?.status ?? 'idle'
-  const detail = overview?.status?.statusDetail ?? event?.statusDetail
-  const matches = overview?.status?.matchCount ?? event?.matchCount ?? 0
-  const drafts = overview?.status?.draftCount ?? event?.draftCount ?? 0
-  const parts = [`${status}`, `${matches} matches`, `${drafts} drafts`]
-  if (detail) parts.push(detail)
-  return parts.join(' · ')
+function formatSyncLabel(
+  event: MetaEventSummary | null,
+  overview: TournamentMetaOverview | null,
+  busy: boolean,
+) {
+  return formatTournamentDatasetStatus(
+    overview?.status ?? (event ? { status: event.status, matchCount: event.matchCount, draftCount: event.draftCount, draftPairCount: event.draftPairCount } : null),
+    busy,
+  )
 }
 
 export function TournamentMetaPanel() {
@@ -218,7 +222,7 @@ export function TournamentMetaPanel() {
             ))}
           </select>
         </label>
-        <p className="hint tournament-meta-status">{formatSyncLabel(selected, overview)}</p>
+        <p className="hint tournament-meta-status">{formatSyncLabel(selected, overview, busy)}</p>
         <button
           type="button"
           className="compact-btn linkish-btn draft-preview-tour-resync"

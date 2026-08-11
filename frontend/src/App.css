@@ -5088,18 +5088,25 @@ td {
 }
 
 .analysis-mode-toggle button {
-  border: 1px solid var(--border, #d5d9e2);
-  background: transparent;
+  border: 1px solid var(--laca-border);
+  background: rgba(10, 10, 10, 0.55);
   color: inherit;
-  border-radius: 6px;
-  padding: 0.4rem 0.45rem;
-  font-size: 0.78rem;
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.analysis-mode-toggle button:hover {
+  border-color: var(--laca-yellow);
 }
 
 .analysis-mode-toggle button.active {
-  background: var(--surface-2, #eef1f6);
-  border-color: var(--accent, #3d5a80);
+  border-color: var(--laca-yellow);
+  background: rgba(176, 48, 176, 0.22);
+  color: inherit;
   font-weight: 600;
 }
 
@@ -6066,6 +6073,7 @@ td {
 }
 
 [data-theme='light'] .tournament-list-item,
+[data-theme='light'] .analysis-mode-toggle button,
 [data-theme='light'] .tier-rule-row,
 [data-theme='light'] .share-invite-banner,
 [data-theme='light'] .share-active-banner {
@@ -6075,6 +6083,12 @@ td {
 }
 
 [data-theme='light'] .tournament-list-item.active {
+  background: var(--laca-purple-dark);
+  color: #fff;
+  border-color: var(--laca-purple-dark);
+}
+
+[data-theme='light'] .analysis-mode-toggle button.active {
   background: var(--laca-purple-dark);
   color: #fff;
   border-color: var(--laca-purple-dark);

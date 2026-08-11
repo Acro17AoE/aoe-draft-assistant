@@ -6,6 +6,7 @@ import type {
   MapTournamentStats,
   TournamentStatsStatus,
 } from '../lib/tournamentStats'
+import { formatTournamentDatasetStatus } from '../lib/tournamentStats'
 
 function formatCivLine(stat: CivRateStat, mode: 'pick' | 'wr' | 'ban' | 'order'): string {
   if (mode === 'wr') return `${stat.civ} ${stat.winRate ?? 0}%`
@@ -121,27 +122,7 @@ function DraftRatesModal({
 }
 
 function statusLine(status: TournamentStatsStatus, busy: boolean): string {
-  if (busy || status.status === 'syncing') {
-    return status.statusDetail || 'Syncing Liquipedia…'
-  }
-  if (status.status === 'error') {
-    return status.statusDetail || 'Sync error'
-  }
-  const parts: string[] = []
-  if (status.displayName) parts.push(status.displayName)
-  if (status.stages?.length) parts.push(`${status.stages.length} stages`)
-  if (status.status && status.status !== 'ready') parts.push(status.status)
-  if (status.matchCount != null) parts.push(`${status.matchCount} matches`)
-  if (status.draftCount != null) {
-    parts.push(`${status.draftCount} drafts`)
-    if ((status.matchCount ?? 0) > 0 && (status.draftCount ?? 0) === 0) {
-      parts.push('no |civdraft= yet')
-    }
-  }
-  if (status.lastSyncedAt) {
-    parts.push(`synced ${new Date(status.lastSyncedAt).toLocaleString()}`)
-  }
-  return parts.join(' · ')
+  return formatTournamentDatasetStatus(status, busy)
 }
 export function TournamentInsightsPanel({
   status,

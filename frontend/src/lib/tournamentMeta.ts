@@ -35,6 +35,8 @@ export interface MetaEventSummary {
   lastSyncedAt?: string | null
   matchCount?: number
   draftCount?: number
+  draftPairCount?: number
+  pendingDraftCount?: number
 }
 
 export interface TournamentMetaOverview {

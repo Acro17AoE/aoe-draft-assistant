@@ -33,7 +33,9 @@ function needsAutoSync(status: TournamentStatsStatus | null): boolean {
   if (stages > 0 && stages < 4 && (status.slug === 'the-league' || /league/i.test(status.displayName || ''))) {
     return true
   }
-  if (stages > 1 && (status.draftCount ?? 0) === 0) return true
+  if (stages > 1 && (status.draftPairCount ?? status.draftCount ?? 0) === 0) return true
+  if ((status.pendingDraftCount ?? 0) > 0) return true
+  if (status.statusDetail?.includes('Partial sync')) return true
   return false
 }
 

@@ -18,6 +18,8 @@ export interface TournamentStatsStatus {
   lastMatchDate?: string | null
   matchCount?: number
   draftCount?: number
+  draftPairCount?: number
+  pendingDraftCount?: number
   registryHit?: boolean
   aliases?: string[]
   attribution: LiquipediaAttribution
@@ -98,4 +100,31 @@ export async function fetchDraftTournamentStats(
   const response = await fetch(`/api/tournament-stats/${encodeURIComponent(slug)}/${path}`)
   if (!response.ok) throw new Error(await readError(response, 'Draft stats failed'))
   return response.json() as Promise<DraftTournamentStats>
+}
+
+export function formatTournamentDatasetStatus(
+  status: Pick<
+    TournamentStatsStatus,
+    'status' | 'statusDetail' | 'matchCount' | 'draftCount' | 'draftPairCount' | 'pendingDraftCount'
+  > | null,
+  busy = false,
+): string {
+  if (!status) return ''
+  if (busy || status.status === 'syncing') {
+    return status.statusDetail || 'Syncing…'
+  }
+  if (status.status === 'error') {
+    return status.statusDetail || 'Sync error'
+  }
+  if (status.statusDetail && status.status !== 'ready') {
+    return status.statusDetail
+  }
+  const matches = status.matchCount ?? 0
+  const pairs = status.draftPairCount ?? status.draftCount ?? 0
+  const pairLabel = pairs === 1 ? 'draft pair' : 'draft pairs'
+  let line = `Ready. ${matches} matches, ${pairs} ${pairLabel}`
+  if (status.statusDetail) {
+    line += `. ${status.statusDetail}`
+  }
+  return line
 }

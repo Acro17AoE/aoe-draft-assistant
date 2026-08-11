@@ -41,14 +41,38 @@ from .tournament_registry import (
 
 logger = logging.getLogger(__name__)
 
-MAX_MATCH_PAGES_PER_SYNC = 16
-MAX_NEW_DRAFTS_PER_SYNC = 24
+# Stay under Liquipedia free tier (~60 req/h). aoe2cm draft fetches do not count.
+LPDB_MAX_REQUESTS_PER_SYNC = 55
 META_TOP_N = 3
 META_MIN_MAP_CIV_SAMPLE = 2
 
 
 def _normalize_map_name(name: str) -> str:
     return re.sub(r"\s+", " ", name.strip())
+
+
+def _draft_pair_count(rows: list[TournamentMatchRow]) -> int:
+    """Matches with both civ and map aoe2cm drafts linked on Liquipedia."""
+    return sum(1 for row in rows if row.civ_draft_id and row.map_draft_id)
+
+
+def _pending_draft_fetches(db: Session, slug: str) -> int:
+    """aoe2cm draft rows still missing for this dataset (civ + map counted separately)."""
+    known = {
+        (d.draft_id, d.draft_type)
+        for d in db.scalars(select(TournamentDraftRow)).all()
+    }
+    pending: set[tuple[str, str]] = set()
+    for row in db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all():
+        if row.civ_draft_id:
+            key = (extract_draft_id(row.civ_draft_id), "civ")
+            if key not in known:
+                pending.add(key)
+        if row.map_draft_id:
+            key = (extract_draft_id(row.map_draft_id), "map")
+            if key not in known:
+                pending.add(key)
+    return len(pending)
 
 
 def _maps_match(a: str, b: str) -> bool:
@@ -455,6 +479,7 @@ async def sync_tournament_dataset(
     errors: list[str] = []
     latest_date = None if needs_restage else dataset.last_match_date
     pages_used = 0
+    lpdb_capped = False
 
     try:
         existing_keys = {
@@ -464,10 +489,13 @@ async def sync_tournament_dataset(
             ).all()
         }
 
-        # Per-stage fetch guarantees Qualifier 1/2 + Div1 + Div2 are all covered.
+        # Per-stage pagination; global LPDB budget only (aoe2cm is fetched separately).
         for stage in stage_order:
             offset = 0
-            while pages_used < MAX_MATCH_PAGES_PER_SYNC:
+            while True:
+                if pages_used >= LPDB_MAX_REQUESTS_PER_SYNC:
+                    lpdb_capped = True
+                    break
                 pages_used += 1
                 rows = await fetch_matches_for_parents(
                     [stage],
@@ -541,8 +569,10 @@ async def sync_tournament_dataset(
                 if len(rows) < 50:
                     break
                 offset += 50
+            if lpdb_capped:
+                break
 
-        # Fetch missing aoe2cm drafts referenced by new/existing rows
+        # Fetch all missing aoe2cm drafts (no Liquipedia quota cost).
         draft_ids: list[tuple[str, str]] = []
         for row in db.scalars(
             select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == dataset.slug)
@@ -569,10 +599,10 @@ async def sync_tournament_dataset(
             if dtype == "map" and (existing.neutral_counts_json or "{}") in ("{}", ""):
                 pending.append((did, dtype))
 
-        dataset.status_detail = f"Fetching up to {min(len(pending), MAX_NEW_DRAFTS_PER_SYNC)} aoe2cm drafts…"
+        dataset.status_detail = f"Fetching {len(pending)} aoe2cm draft(s)…"
         db.commit()
 
-        for draft_id, draft_type in pending[:MAX_NEW_DRAFTS_PER_SYNC]:
+        for draft_id, draft_type in pending:
             try:
                 draft = await fetch_draft(draft_id)
                 events = list(draft.get("events") or [])
@@ -610,44 +640,27 @@ async def sync_tournament_dataset(
 
         recompute_aggregates(db, dataset.slug)
 
-        match_count = db.scalars(
-            select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == dataset.slug)
-        ).all()
-        draft_count = len(
-            {
-                (d.draft_id, d.draft_type)
-                for d in db.scalars(select(TournamentDraftRow)).all()
-                if d.draft_id
-            }
+        match_rows = list(
+            db.scalars(
+                select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == dataset.slug)
+            ).all()
         )
-        # Only count drafts linked to this dataset
-        linked_draft_ids = set()
-        for row in match_count:
-            if row.civ_draft_id:
-                linked_draft_ids.add(extract_draft_id(row.civ_draft_id))
-            if row.map_draft_id:
-                linked_draft_ids.add(extract_draft_id(row.map_draft_id))
-        linked_draft_count = db.scalars(
-            select(TournamentDraftRow).where(TournamentDraftRow.draft_id.in_(list(linked_draft_ids) or ["__none__"]))
-        ).all()
+        draft_pairs = _draft_pair_count(match_rows)
+        pending_after = _pending_draft_fetches(db, dataset.slug)
 
-        covered = sorted(
-            {
-                to_pagename(str(row.stage))
-                for row in match_count
-                if row.stage
-            }
-        )
-        dataset.match_count = len(match_count)
-        dataset.draft_count = len(linked_draft_count)
+        dataset.match_count = len(match_rows)
+        dataset.draft_count = draft_pairs
         dataset.last_match_date = latest_date
         dataset.last_synced_at = utcnow()
         dataset.status = "ready"
-        dataset.status_detail = (
-            f"+{new_matches} matches, +{new_drafts} drafts"
-            + (f"; stages {', '.join(covered) or 'none'}")
-            + (f"; {len(errors)} draft errors" if errors else "")
-        )
+        if lpdb_capped:
+            dataset.status_detail = "Partial sync (Liquipedia quota); sync again for remaining matches"
+        elif pending_after > 0:
+            dataset.status_detail = f"{pending_after} draft(s) still pending; sync again"
+        elif errors:
+            dataset.status_detail = f"{len(errors)} draft fetch error(s)"
+        else:
+            dataset.status_detail = None
         db.commit()
     except Exception as exc:
         dataset.status = "error"
@@ -763,6 +776,14 @@ def dataset_status(db: Session, slug: str) -> dict[str, Any]:
             row.stages_json = json.dumps(stages, ensure_ascii=True)
             row.display_name = str(entry.get("displayName") or row.display_name)
             db.commit()
+    pending_drafts = _pending_draft_fetches(db, slug) if row.status == "ready" else 0
+    match_rows = list(
+        db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all()
+    )
+    draft_pairs = _draft_pair_count(match_rows)
+    if draft_pairs != row.draft_count:
+        row.draft_count = draft_pairs
+        db.commit()
     return {
         "found": True,
         "slug": row.slug,
@@ -775,7 +796,9 @@ def dataset_status(db: Session, slug: str) -> dict[str, Any]:
         "lastSyncedAt": row.last_synced_at.isoformat() if row.last_synced_at else None,
         "lastMatchDate": row.last_match_date,
         "matchCount": row.match_count,
-        "draftCount": row.draft_count,
+        "draftCount": draft_pairs,
+        "draftPairCount": draft_pairs,
+        "pendingDraftCount": pending_drafts,
         "attribution": liquipedia_attribution(),
     }
 
@@ -903,6 +926,8 @@ def list_meta_events(db: Session) -> dict[str, Any]:
                 "lastSyncedAt": status.get("lastSyncedAt"),
                 "matchCount": status.get("matchCount") or 0,
                 "draftCount": status.get("draftCount") or 0,
+                "draftPairCount": status.get("draftPairCount") or status.get("draftCount") or 0,
+                "pendingDraftCount": status.get("pendingDraftCount") or 0,
             }
         )
     return {"events": events, "attribution": liquipedia_attribution()}
