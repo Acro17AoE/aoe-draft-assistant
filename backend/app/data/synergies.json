@@ -6,8 +6,7 @@
     "civB": "Chinese",
     "category": "economic",
     "strength": "high",
-    "explanation": "Poles' Folwark mechanic and Chinese farm bonuses both reshape how farm food is created and stored — the same economic object (Farms) is modified from two angles in team games.",
-    "effects": ["farm_food_capacity", "farm_build_cost", "villager_work_rate"]
+    "explanation": "Poles' Folwark mechanic and Chinese farm bonuses both reshape how farm food is created and stored — the same economic object (Farms) is modified from two angles in team games."
   },
   {
     "id": "incas-chinese-start",
@@ -16,18 +15,7 @@
     "civB": "Chinese",
     "category": "opening",
     "strength": "medium",
-    "explanation": "Incas' team llama adds an early food source that compounds with civilizations that start with extra villagers or unusual early economy — more bodies and more food before the first farm.",
-    "effects": ["starting_unit", "starting_villagers", "early_food"]
-  },
-  {
-    "id": "huns-teutons-pop",
-    "title": "Population pressure vs housing",
-    "civA": "Huns",
-    "civB": "Teutons",
-    "category": "team",
-    "strength": "medium",
-    "explanation": "Huns skip houses while Teutons' cheaper farms support a dense economy — less housing tax for the team while Teuton allies scale villager count on cheaper farms.",
-    "effects": ["population_efficiency", "farm_build_cost"]
+    "explanation": "Incas' team llama adds an early food source that compounds with civilizations that start with extra villagers or unusual early economy — more bodies and more food before the first farm."
   },
   {
     "id": "britons-mayans-archers",
@@ -36,47 +24,46 @@
     "civB": "Mayans",
     "category": "military",
     "strength": "high",
-    "explanation": "Britons' faster archery ranges and Mayans' cheaper archers reduce the combined time and resource cost of mass archer production in team archer compositions.",
-    "effects": ["unit_training_speed", "unit_cost", "archer_line"]
+    "explanation": "Britons' faster archery ranges and Mayans' cheaper archers reduce the combined time and resource cost of mass archer production in team archer compositions."
   },
   {
-    "id": "franks-hindustanis-scout",
-    "title": "Cavalry + camel answer",
-    "civA": "Franks",
-    "civB": "Hindustanis",
-    "category": "military",
-    "strength": "medium",
-    "explanation": "Franks bring cheap knights; Hindustanis add team Scout Cavalry-line bonus damage vs buildings — complementary cavalry roles in early aggression and siege support.",
-    "effects": ["cavalry", "team_bonus", "anti_building"]
-  },
-  {
-    "id": "byzantines-indians-monks",
-    "title": "Monk discount chain",
-    "civA": "Byzantines",
-    "civB": "Hindustanis",
-    "category": "monk",
-    "strength": "medium",
-    "explanation": "Byzantines heal faster and Hindustanis' Imperial Camel upgrade path often appears in monk-heavy lobbies — both civs skew toward sustained Castle-age fights where monk value spikes.",
-    "effects": ["monk_heal", "camel_counter", "late_castle"]
-  },
-  {
-    "id": "vietnamese-burgundians-tech",
-    "title": "Full tech visibility + power spike timing",
-    "civA": "Vietnamese",
-    "civB": "Burgundians",
-    "category": "information",
-    "strength": "low",
-    "explanation": "Vietnamese reveal enemy Town Centers at game start; Burgundians spike at specific upgrade timings. Knowing opponent location helps coordinate early pressure around Burgundian power windows.",
-    "effects": ["information", "upgrade_timing"]
-  },
-  {
-    "id": "slavs-goths-infantry",
-    "title": "Infantry supply chain",
+    "id": "slavs-archer-civs",
+    "title": "Slavs + Archer civs",
     "civA": "Slavs",
-    "civB": "Goths",
+    "civB": "Britons",
+    "partnerLabel": "Archer civs",
     "category": "military",
     "strength": "high",
-    "explanation": "Slav team bonus (+5 pop for military buildings) and Goth cheaper infantry create more building space and cheaper flood units — classic infantry team synergy.",
-    "effects": ["population_efficiency", "infantry_cost", "team_bonus"]
+    "explanation": "Der Slaven-Teambonus (+5 Bevölkerung in Militärgebäuden) hilft Civs mit schwachem oder ohne Eco-Bonus dabei, auf offenen Karten früh Archer-Pop-Builds zu spielen."
+  },
+  {
+    "id": "teutons-monk-rush",
+    "title": "Teutons + Monk rush civs",
+    "civA": "Teutons",
+    "civB": "Aztecs",
+    "partnerLabel": "Monk rush civs",
+    "category": "team",
+    "strength": "high",
+    "explanation": "Der Teutonen-Teambonus macht Mönchs-Rushes deutlich schwerer durch gegnerische Mönche zu stoppen."
+  },
+  {
+    "id": "teutons-unique-unit",
+    "title": "Teutons + Unique unit civs",
+    "civA": "Teutons",
+    "civB": "Spanish",
+    "partnerLabel": "Unique unit civs",
+    "category": "team",
+    "strength": "high",
+    "explanation": "Eine häufige Antwort auf Unique-Unit-Spiel wie Conquistadores sind Mönche. Mit Teutonenbonus ist dieser Ansatz nur schwer durchsetzbar."
+  },
+  {
+    "id": "malians-bombard-cannon",
+    "title": "Malians + Bombard cannon civs",
+    "civA": "Malians",
+    "civB": "Portuguese",
+    "partnerLabel": "Bombard cannon civs",
+    "category": "military",
+    "strength": "medium",
+    "explanation": "Malians' schnellere Chemistry kann helfen, starke Timings mit Bombard Cannons zu treffen."
   }
 ]

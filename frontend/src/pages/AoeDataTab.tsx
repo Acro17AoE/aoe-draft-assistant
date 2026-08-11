@@ -51,6 +51,30 @@ function OverviewPanel({
     [],
   )
 
+  const funFacts = useMemo(
+    () => [
+      {
+        id: 'permanent-guest',
+        title: 'Permanent Guest',
+        civs: ['Celts', 'Huns', 'Slavs'] as const,
+        body: 'Celts were banned in 0.0% of tracked civ drafts (The League Qualifiers). They made it through every draft untouched. So did Huns and Slavs.',
+      },
+      {
+        id: 'waiting-chinese',
+        title: 'Waiting for you to ban Chinese',
+        civs: ['Chinese'] as const,
+        body: 'Chinese were banned in 51.8% of tracked civ drafts (The League Qualifiers), but usually only after surviving most of the ban phase. Average ban slot: #9.55 of 14.',
+      },
+      {
+        id: 'not-spanish',
+        title: 'Definitely not Spanish',
+        civs: ['Spanish'] as const,
+        body: 'Spanish were banned in 73.2% of tracked civ drafts (The League Qualifiers) and tended to disappear early. Average ban slot: #5.59 of 14.',
+      },
+    ],
+    [],
+  )
+
   return (
     <div className="aoe-data-overview">
       <article className="aoe-data-spotlight panel">
@@ -63,14 +87,24 @@ function OverviewPanel({
             {spotlight ??
               'Asian elephants are endangered in the wild — in AoE2, War Elephants remain a Persian trademark while ban rates tell another story. Sync Tournament Meta for live draft headlines.'}
           </p>
-          {overview ? (
-            <p className="hint aoe-data-patch-line">
-              Dataset: {overview.source} · {overview.civCount} civs · {overview.techCount} techs ·{' '}
-              {overview.unitCount} units · patch snapshot: {overview.patchLabel}
-            </p>
-          ) : null}
         </div>
       </article>
+
+      <section className="aoe-data-funfacts">
+        {funFacts.map((fact) => (
+          <article key={fact.id} className="aoe-data-funfact panel">
+            <div className="aoe-data-funfact-icons">
+              {fact.civs.map((civ) => (
+                <img key={civ} src={civIconUrl(civ)} alt="" title={civ} />
+              ))}
+            </div>
+            <div>
+              <h3>{fact.title}</h3>
+              <p>{fact.body}</p>
+            </div>
+          </article>
+        ))}
+      </section>
 
       {overview ? (
         <div className="aoe-data-stat-grid">

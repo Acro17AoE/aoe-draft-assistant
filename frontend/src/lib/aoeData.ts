@@ -54,7 +54,8 @@ export interface AoeDataSynergy {
   category: string
   strength: string
   explanation: string
-  effects?: string[]
+  /** Display label when partner is a civ archetype, not one specific civ. */
+  partnerLabel?: string
 }
 
 async function readError(response: Response, fallback: string): Promise<string> {
@@ -121,7 +122,7 @@ export const AOE_DATA_SECTIONS: { id: AoeDataSection; label: string; blurb: stri
   {
     id: 'overview',
     label: 'Overview',
-    blurb: 'Headlines and entry points into AoE2 data.',
+    blurb: '',
   },
   {
     id: 'tech',
@@ -131,7 +132,7 @@ export const AOE_DATA_SECTIONS: { id: AoeDataSection; label: string; blurb: stri
   {
     id: 'dna',
     label: 'Civilization DNA',
-    blurb: 'Structural similarity from tech-tree access.',
+    blurb: 'Structural similarity from tech-tree access (Jaccard).',
   },
   {
     id: 'synergies',

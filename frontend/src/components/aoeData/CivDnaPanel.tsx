@@ -10,7 +10,6 @@ export function CivDnaPanel() {
   const [civs, setCivs] = useState<string[]>([])
   const [selected, setSelected] = useState('Magyars')
   const [neighbors, setNeighbors] = useState<AoeDataSimilarityNeighbor[]>([])
-  const [method, setMethod] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,7 +42,6 @@ export function CivDnaPanel() {
         const data = await fetchAoeDataSimilarity(selected)
         if (cancelled) return
         setNeighbors(data.neighbors)
-        setMethod(data.method ?? null)
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Similarity failed')
       } finally {
@@ -68,7 +66,6 @@ export function CivDnaPanel() {
             ))}
           </select>
         </label>
-        {method ? <p className="hint">{method} · structural tech-tree similarity</p> : null}
       </div>
       {error ? <p className="set-replay-error">{error}</p> : null}
       {busy ? <p className="hint">Calculating neighbors…</p> : null}

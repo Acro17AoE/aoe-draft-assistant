@@ -14,7 +14,8 @@ function entityKey(entity: AoeDataEntity): string {
 export function TechExplorerPanel() {
   const [query, setQuery] = useState('Husbandry')
   const [results, setResults] = useState<AoeDataEntity[]>([])
-  const [selected, setSelected] = useState<AoeDataEntity[]>([])
+  const [pinned, setPinned] = useState<AoeDataEntity[]>([])
+  const [focusedKey, setFocusedKey] = useState<string | null>(null)
   const [intersection, setIntersection] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,14 +43,14 @@ export function TechExplorerPanel() {
   }, []) // initial sample search
 
   useEffect(() => {
-    if (selected.length === 0) {
+    if (pinned.length === 0) {
       setIntersection([])
       return
     }
     let cancelled = false
     void (async () => {
       try {
-        const data = await fetchAoeDataIntersection(selected.map(entityKey))
+        const data = await fetchAoeDataIntersection(pinned.map(entityKey))
         if (!cancelled) setIntersection(data.civs)
       } catch {
         if (!cancelled) setIntersection([])
@@ -58,40 +59,47 @@ export function TechExplorerPanel() {
     return () => {
       cancelled = true
     }
-  }, [selected])
+  }, [pinned])
 
-  const active = selected[0] ?? null
+  const focusEntity =
+    pinned.find((row) => entityKey(row) === focusedKey) ?? pinned[pinned.length - 1] ?? null
   const [activeDetail, setActiveDetail] = useState<AoeDataEntity | null>(null)
 
   useEffect(() => {
-    if (!active) {
+    if (!focusEntity) {
       setActiveDetail(null)
       return
     }
     let cancelled = false
     void (async () => {
       try {
-        const detail = await fetchAoeDataEntity(active.type, active.id)
+        const detail = await fetchAoeDataEntity(focusEntity.type, focusEntity.id)
         if (!cancelled) setActiveDetail(detail)
       } catch {
-        if (!cancelled) setActiveDetail(active)
+        if (!cancelled) setActiveDetail(focusEntity)
       }
     })()
     return () => {
       cancelled = true
     }
-  }, [active])
+  }, [focusEntity])
 
   const missingPreview = useMemo(() => activeDetail?.missingCivs?.slice(0, 8) ?? [], [activeDetail])
+  const pinnedKeys = useMemo(() => new Set(pinned.map(entityKey)), [pinned])
 
-  const toggleSelected = (entity: AoeDataEntity) => {
+  const addPinned = (entity: AoeDataEntity) => {
     const key = entityKey(entity)
-    setSelected((prev) => {
-      if (prev.some((row) => entityKey(row) === key)) {
-        return prev.filter((row) => entityKey(row) !== key)
-      }
+    setPinned((prev) => {
+      if (prev.some((row) => entityKey(row) === key)) return prev
       return [...prev, entity]
     })
+    setFocusedKey(key)
+  }
+
+  const removePinned = (entity: AoeDataEntity) => {
+    const key = entityKey(entity)
+    setPinned((prev) => prev.filter((row) => entityKey(row) !== key))
+    setFocusedKey((current) => (current === key ? null : current))
   }
 
   return (
@@ -115,6 +123,38 @@ export function TechExplorerPanel() {
       </form>
       {error ? <p className="set-replay-error">{error}</p> : null}
 
+      {pinned.length > 0 ? (
+        <section className="aoe-data-pinned panel">
+          <h4>Linked ({pinned.length})</h4>
+          <ul className="aoe-data-pinned-list">
+            {pinned.map((entity) => {
+              const key = entityKey(entity)
+              const isFocused = focusEntity && entityKey(focusEntity) === key
+              return (
+                <li key={key} className={`aoe-data-pinned-item${isFocused ? ' focused' : ''}`}>
+                  <button
+                    type="button"
+                    className="aoe-data-pinned-main"
+                    onClick={() => setFocusedKey(key)}
+                  >
+                    <span className="aoe-data-entity-type">{entity.type}</span>
+                    <span>{entity.name}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="aoe-data-pinned-remove"
+                    aria-label={`Remove ${entity.name}`}
+                    onClick={() => removePinned(entity)}
+                  >
+                    ×
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      ) : null}
+
       <div className="aoe-data-tech-layout">
         <section className="aoe-data-tech-results panel">
           <h4>Results</h4>
@@ -124,18 +164,19 @@ export function TechExplorerPanel() {
             <ul className="aoe-data-entity-list">
               {results.map((entity) => {
                 const key = entityKey(entity)
-                const isSelected = selected.some((row) => entityKey(row) === key)
+                const isPinned = pinnedKeys.has(key)
                 return (
                   <li key={key}>
                     <button
                       type="button"
-                      className={`aoe-data-entity-btn${isSelected ? ' active' : ''}`}
-                      onClick={() => toggleSelected(entity)}
+                      className={`aoe-data-entity-btn${isPinned ? ' pinned' : ''}`}
+                      onClick={() => addPinned(entity)}
+                      disabled={isPinned}
                     >
                       <span className="aoe-data-entity-type">{entity.type}</span>
                       <span>{entity.name}</span>
                       <span className="aoe-data-entity-count">
-                        {entity.civCount}/{entity.totalCivs}
+                        {isPinned ? 'linked' : `${entity.civCount}/${entity.totalCivs}`}
                       </span>
                     </button>
                   </li>
@@ -168,15 +209,13 @@ export function TechExplorerPanel() {
               ) : null}
             </>
           ) : (
-            <p className="hint">Select an entity to inspect civilization access.</p>
+            <p className="hint">Link an entity from search results to inspect civilization access.</p>
           )}
 
-          {selected.length > 1 ? (
+          {pinned.length > 1 ? (
             <div className="aoe-data-intersection">
-              <h4>
-                Intersection ({intersection.length} civs)
-              </h4>
-              <p className="hint">{selected.map((row) => row.name).join(' + ')}</p>
+              <h4>Intersection ({intersection.length} civs)</h4>
+              <p className="hint">{pinned.map((row) => row.name).join(' + ')}</p>
               <div className="aoe-data-civ-chip-grid compact">
                 {intersection.map((civ) => (
                   <span key={civ} className="aoe-data-civ-chip">

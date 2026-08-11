@@ -5379,6 +5379,43 @@ td {
   margin-top: 0.45rem;
 }
 
+.aoe-data-funfacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.aoe-data-funfact {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.aoe-data-funfact h3 {
+  margin: 0 0 0.3rem;
+  font-size: 0.92rem;
+}
+
+.aoe-data-funfact p {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.aoe-data-funfact-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.aoe-data-funfact-icons img {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+}
+
 .aoe-data-stat-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -5473,6 +5510,68 @@ td {
 .aoe-data-entity-btn:hover {
   border-color: var(--laca-border);
   background: rgba(255, 255, 255, 0.03);
+}
+
+.aoe-data-entity-btn.pinned {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.aoe-data-pinned {
+  margin-bottom: 0.65rem;
+}
+
+.aoe-data-pinned h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+}
+
+.aoe-data-pinned-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.aoe-data-pinned-item {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--laca-yellow);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.aoe-data-pinned-item.focused {
+  box-shadow: 0 0 0 1px var(--laca-yellow);
+}
+
+.aoe-data-pinned-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  padding: 0.3rem 0.45rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.aoe-data-pinned-remove {
+  border: none;
+  border-left: 1px solid var(--laca-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  width: 1.75rem;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.aoe-data-pinned-remove:hover {
+  background: rgba(255, 80, 80, 0.15);
 }
 
 .aoe-data-entity-type {
@@ -5639,7 +5738,7 @@ td {
 }
 
 [data-theme='light'] .aoe-data-entity-btn:hover,
-[data-theme='light'] .aoe-data-entity-btn.active {
+[data-theme='light'] .aoe-data-entity-btn.pinned {
   background: rgba(0, 0, 0, 0.04);
 }
 

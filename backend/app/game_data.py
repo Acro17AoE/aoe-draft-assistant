@@ -181,7 +181,7 @@ async def overview_payload() -> dict[str, Any]:
         "techCount": data["techCount"],
         "unitCount": data["unitCount"],
         "buildingCount": data["buildingCount"],
-        "synergyCount": len(data["synergies"]),
+        "synergyCount": len(_load_synergies()),
     }
 
 
@@ -299,8 +299,7 @@ async def civ_similarity(civ_name: str, *, limit: int = 8) -> dict[str, Any]:
 
 
 async def list_synergies(*, category: str | None = None) -> list[dict[str, Any]]:
-    data = await _load_techtree()
-    rows = list(data["synergies"])
+    rows = _load_synergies()
     if category:
         needle = category.lower().strip()
         rows = [row for row in rows if str(row.get("category") or "").lower() == needle]

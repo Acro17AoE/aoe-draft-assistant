@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { civIconUrl } from '../../lib/civs'
 import { fetchAoeDataSynergies, type AoeDataSynergy } from '../../lib/aoeData'
 
-const CATEGORIES = ['all', 'economic', 'military', 'opening', 'team', 'monk', 'information'] as const
+const CATEGORIES = ['all', 'economic', 'military', 'opening', 'team'] as const
+
+function partnerLabel(row: AoeDataSynergy): string {
+  return row.partnerLabel ?? row.civB
+}
 
 export function SynergiesPanel() {
   const [rows, setRows] = useState<AoeDataSynergy[]>([])
@@ -57,20 +61,17 @@ export function SynergiesPanel() {
             <header>
               <div className="aoe-data-synergy-civs">
                 <img src={civIconUrl(row.civA)} alt="" />
-                <span>×</span>
+                <span>+</span>
                 <img src={civIconUrl(row.civB)} alt="" />
               </div>
               <div>
                 <h4>{row.title}</h4>
                 <p className="hint">
-                  {row.civA} + {row.civB} · {row.category} · {row.strength}
+                  {row.civA} + {partnerLabel(row)}
                 </p>
               </div>
             </header>
             <p>{row.explanation}</p>
-            {row.effects?.length ? (
-              <p className="hint aoe-data-effects">{row.effects.join(' · ')}</p>
-            ) : null}
           </article>
         ))}
         {sorted.length === 0 ? <p className="hint">No synergies in this category yet.</p> : null}
