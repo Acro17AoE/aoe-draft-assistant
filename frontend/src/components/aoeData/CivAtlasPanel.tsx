@@ -19,8 +19,8 @@ import { CivVizDetailPanel } from './CivVizDetailPanel'
 
 const MAP_W = 950
 const MAP_H = 620
-const ICON = 28
-const ICON_ACTIVE = 34
+const ICON = 24
+const ICON_ACTIVE = 30
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
@@ -100,7 +100,7 @@ export function CivAtlasPanel() {
       event.preventDefault()
       const delta = event.deltaY > 0 ? -0.12 : 0.12
       setZoom((prevZoom) => {
-        const nextZoom = clamp(prevZoom + delta, 0.7, 5)
+        const nextZoom = clamp(prevZoom + delta, 0.7, 14)
         const local = clientToSvg(svg, event.clientX, event.clientY)
         setPan((prevPan) => {
           const contentX = (local.x - prevPan.x) / prevZoom
@@ -228,11 +228,14 @@ export function CivAtlasPanel() {
                   const active = selected === entry.civ || hovered === entry.civ
                   const size = active ? ICON_ACTIVE : ICON
                   const half = size / 2
+                  // Keep icons roughly screen-sized while the map zooms, so dense
+                  // regions (Europe) separate instead of scaling the clutter up.
+                  const markerScale = 1 / zoom
                   return (
                     <g
                       key={entry.civ}
                       className={`aoe-atlas-marker${active ? ' is-active' : ''}`}
-                      transform={`translate(${x}, ${y})`}
+                      transform={`translate(${x}, ${y}) scale(${markerScale})`}
                       onMouseEnter={() => setHovered(entry.civ)}
                       onMouseLeave={() =>
                         setHovered((current) => (current === entry.civ ? null : current))

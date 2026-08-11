@@ -7,7 +7,7 @@ import {
   type AoeDataSimilarityEdge,
   type AoeDataSynergy,
 } from '../../lib/aoeData'
-import { CIV_ATLAS, atlasEntryForCiv, projectLatLon } from '../../data/civRegions'
+import { CIV_ATLAS } from '../../data/civRegions'
 import { CivVizDetailPanel } from './CivVizDetailPanel'
 
 const DNA_MODES: { id: AoeDataDnaMode; label: string }[] = [
@@ -18,10 +18,11 @@ const DNA_MODES: { id: AoeDataDnaMode; label: string }[] = [
 
 const WIDTH = 1400
 const HEIGHT = 900
-const NODE_R = 22
-const NODE_R_ACTIVE = 28
-const ICON = 36
-const ICON_ACTIVE = 44
+const NODE_R = 26
+const NODE_R_ACTIVE = 32
+const ICON = 42
+const ICON_ACTIVE = 52
+const PAD = 48
 
 interface SimNode {
   civ: string
@@ -32,23 +33,21 @@ interface SimNode {
 }
 
 function seedPositions(civs: string[]): SimNode[] {
+  const n = Math.max(1, civs.length)
+  const cols = Math.ceil(Math.sqrt(n * (WIDTH / HEIGHT)))
+  const rows = Math.ceil(n / cols)
+  const cellW = (WIDTH - PAD * 2) / cols
+  const cellH = (HEIGHT - PAD * 2) / rows
   return civs.map((civ, index) => {
-    const atlas = atlasEntryForCiv(civ)
-    if (atlas) {
-      const projected = projectLatLon(atlas.lat, atlas.lon)
-      return {
-        civ,
-        x: (projected.x / 950) * WIDTH,
-        y: (projected.y / 620) * HEIGHT,
-        vx: 0,
-        vy: 0,
-      }
-    }
-    const angle = (index / Math.max(1, civs.length)) * Math.PI * 2
+    const col = index % cols
+    const row = Math.floor(index / cols)
+    // Mild jitter so the grid isn't rigid
+    const jitterX = ((index * 37) % 17) - 8
+    const jitterY = ((index * 53) % 17) - 8
     return {
       civ,
-      x: WIDTH / 2 + Math.cos(angle) * 260,
-      y: HEIGHT / 2 + Math.sin(angle) * 200,
+      x: PAD + cellW * (col + 0.5) + jitterX,
+      y: PAD + cellH * (row + 0.5) + jitterY,
       vx: 0,
       vy: 0,
     }
@@ -134,34 +133,43 @@ export function SimilarityConstellationPanel() {
         return
       }
 
+      const n = current.length
       const index = new Map(current.map((node, i) => [node.civ, i]))
       const forces = current.map(() => ({ fx: 0, fy: 0 }))
+      // Target spacing fills most of the canvas
+      const targetSep = Math.sqrt(((WIDTH - PAD * 2) * (HEIGHT - PAD * 2)) / Math.max(1, n)) * 0.95
+      const repulsion = targetSep * targetSep * 0.55
 
-      // weak centering + repulsion
-      for (let i = 0; i < current.length; i++) {
+      for (let i = 0; i < n; i++) {
         const a = current[i]
-        forces[i].fx += (WIDTH / 2 - a.x) * 0.004
-        forces[i].fy += (HEIGHT / 2 - a.y) * 0.004
-        for (let j = i + 1; j < current.length; j++) {
+        // Very soft centering — keep graph on canvas without crushing it
+        forces[i].fx += (WIDTH / 2 - a.x) * 0.0008
+        forces[i].fy += (HEIGHT / 2 - a.y) * 0.0008
+
+        for (let j = i + 1; j < n; j++) {
           const b = current[j]
           let dx = a.x - b.x
           let dy = a.y - b.y
-          let dist = Math.hypot(dx, dy) || 0.01
-          const minDist = 64
-          if (dist < minDist) {
-            const push = ((minDist - dist) / minDist) * 1.8
-            dx /= dist
-            dy /= dist
-            forces[i].fx += dx * push
-            forces[i].fy += dy * push
-            forces[j].fx -= dx * push
-            forces[j].fy -= dy * push
+          let distSq = dx * dx + dy * dy
+          if (distSq < 1) {
+            dx = (Math.random() - 0.5) * 2
+            dy = (Math.random() - 0.5) * 2
+            distSq = dx * dx + dy * dy
           }
+          const dist = Math.sqrt(distSq)
+          // Continuous Coulomb repulsion (keeps the constellation expanded)
+          const force = repulsion / distSq
+          const fx = (dx / dist) * force
+          const fy = (dy / dist) * force
+          forces[i].fx += fx
+          forces[i].fy += fy
+          forces[j].fx -= fx
+          forces[j].fy -= fy
         }
       }
 
-      // spring along strong edges
-      for (const edge of visibleEdges.slice(0, 180)) {
+      // Springs: pull related civs closer, but keep long ideal length
+      for (const edge of visibleEdges.slice(0, 220)) {
         const ia = index.get(edge.a)
         const ib = index.get(edge.b)
         if (ia == null || ib == null) continue
@@ -170,24 +178,61 @@ export function SimilarityConstellationPanel() {
         const dx = b.x - a.x
         const dy = b.y - a.y
         const dist = Math.hypot(dx, dy) || 0.01
-        const ideal = 120 + (100 - edge.similarity) * 1.4
-        const pull = ((dist - ideal) / dist) * 0.018 * (edge.similarity / 100)
+        const ideal = targetSep * (0.85 + (1 - edge.similarity / 100) * 0.7)
+        const pull = ((dist - ideal) / dist) * 0.012 * (edge.similarity / 100)
         forces[ia].fx += dx * pull
         forces[ia].fy += dy * pull
         forces[ib].fx -= dx * pull
         forces[ib].fy -= dy * pull
       }
 
-      const next = current.map((node, i) => {
+      let next = current.map((node, i) => {
         if (dragCiv.current === node.civ) {
           return { ...node, vx: 0, vy: 0 }
         }
-        let vx = (node.vx + forces[i].fx) * 0.82
-        let vy = (node.vy + forces[i].fy) * 0.82
-        let x = Math.min(WIDTH - 36, Math.max(36, node.x + vx))
-        let y = Math.min(HEIGHT - 36, Math.max(36, node.y + vy))
-        return { ...node, x, y, vx, vy }
+        const vx = (node.vx + forces[i].fx) * 0.78
+        const vy = (node.vy + forces[i].fy) * 0.78
+        return {
+          ...node,
+          x: node.x + vx,
+          y: node.y + vy,
+          vx,
+          vy,
+        }
       })
+
+      // Fit layout to canvas so the constellation always uses the available space
+      let minX = Infinity
+      let maxX = -Infinity
+      let minY = Infinity
+      let maxY = -Infinity
+      for (const node of next) {
+        minX = Math.min(minX, node.x)
+        maxX = Math.max(maxX, node.x)
+        minY = Math.min(minY, node.y)
+        maxY = Math.max(maxY, node.y)
+      }
+      const spanX = Math.max(80, maxX - minX)
+      const spanY = Math.max(80, maxY - minY)
+      const scale = Math.min((WIDTH - PAD * 2) / spanX, (HEIGHT - PAD * 2) / spanY)
+      // Only gently expand when the cluster is too small; never shrink aggressively mid-drag
+      const expand = scale > 1.05 && !dragCiv.current ? Math.min(scale, 1.04) : 1
+      if (expand > 1) {
+        const cx = (minX + maxX) / 2
+        const cy = (minY + maxY) / 2
+        next = next.map((node) => ({
+          ...node,
+          x: WIDTH / 2 + (node.x - cx) * expand,
+          y: HEIGHT / 2 + (node.y - cy) * expand,
+        }))
+      }
+
+      next = next.map((node) => ({
+        ...node,
+        x: Math.min(WIDTH - PAD, Math.max(PAD, node.x)),
+        y: Math.min(HEIGHT - PAD, Math.max(PAD, node.y)),
+      }))
+
       nodesRef.current = next
       setNodes(next)
       frameRef.current = requestAnimationFrame(tick)
