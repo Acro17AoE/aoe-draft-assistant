@@ -16,8 +16,12 @@ const DNA_MODES: { id: AoeDataDnaMode; label: string }[] = [
   { id: 'eco', label: 'Eco' },
 ]
 
-const WIDTH = 1100
-const HEIGHT = 680
+const WIDTH = 1400
+const HEIGHT = 900
+const NODE_R = 22
+const NODE_R_ACTIVE = 28
+const ICON = 36
+const ICON_ACTIVE = 44
 
 interface SimNode {
   civ: string
@@ -43,8 +47,8 @@ function seedPositions(civs: string[]): SimNode[] {
     const angle = (index / Math.max(1, civs.length)) * Math.PI * 2
     return {
       civ,
-      x: WIDTH / 2 + Math.cos(angle) * 180,
-      y: HEIGHT / 2 + Math.sin(angle) * 140,
+      x: WIDTH / 2 + Math.cos(angle) * 260,
+      y: HEIGHT / 2 + Math.sin(angle) * 200,
       vx: 0,
       vy: 0,
     }
@@ -143,9 +147,9 @@ export function SimilarityConstellationPanel() {
           let dx = a.x - b.x
           let dy = a.y - b.y
           let dist = Math.hypot(dx, dy) || 0.01
-          const minDist = 42
+          const minDist = 64
           if (dist < minDist) {
-            const push = ((minDist - dist) / minDist) * 1.4
+            const push = ((minDist - dist) / minDist) * 1.8
             dx /= dist
             dy /= dist
             forces[i].fx += dx * push
@@ -166,8 +170,8 @@ export function SimilarityConstellationPanel() {
         const dx = b.x - a.x
         const dy = b.y - a.y
         const dist = Math.hypot(dx, dy) || 0.01
-        const ideal = 90 + (100 - edge.similarity) * 1.2
-        const pull = ((dist - ideal) / dist) * 0.02 * (edge.similarity / 100)
+        const ideal = 120 + (100 - edge.similarity) * 1.4
+        const pull = ((dist - ideal) / dist) * 0.018 * (edge.similarity / 100)
         forces[ia].fx += dx * pull
         forces[ia].fy += dy * pull
         forces[ib].fx -= dx * pull
@@ -180,8 +184,8 @@ export function SimilarityConstellationPanel() {
         }
         let vx = (node.vx + forces[i].fx) * 0.82
         let vy = (node.vy + forces[i].fy) * 0.82
-        let x = Math.min(WIDTH - 24, Math.max(24, node.x + vx))
-        let y = Math.min(HEIGHT - 24, Math.max(24, node.y + vy))
+        let x = Math.min(WIDTH - 36, Math.max(36, node.x + vx))
+        let y = Math.min(HEIGHT - 36, Math.max(36, node.y + vy))
         return { ...node, x, y, vx, vy }
       })
       nodesRef.current = next
@@ -318,6 +322,9 @@ export function SimilarityConstellationPanel() {
             {nodes.map((node) => {
               const active = selected === node.civ || hovered === node.civ
               const dim = neighborSet != null && !neighborSet.has(node.civ)
+              const size = active ? ICON_ACTIVE : ICON
+              const half = size / 2
+              const ring = active ? NODE_R_ACTIVE : NODE_R
               return (
                 <g
                   key={node.civ}
@@ -329,17 +336,17 @@ export function SimilarityConstellationPanel() {
                   onClick={() => setSelected(node.civ)}
                   style={{ cursor: 'grab' }}
                 >
-                  <circle r={active ? 16 : 13} />
+                  <circle r={ring} />
                   <image
                     href={civIconUrl(node.civ)}
-                    x={-10}
-                    y={-10}
-                    width={20}
-                    height={20}
-                    clipPath="circle(10px at 10px 10px)"
+                    x={-half}
+                    y={-half}
+                    width={size}
+                    height={size}
+                    clipPath={`circle(${half}px at ${half}px ${half}px)`}
                   />
                   {active ? (
-                    <text y={28} textAnchor="middle" className="aoe-constellation-label">
+                    <text y={ring + 16} textAnchor="middle" className="aoe-constellation-label">
                       {node.civ}
                     </text>
                   ) : null}

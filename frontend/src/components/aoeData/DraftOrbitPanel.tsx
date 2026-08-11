@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import { civIconUrl } from '../../lib/civs'
 import {
   fetchMetaEvents,
@@ -11,9 +17,21 @@ import { CivVizDetailPanel } from './CivVizDetailPanel'
 const PLOT_W = 1100
 const PLOT_H = 620
 const PAD = { top: 36, right: 36, bottom: 64, left: 72 }
+const ICON_BASE = 22
+const ICON_MAX = 34
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
+}
+
+function clientToSvg(svg: SVGSVGElement, clientX: number, clientY: number) {
+  const point = svg.createSVGPoint()
+  point.x = clientX
+  point.y = clientY
+  const ctm = svg.getScreenCTM()
+  if (!ctm) return { x: 0, y: 0 }
+  const local = point.matrixTransform(ctm.inverse())
+  return { x: local.x, y: local.y }
 }
 
 export function DraftOrbitPanel() {
@@ -26,8 +44,15 @@ export function DraftOrbitPanel() {
   const [hovered, setHovered] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [zoom, setZoom] = useState(1)
-  const dragRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null)
   const [pan, setPan] = useState({ x: 0, y: 0 })
+  const svgRef = useRef<SVGSVGElement | null>(null)
+  const dragRef = useRef<{
+    x: number
+    y: number
+    panX: number
+    panY: number
+    moved: boolean
+  } | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -69,6 +94,30 @@ export function DraftOrbitPanel() {
     }
   }, [slug])
 
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault()
+      const delta = event.deltaY > 0 ? -0.12 : 0.12
+      setZoom((prevZoom) => {
+        const nextZoom = clamp(prevZoom + delta, 0.6, 4)
+        const local = clientToSvg(svg, event.clientX, event.clientY)
+        setPan((prevPan) => {
+          const contentX = (local.x - prevPan.x) / prevZoom
+          const contentY = (local.y - prevPan.y) / prevZoom
+          return {
+            x: local.x - contentX * nextZoom,
+            y: local.y - contentY * nextZoom,
+          }
+        })
+        return nextZoom
+      })
+    }
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    return () => svg.removeEventListener('wheel', onWheel)
+  }, [])
+
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
     return rates.filter((row) => {
@@ -91,17 +140,31 @@ export function DraftOrbitPanel() {
       const pick = row.pickRate ?? 0
       const x = PAD.left + (ban / 100) * innerW
       const y = PAD.top + (1 - pick / 100) * innerH
-      const r = 8 + ((row.plays ?? 0) / maxPlays) * 14
+      const playRatio = (row.plays ?? 0) / maxPlays
+      const icon = ICON_BASE + playRatio * (ICON_MAX - ICON_BASE)
+      const r = icon / 2 + 6
       const win = row.winRate
       const hue = win == null ? 40 : clamp(Math.round((win / 100) * 120), 0, 120)
-      return { row, x, y, r, color: `hsla(${hue}, 70%, 48%, 0.85)` }
+      return { row, x, y, r, icon, color: `hsla(${hue}, 70%, 48%, 0.85)` }
     })
   }, [filtered, maxPlays])
 
   const selectedRate = selected ? rates.find((row) => row.civ === selected) : null
 
+  const resetView = () => {
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+  }
+
   const onPointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
-    dragRef.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y }
+    if (event.button !== 0) return
+    dragRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      panX: pan.x,
+      panY: pan.y,
+      moved: false,
+    }
     event.currentTarget.setPointerCapture(event.pointerId)
   }
 
@@ -109,6 +172,7 @@ export function DraftOrbitPanel() {
     if (!dragRef.current) return
     const dx = event.clientX - dragRef.current.x
     const dy = event.clientY - dragRef.current.y
+    if (Math.hypot(dx, dy) > 3) dragRef.current.moved = true
     setPan({ x: dragRef.current.panX + dx, y: dragRef.current.panY + dy })
   }
 
@@ -137,27 +201,15 @@ export function DraftOrbitPanel() {
             placeholder="e.g. Georgians"
           />
         </label>
-        <label>
-          Zoom
-          <input
-            type="range"
-            min={0.8}
-            max={2.2}
-            step={0.05}
-            value={zoom}
-            onChange={(event) => setZoom(Number(event.target.value))}
-          />
-        </label>
-        <button
-          type="button"
-          className="compact-btn"
-          onClick={() => {
-            setZoom(1)
-            setPan({ x: 0, y: 0 })
-          }}
-        >
-          Reset view
-        </button>
+        <div className="aoe-orbit-legend" aria-label="Win rate color legend">
+          <span className="aoe-orbit-legend-label">Win rate</span>
+          <div className="aoe-orbit-legend-bar" />
+          <span className="aoe-orbit-legend-ends">
+            <em>low</em>
+            <em>high</em>
+          </span>
+          <span className="hint aoe-orbit-legend-size">Size = plays</span>
+        </div>
       </div>
 
       {busy ? <p className="hint">Loading draft orbit…</p> : null}
@@ -166,12 +218,17 @@ export function DraftOrbitPanel() {
       <div className="aoe-orbit-body">
         <div className="aoe-orbit-plot panel">
           <svg
+            ref={svgRef}
             viewBox={`0 0 ${PLOT_W} ${PLOT_H}`}
             className="aoe-orbit-svg"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerLeave={onPointerUp}
+            onDoubleClick={(event) => {
+              event.preventDefault()
+              resetView()
+            }}
           >
             <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
               <rect
@@ -200,7 +257,12 @@ export function DraftOrbitPanel() {
                       y2={y}
                       className="aoe-orbit-grid"
                     />
-                    <text x={x} y={PLOT_H - PAD.bottom + 18} textAnchor="middle" className="aoe-orbit-axis">
+                    <text
+                      x={x}
+                      y={PLOT_H - PAD.bottom + 18}
+                      textAnchor="middle"
+                      className="aoe-orbit-axis"
+                    >
                       {tick}%
                     </text>
                     <text x={PAD.left - 10} y={y + 4} textAnchor="end" className="aoe-orbit-axis">
@@ -229,6 +291,7 @@ export function DraftOrbitPanel() {
 
               {points.map((point) => {
                 const active = selected === point.row.civ || hovered === point.row.civ
+                const half = point.icon / 2
                 return (
                   <g
                     key={point.row.civ}
@@ -240,6 +303,7 @@ export function DraftOrbitPanel() {
                     }
                     onClick={(event) => {
                       event.stopPropagation()
+                      if (dragRef.current?.moved) return
                       setSelected(point.row.civ)
                     }}
                     style={{ cursor: 'pointer' }}
@@ -247,14 +311,14 @@ export function DraftOrbitPanel() {
                     <circle r={point.r} fill={point.color} />
                     <image
                       href={civIconUrl(point.row.civ)}
-                      x={-8}
-                      y={-8}
-                      width={16}
-                      height={16}
-                      clipPath="circle(8px at 8px 8px)"
+                      x={-half}
+                      y={-half}
+                      width={point.icon}
+                      height={point.icon}
+                      clipPath={`circle(${half}px at ${half}px ${half}px)`}
                     />
                     {active ? (
-                      <text y={point.r + 14} textAnchor="middle" className="aoe-orbit-point-label">
+                      <text y={point.r + 16} textAnchor="middle" className="aoe-orbit-point-label">
                         {point.row.civ}
                       </text>
                     ) : null}

@@ -5912,11 +5912,17 @@ td {
 }
 
 .aoe-constellation-svg {
-  min-height: min(68vh, 720px);
+  min-height: calc(100vh - 220px);
+  height: calc(100vh - 220px);
+}
+
+.aoe-constellation-plot {
+  min-height: calc(100vh - 200px);
 }
 
 .aoe-atlas-map {
   min-height: min(62vh, 640px);
+  cursor: grab;
   background:
     repeating-linear-gradient(
       0deg,
@@ -5924,6 +5930,51 @@ td {
       transparent 1px 3px
     ),
     #d2bc90;
+}
+
+.aoe-atlas-map:active,
+.aoe-orbit-svg:active {
+  cursor: grabbing;
+}
+
+.aoe-orbit-svg {
+  min-height: min(68vh, 720px);
+  cursor: grab;
+}
+
+.aoe-orbit-legend {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 160px;
+  margin-left: auto;
+}
+
+.aoe-orbit-legend-label {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+.aoe-orbit-legend-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, hsl(0, 70%, 48%), hsl(40, 70%, 48%), hsl(120, 70%, 48%));
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.aoe-orbit-legend-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  opacity: 0.7;
+}
+
+.aoe-orbit-legend-ends em {
+  font-style: normal;
+}
+
+.aoe-orbit-legend-size {
+  margin: 0;
+  font-size: 0.72rem;
 }
 
 .aoe-atlas-basemap {
