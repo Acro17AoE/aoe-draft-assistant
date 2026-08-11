@@ -5867,15 +5867,38 @@ td {
 .aoe-orbit-body,
 .aoe-constellation-body {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.9fr);
+  grid-template-columns: 1fr;
   gap: 0.65rem;
-  align-items: start;
+  align-items: stretch;
+}
+
+.aoe-atlas-scroll {
+  padding: 0.85rem 1rem 1rem;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(255, 230, 180, 0.18), transparent 45%),
+    radial-gradient(ellipse at 80% 85%, rgba(120, 70, 30, 0.22), transparent 50%),
+    linear-gradient(145deg, #c4a574 0%, #b8956a 35%, #a67c52 70%, #8f6844 100%);
+  border: 1px solid color-mix(in srgb, #5c3d22 55%, transparent);
+  box-shadow:
+    inset 0 0 40px rgba(70, 40, 15, 0.28),
+    inset 0 0 8px rgba(255, 235, 190, 0.25),
+    0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.aoe-atlas-scroll-inner {
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 1px rgba(90, 55, 25, 0.35),
+    inset 0 0 30px rgba(60, 35, 10, 0.2);
+  background: #d7c29a;
 }
 
 .aoe-atlas-map-wrap,
 .aoe-orbit-plot,
 .aoe-constellation-plot {
-  padding: 0.55rem;
+  padding: 0.75rem;
   overflow: hidden;
 }
 
@@ -5888,38 +5911,56 @@ td {
   touch-action: none;
 }
 
-.aoe-atlas-land {
-  fill: color-mix(in srgb, #6f8f6a 42%, transparent);
-  stroke: color-mix(in srgb, #c9d5b8 35%, transparent);
-  stroke-width: 1.2;
+.aoe-constellation-svg {
+  min-height: min(68vh, 720px);
 }
 
-.aoe-atlas-land-ice {
-  fill: color-mix(in srgb, #a8c4d8 35%, transparent);
+.aoe-atlas-map {
+  min-height: min(62vh, 640px);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(120, 80, 40, 0.04) 0 1px,
+      transparent 1px 3px
+    ),
+    #d2bc90;
+}
+
+.aoe-atlas-basemap {
+  opacity: 0.92;
 }
 
 .aoe-atlas-marker-ring {
-  fill: color-mix(in srgb, #0d1520 70%, transparent);
-  stroke: color-mix(in srgb, var(--laca-yellow, #c9a227) 55%, transparent);
+  fill: color-mix(in srgb, #3a2918 78%, transparent);
+  stroke: color-mix(in srgb, #6b4420 70%, #c9a227 30%);
   stroke-width: 1.5;
 }
 
 .aoe-atlas-marker.is-active .aoe-atlas-marker-ring {
-  stroke: var(--laca-yellow, #c9a227);
-  stroke-width: 2.2;
+  stroke: #5c3a14;
+  stroke-width: 2.4;
+  fill: color-mix(in srgb, #fff4d8 35%, #3a2918 65%);
 }
 
-.aoe-atlas-marker-label,
-.aoe-constellation-label {
-  fill: currentColor;
-  font-size: 11px;
+.aoe-atlas-marker-label {
+  fill: #2a1a0c;
+  font-size: 12px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: rgba(255, 240, 210, 0.75);
+  stroke-width: 3px;
   pointer-events: none;
 }
 
-.aoe-atlas-hover-hint,
-.aoe-orbit-tooltip {
-  margin: 0.4rem 0 0;
-  min-height: 1.2em;
+.aoe-constellation-label,
+.aoe-orbit-point-label {
+  fill: currentColor;
+  font-size: 12px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: color-mix(in srgb, #0d1520 55%, transparent);
+  stroke-width: 3px;
+  pointer-events: none;
 }
 
 .aoe-orbit-plot-bg {
@@ -5933,12 +5974,14 @@ td {
 
 .aoe-orbit-axis,
 .aoe-orbit-axis-title {
-  fill: color-mix(in srgb, currentColor 65%, transparent);
-  font-size: 10px;
+  fill: color-mix(in srgb, currentColor 78%, transparent);
+  font-size: 11px;
 }
 
 .aoe-orbit-axis-title {
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .aoe-orbit-point circle {
@@ -5992,10 +6035,7 @@ td {
   }
 
   .aoe-data-tech-layout,
-  .aoe-data-dna-grid,
-  .aoe-atlas-body,
-  .aoe-orbit-body,
-  .aoe-constellation-body {
+  .aoe-data-dna-grid {
     grid-template-columns: 1fr;
   }
 

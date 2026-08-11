@@ -1,4 +1,4 @@
-/** Approximate historical placements on a stylized 1000×520 world map (viewBox). */
+/** Approximate historical heartlands for atlas placement (WGS84). */
 
 export type CivAtlasRegion =
   | 'Europe'
@@ -10,10 +10,10 @@ export type CivAtlasRegion =
 export interface CivAtlasEntry {
   civ: string
   region: CivAtlasRegion
-  /** 0–1000 map X */
-  x: number
-  /** 0–520 map Y */
-  y: number
+  /** Degrees north */
+  lat: number
+  /** Degrees east */
+  lon: number
 }
 
 export const CIV_ATLAS_REGIONS: CivAtlasRegion[] = [
@@ -24,64 +24,77 @@ export const CIV_ATLAS_REGIONS: CivAtlasRegion[] = [
   'Africa',
 ]
 
+/** Equirectangular projection into map pixel space (default: /maps/world.svg). */
+export function projectLatLon(
+  lat: number,
+  lon: number,
+  width = 950,
+  height = 620,
+): { x: number; y: number } {
+  return {
+    x: ((lon + 180) / 360) * width,
+    y: ((90 - lat) / 180) * height,
+  }
+}
+
 export const CIV_ATLAS: CivAtlasEntry[] = [
-  { civ: 'Vikings', region: 'Europe', x: 490, y: 105 },
-  { civ: 'Britons', region: 'Europe', x: 445, y: 145 },
-  { civ: 'Celts', region: 'Europe', x: 430, y: 155 },
-  { civ: 'Franks', region: 'Europe', x: 470, y: 175 },
-  { civ: 'Burgundians', region: 'Europe', x: 480, y: 185 },
-  { civ: 'Teutons', region: 'Europe', x: 505, y: 165 },
-  { civ: 'Goths', region: 'Europe', x: 525, y: 185 },
-  { civ: 'Italians', region: 'Europe', x: 515, y: 210 },
-  { civ: 'Sicilians', region: 'Europe', x: 525, y: 235 },
-  { civ: 'Romans', region: 'Europe', x: 530, y: 220 },
-  { civ: 'Spanish', region: 'Europe', x: 445, y: 220 },
-  { civ: 'Portuguese', region: 'Europe', x: 430, y: 230 },
-  { civ: 'Bohemians', region: 'Europe', x: 530, y: 170 },
-  { civ: 'Poles', region: 'Europe', x: 545, y: 155 },
-  { civ: 'Lithuanians', region: 'Europe', x: 560, y: 140 },
-  { civ: 'Slavs', region: 'Europe', x: 575, y: 150 },
-  { civ: 'Magyars', region: 'Europe', x: 555, y: 185 },
-  { civ: 'Bulgarians', region: 'Europe', x: 565, y: 205 },
-  { civ: 'Byzantines', region: 'Europe', x: 575, y: 220 },
-  { civ: 'Huns', region: 'Europe', x: 590, y: 175 },
-  { civ: 'Cumans', region: 'Europe', x: 620, y: 165 },
+  { civ: 'Vikings', region: 'Europe', lat: 60.5, lon: 10.5 },
+  { civ: 'Britons', region: 'Europe', lat: 52.5, lon: -1.5 },
+  { civ: 'Celts', region: 'Europe', lat: 53.5, lon: -7.5 },
+  { civ: 'Franks', region: 'Europe', lat: 48.5, lon: 2.5 },
+  { civ: 'Burgundians', region: 'Europe', lat: 47.0, lon: 5.0 },
+  { civ: 'Teutons', region: 'Europe', lat: 51.0, lon: 10.0 },
+  { civ: 'Goths', region: 'Europe', lat: 45.0, lon: 20.0 },
+  { civ: 'Italians', region: 'Europe', lat: 43.5, lon: 11.5 },
+  { civ: 'Sicilians', region: 'Europe', lat: 37.5, lon: 14.0 },
+  { civ: 'Romans', region: 'Europe', lat: 41.9, lon: 12.5 },
+  { civ: 'Spanish', region: 'Europe', lat: 40.4, lon: -3.7 },
+  { civ: 'Portuguese', region: 'Europe', lat: 39.0, lon: -8.5 },
+  { civ: 'Bohemians', region: 'Europe', lat: 50.1, lon: 14.4 },
+  { civ: 'Poles', region: 'Europe', lat: 52.2, lon: 21.0 },
+  { civ: 'Lithuanians', region: 'Europe', lat: 54.7, lon: 25.3 },
+  { civ: 'Slavs', region: 'Europe', lat: 55.8, lon: 37.6 },
+  { civ: 'Magyars', region: 'Europe', lat: 47.5, lon: 19.0 },
+  { civ: 'Bulgarians', region: 'Europe', lat: 42.7, lon: 25.5 },
+  { civ: 'Byzantines', region: 'Europe', lat: 41.0, lon: 29.0 },
+  { civ: 'Huns', region: 'Europe', lat: 47.0, lon: 28.0 },
+  { civ: 'Cumans', region: 'Europe', lat: 48.0, lon: 35.0 },
 
-  { civ: 'Georgians', region: 'Middle East', x: 635, y: 200 },
-  { civ: 'Armenians', region: 'Middle East', x: 645, y: 210 },
-  { civ: 'Persians', region: 'Middle East', x: 665, y: 230 },
-  { civ: 'Saracens', region: 'Middle East', x: 605, y: 245 },
-  { civ: 'Turks', region: 'Middle East', x: 590, y: 230 },
-  { civ: 'Tatars', region: 'Middle East', x: 680, y: 175 },
+  { civ: 'Georgians', region: 'Middle East', lat: 41.7, lon: 44.8 },
+  { civ: 'Armenians', region: 'Middle East', lat: 40.2, lon: 44.5 },
+  { civ: 'Persians', region: 'Middle East', lat: 32.5, lon: 53.0 },
+  { civ: 'Saracens', region: 'Middle East', lat: 31.8, lon: 35.2 },
+  { civ: 'Turks', region: 'Middle East', lat: 39.9, lon: 32.9 },
+  { civ: 'Tatars', region: 'Middle East', lat: 46.0, lon: 50.0 },
 
-  { civ: 'Berbers', region: 'Africa', x: 470, y: 265 },
-  { civ: 'Malians', region: 'Africa', x: 455, y: 310 },
-  { civ: 'Ethiopians', region: 'Africa', x: 585, y: 320 },
+  { civ: 'Berbers', region: 'Africa', lat: 33.5, lon: -5.0 },
+  { civ: 'Malians', region: 'Africa', lat: 12.6, lon: -8.0 },
+  { civ: 'Ethiopians', region: 'Africa', lat: 9.0, lon: 38.7 },
 
-  { civ: 'Hindustanis', region: 'Asia', x: 720, y: 255 },
-  { civ: 'Gurjaras', region: 'Asia', x: 705, y: 250 },
-  { civ: 'Bengalis', region: 'Asia', x: 750, y: 265 },
-  { civ: 'Dravidians', region: 'Asia', x: 725, y: 300 },
-  { civ: 'Burmese', region: 'Asia', x: 780, y: 275 },
-  { civ: 'Khmer', region: 'Asia', x: 800, y: 295 },
-  { civ: 'Malay', region: 'Asia', x: 815, y: 330 },
-  { civ: 'Vietnamese', region: 'Asia', x: 820, y: 280 },
-  { civ: 'Chinese', region: 'Asia', x: 835, y: 230 },
-  { civ: 'Shu', region: 'Asia', x: 825, y: 250 },
-  { civ: 'Wei', region: 'Asia', x: 845, y: 215 },
-  { civ: 'Wu', region: 'Asia', x: 855, y: 245 },
-  { civ: 'Koreans', region: 'Asia', x: 880, y: 210 },
-  { civ: 'Japanese', region: 'Asia', x: 910, y: 220 },
-  { civ: 'Mongols', region: 'Asia', x: 780, y: 175 },
-  { civ: 'Khitans', region: 'Asia', x: 820, y: 175 },
-  { civ: 'Jurchens', region: 'Asia', x: 860, y: 175 },
+  { civ: 'Hindustanis', region: 'Asia', lat: 27.0, lon: 78.0 },
+  { civ: 'Gurjaras', region: 'Asia', lat: 24.5, lon: 72.5 },
+  { civ: 'Bengalis', region: 'Asia', lat: 23.8, lon: 90.4 },
+  { civ: 'Dravidians', region: 'Asia', lat: 11.0, lon: 78.5 },
+  { civ: 'Burmese', region: 'Asia', lat: 21.9, lon: 96.1 },
+  { civ: 'Khmer', region: 'Asia', lat: 13.4, lon: 103.9 },
+  { civ: 'Malay', region: 'Asia', lat: 3.1, lon: 101.7 },
+  { civ: 'Vietnamese', region: 'Asia', lat: 21.0, lon: 105.8 },
+  { civ: 'Chinese', region: 'Asia', lat: 34.3, lon: 108.9 },
+  { civ: 'Shu', region: 'Asia', lat: 30.6, lon: 104.1 },
+  { civ: 'Wei', region: 'Asia', lat: 34.8, lon: 113.6 },
+  { civ: 'Wu', region: 'Asia', lat: 32.0, lon: 118.8 },
+  { civ: 'Koreans', region: 'Asia', lat: 37.6, lon: 127.0 },
+  { civ: 'Japanese', region: 'Asia', lat: 35.0, lon: 136.0 },
+  { civ: 'Mongols', region: 'Asia', lat: 47.9, lon: 106.9 },
+  { civ: 'Khitans', region: 'Asia', lat: 43.0, lon: 118.0 },
+  { civ: 'Jurchens', region: 'Asia', lat: 45.0, lon: 126.0 },
 
-  { civ: 'Aztecs', region: 'Americas', x: 195, y: 275 },
-  { civ: 'Mayans', region: 'Americas', x: 220, y: 295 },
-  { civ: 'Incas', region: 'Americas', x: 255, y: 365 },
-  { civ: 'Mapuche', region: 'Americas', x: 250, y: 420 },
-  { civ: 'Muisca', region: 'Americas', x: 245, y: 340 },
-  { civ: 'Tupi', region: 'Americas', x: 300, y: 380 },
+  { civ: 'Aztecs', region: 'Americas', lat: 19.4, lon: -99.1 },
+  { civ: 'Mayans', region: 'Americas', lat: 17.2, lon: -89.6 },
+  { civ: 'Incas', region: 'Americas', lat: -13.5, lon: -72.0 },
+  { civ: 'Mapuche', region: 'Americas', lat: -38.7, lon: -72.5 },
+  { civ: 'Muisca', region: 'Americas', lat: 5.0, lon: -74.0 },
+  { civ: 'Tupi', region: 'Americas', lat: -15.8, lon: -47.9 },
 ]
 
 export function atlasEntryForCiv(civ: string): CivAtlasEntry | undefined {

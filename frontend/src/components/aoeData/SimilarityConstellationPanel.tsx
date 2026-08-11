@@ -7,7 +7,7 @@ import {
   type AoeDataSimilarityEdge,
   type AoeDataSynergy,
 } from '../../lib/aoeData'
-import { CIV_ATLAS, atlasEntryForCiv } from '../../data/civRegions'
+import { CIV_ATLAS, atlasEntryForCiv, projectLatLon } from '../../data/civRegions'
 import { CivVizDetailPanel } from './CivVizDetailPanel'
 
 const DNA_MODES: { id: AoeDataDnaMode; label: string }[] = [
@@ -16,8 +16,8 @@ const DNA_MODES: { id: AoeDataDnaMode; label: string }[] = [
   { id: 'eco', label: 'Eco' },
 ]
 
-const WIDTH = 900
-const HEIGHT = 560
+const WIDTH = 1100
+const HEIGHT = 680
 
 interface SimNode {
   civ: string
@@ -31,10 +31,11 @@ function seedPositions(civs: string[]): SimNode[] {
   return civs.map((civ, index) => {
     const atlas = atlasEntryForCiv(civ)
     if (atlas) {
+      const projected = projectLatLon(atlas.lat, atlas.lon)
       return {
         civ,
-        x: (atlas.x / 1000) * WIDTH,
-        y: (atlas.y / 520) * HEIGHT,
+        x: (projected.x / 950) * WIDTH,
+        y: (projected.y / 620) * HEIGHT,
         vx: 0,
         vy: 0,
       }
@@ -354,15 +355,7 @@ export function SimilarityConstellationPanel() {
             onClose={() => setSelected(null)}
             onSelectCiv={setSelected}
           />
-        ) : (
-          <aside className="aoe-viz-detail panel aoe-viz-detail-empty">
-            <h3>Explore the graph</h3>
-            <p className="hint">
-              Drag nodes, raise the threshold to keep only close DNA pairs. Dashed lines are curated
-              synergies.
-            </p>
-          </aside>
-        )}
+        ) : null}
       </div>
     </div>
   )

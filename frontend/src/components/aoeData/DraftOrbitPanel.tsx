@@ -8,9 +8,9 @@ import {
 } from '../../lib/tournamentMeta'
 import { CivVizDetailPanel } from './CivVizDetailPanel'
 
-const PLOT_W = 720
-const PLOT_H = 420
-const PAD = { top: 24, right: 28, bottom: 48, left: 52 }
+const PLOT_W = 1100
+const PLOT_H = 620
+const PAD = { top: 36, right: 36, bottom: 64, left: 72 }
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
@@ -93,14 +93,12 @@ export function DraftOrbitPanel() {
       const y = PAD.top + (1 - pick / 100) * innerH
       const r = 8 + ((row.plays ?? 0) / maxPlays) * 14
       const win = row.winRate
-      const hue =
-        win == null ? 40 : clamp(Math.round((win / 100) * 120), 0, 120)
+      const hue = win == null ? 40 : clamp(Math.round((win / 100) * 120), 0, 120)
       return { row, x, y, r, color: `hsla(${hue}, 70%, 48%, 0.85)` }
     })
   }, [filtered, maxPlays])
 
   const selectedRate = selected ? rates.find((row) => row.civ === selected) : null
-  const hoverPoint = hovered ? points.find((point) => point.row.civ === hovered) : null
 
   const onPointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
     dragRef.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y }
@@ -162,9 +160,6 @@ export function DraftOrbitPanel() {
         </button>
       </div>
 
-      <p className="hint">
-        X = ban rate · Y = pick rate · size = plays · color = win rate (red→green). Drag to pan.
-      </p>
       {busy ? <p className="hint">Loading draft orbit…</p> : null}
       {error ? <p className="set-replay-error">{error}</p> : null}
 
@@ -187,11 +182,8 @@ export function DraftOrbitPanel() {
                 className="aoe-orbit-plot-bg"
               />
               {[0, 25, 50, 75, 100].map((tick) => {
-                const x =
-                  PAD.left + ((PLOT_W - PAD.left - PAD.right) * tick) / 100
-                const y =
-                  PAD.top +
-                  (PLOT_H - PAD.top - PAD.bottom) * (1 - tick / 100)
+                const x = PAD.left + ((PLOT_W - PAD.left - PAD.right) * tick) / 100
+                const y = PAD.top + (PLOT_H - PAD.top - PAD.bottom) * (1 - tick / 100)
                 return (
                   <g key={tick}>
                     <line
@@ -208,31 +200,31 @@ export function DraftOrbitPanel() {
                       y2={y}
                       className="aoe-orbit-grid"
                     />
-                    <text x={x} y={PLOT_H - 18} textAnchor="middle" className="aoe-orbit-axis">
+                    <text x={x} y={PLOT_H - PAD.bottom + 18} textAnchor="middle" className="aoe-orbit-axis">
                       {tick}%
                     </text>
-                    <text x={18} y={y + 4} className="aoe-orbit-axis">
+                    <text x={PAD.left - 10} y={y + 4} textAnchor="end" className="aoe-orbit-axis">
                       {tick}%
                     </text>
                   </g>
                 )
               })}
               <text
-                x={PLOT_W / 2}
-                y={PLOT_H - 4}
+                x={(PAD.left + PLOT_W - PAD.right) / 2}
+                y={PLOT_H - 14}
                 textAnchor="middle"
                 className="aoe-orbit-axis-title"
               >
-                Ban rate
+                Ban rate →
               </text>
               <text
-                x={14}
-                y={PLOT_H / 2}
+                x={18}
+                y={(PAD.top + PLOT_H - PAD.bottom) / 2}
                 textAnchor="middle"
-                transform={`rotate(-90 14 ${PLOT_H / 2})`}
+                transform={`rotate(-90 18 ${(PAD.top + PLOT_H - PAD.bottom) / 2})`}
                 className="aoe-orbit-axis-title"
               >
-                Pick rate
+                ← Pick rate
               </text>
 
               {points.map((point) => {
@@ -261,23 +253,16 @@ export function DraftOrbitPanel() {
                       height={16}
                       clipPath="circle(8px at 8px 8px)"
                     />
+                    {active ? (
+                      <text y={point.r + 14} textAnchor="middle" className="aoe-orbit-point-label">
+                        {point.row.civ}
+                      </text>
+                    ) : null}
                   </g>
                 )
               })}
             </g>
           </svg>
-          {hoverPoint ? (
-            <p className="hint aoe-orbit-tooltip">
-              {hoverPoint.row.civ}: ban {hoverPoint.row.banRate}% · pick {hoverPoint.row.pickRate}%
-              {hoverPoint.row.winRate != null ? ` · win ${hoverPoint.row.winRate}%` : ''}
-              {hoverPoint.row.plays != null ? ` · ${hoverPoint.row.plays} plays` : ''}
-            </p>
-          ) : (
-            <p className="hint aoe-orbit-tooltip">
-              {filtered.length} civs plotted
-              {!rates.length && !busy ? ' — sync Tournament Meta if empty' : ''}
-            </p>
-          )}
         </div>
 
         {selectedRate ? (
@@ -287,12 +272,7 @@ export function DraftOrbitPanel() {
             onClose={() => setSelected(null)}
             onSelectCiv={setSelected}
           />
-        ) : (
-          <aside className="aoe-viz-detail panel aoe-viz-detail-empty">
-            <h3>Pick a point</h3>
-            <p className="hint">High ban / high pick civs sit top-right — polarizing draft staples.</p>
-          </aside>
-        )}
+        ) : null}
       </div>
     </div>
   )
