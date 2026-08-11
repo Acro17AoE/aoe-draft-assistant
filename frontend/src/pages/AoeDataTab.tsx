@@ -71,6 +71,30 @@ function OverviewPanel({
         civs: ['Spanish'] as const,
         body: 'Spanish were banned in 73.2% of tracked civ drafts (The League Qualifiers) and tended to disappear early. Average ban slot: #5.59 of 14.',
       },
+      {
+        id: 'once-in-a-lifetime',
+        title: 'Once in a lifetime',
+        civs: ['Bulgarians'] as const,
+        body: 'Even though Bulgarians only have a ban rate of 3.6% they have a pick rate of 12.5%, the lowest pick position (32.29) and were played only once. However, they won that game.',
+      },
+      {
+        id: 'well-balanced',
+        title: 'Well balanced',
+        civs: ['Portuguese'] as const,
+        body: 'Portuguese were banned in 50% of the cases, picked in the other 50% of the cases and have a win rate of 47.6%.',
+      },
+      {
+        id: 'the-favourite',
+        title: 'The favourite',
+        civs: ['Georgians'] as const,
+        body: 'Georgians are the most drafted civ with 94.6% pick and 5.4% ban rate. They have been played 30 times.',
+      },
+      {
+        id: 'exhaustive-usage',
+        title: 'Exhaustive usage',
+        civs: ['Magyars'] as const,
+        body: 'Magyars have been played in the most Sets (36) but only at a win rate of 36.1%.',
+      },
     ],
     [],
   )
