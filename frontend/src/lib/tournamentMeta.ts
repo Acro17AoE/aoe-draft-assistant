@@ -17,12 +17,16 @@ export interface MetaCivRate {
   banRate?: number | null
   avgPickOrder?: number | null
   avgBanOrder?: number | null
+  /** Share of games on this map (per-map section only). */
+  mapPickRate?: number | null
 }
 
 export interface MetaPerMap {
   mapName: string
+  mapPlays?: number
   topPicks: MetaCivRate[]
   bottomPicks: MetaCivRate[]
+  topPlayed?: MetaCivRate[]
 }
 
 export interface MetaEventSummary {

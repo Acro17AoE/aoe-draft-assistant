@@ -1240,22 +1240,36 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
 
     per_map: list[dict[str, Any]] = []
     for map_name in sorted(by_map.keys(), key=lambda name: (-map_plays.get(name, 0), name)):
+        map_total_plays = int(map_plays.get(map_name, 0))
         stats = []
         for row in by_map[map_name]:
             wr = (row.wins / row.plays) if row.plays else 0.0
+            map_pick_rate = (
+                round((row.plays / map_total_plays) * 100, 1) if map_total_plays else None
+            )
             stats.append(
                 {
                     "civ": row.civ_name,
                     "plays": row.plays,
                     "wins": row.wins,
                     "winRate": round(wr * 100, 1),
+                    "mapPickRate": map_pick_rate,
                 }
             )
         eligible = [item for item in stats if item["plays"] >= META_MIN_MAP_CIV_SAMPLE]
         pool = eligible or stats
         top = sorted(pool, key=lambda item: (-item["winRate"], -item["plays"], item["civ"]))[:META_TOP_N]
         bottom = sorted(pool, key=lambda item: (item["winRate"], -item["plays"], item["civ"]))[:META_TOP_N]
-        per_map.append({"mapName": map_name, "topPicks": top, "bottomPicks": bottom})
+        top_played = sorted(stats, key=lambda item: (-item["plays"], -item["winRate"], item["civ"]))[:META_TOP_N]
+        per_map.append(
+            {
+                "mapName": map_name,
+                "mapPlays": map_total_plays,
+                "topPicks": top,
+                "bottomPicks": bottom,
+                "topPlayed": top_played,
+            }
+        )
 
     return {
         "found": True,

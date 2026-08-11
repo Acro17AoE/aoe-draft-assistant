@@ -56,7 +56,7 @@ function RankingList({
 }
 
 function PerMapBlock({ entry }: { entry: MetaPerMap }) {
-  const renderCivs = (label: string, rows: MetaCivRate[]) => (
+  const renderWinRateCivs = (label: string, rows: MetaCivRate[]) => (
     <div className="tournament-meta-permap-col">
       <em>{label}</em>
       {rows.length === 0 ? (
@@ -76,15 +76,42 @@ function PerMapBlock({ entry }: { entry: MetaPerMap }) {
     </div>
   )
 
+  const renderPlayedCivs = (label: string, rows: MetaCivRate[]) => (
+    <div className="tournament-meta-permap-col">
+      <em>{label}</em>
+      {rows.length === 0 ? (
+        <p className="hint">—</p>
+      ) : (
+        <ul>
+          {rows.map((row) => (
+            <li key={`${label}-${row.civ}`}>
+              <CivIcon name={row.civ} />
+              <span>
+                {row.civ} {row.plays ?? 0}
+                {row.mapPickRate != null ? ` (${row.mapPickRate}%)` : ''}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+
   return (
     <article className="tournament-meta-permap panel">
       <header>
         <MapEmblem name={entry.mapName} />
-        <h4>{entry.mapName}</h4>
+        <h4>
+          {entry.mapName}
+          {entry.mapPlays != null ? (
+            <span className="tournament-meta-permap-plays"> · {entry.mapPlays} played</span>
+          ) : null}
+        </h4>
       </header>
       <div className="tournament-meta-permap-grid">
-        {renderCivs('Top 3 WR', entry.topPicks)}
-        {renderCivs('Bottom 3 WR', entry.bottomPicks)}
+        {renderPlayedCivs('Top 3 pick', entry.topPlayed ?? [])}
+        {renderWinRateCivs('Top 3 WR', entry.topPicks)}
+        {renderWinRateCivs('Bottom 3 WR', entry.bottomPicks)}
       </div>
     </article>
   )
@@ -351,13 +378,13 @@ export function TournamentMetaPanel() {
           </section>
 
           <section className="tournament-meta-section">
-            <h3>Per-map civ WR</h3>
+            <h3>Map by Map</h3>
             <div className="tournament-meta-permap-list">
               {(overview.perMap ?? []).map((entry) => (
                 <PerMapBlock key={entry.mapName} entry={entry} />
               ))}
               {(overview.perMap ?? []).length === 0 ? (
-                <p className="hint">No per-map civ data yet.</p>
+                <p className="hint">No map-by-map civ data yet.</p>
               ) : null}
             </div>
           </section>

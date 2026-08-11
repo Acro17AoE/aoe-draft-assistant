@@ -5298,10 +5298,22 @@ td {
   font-size: 0.85rem;
 }
 
+.tournament-meta-permap-plays {
+  font-weight: 400;
+  opacity: 0.7;
+  font-size: 0.78rem;
+}
+
 .tournament-meta-permap-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
+}
+
+@media (max-width: 720px) {
+  .tournament-meta-permap-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .tournament-meta-permap-col em {
