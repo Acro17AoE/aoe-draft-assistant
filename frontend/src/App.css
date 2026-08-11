@@ -4813,12 +4813,10 @@ td {
 }
 
 .app-footer-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
+  display: inline;
   color: #fff;
   text-decoration: none;
-  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .app-footer-link:hover {
@@ -4827,8 +4825,11 @@ td {
 }
 
 .app-footer-link-icon {
-  width: 14px;
-  height: 14px;
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-right: 0.2em;
+  vertical-align: -0.1em;
   flex: 0 0 auto;
 }
 

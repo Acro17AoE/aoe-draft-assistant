@@ -56,7 +56,7 @@ function OverviewPanel({
       {
         id: 'permanent-guest',
         title: 'Permanent Guest',
-        civs: ['Celts', 'Huns', 'Slavs'] as const,
+        civs: ['Celts'] as const,
         body: 'Celts were banned in 0.0% of tracked civ drafts (The League Qualifiers). They made it through every draft untouched. So did Huns and Slavs.',
       },
       {
