@@ -6027,6 +6027,22 @@ td {
   font-size: 0.82rem;
 }
 
+.opponent-analysis-section-title {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.88rem;
+}
+
+.opponent-analysis-uncertain {
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.opponent-analysis-uncertain-note {
+  margin: 0 0 0.45rem;
+  max-width: 52rem;
+}
+
 .opponent-analysis-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

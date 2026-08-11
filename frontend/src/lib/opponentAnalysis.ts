@@ -53,6 +53,13 @@ export interface OpponentSetSummary {
   games: OpponentSetGame[]
 }
 
+export interface OpponentUncertainActions {
+  mapsBannedAgainst?: OpponentNamedCount[]
+  mapsPickedByOpponent?: OpponentNamedCount[]
+  civsBannedAgainst?: OpponentNamedCount[]
+  note?: string
+}
+
 export interface OpponentTeamAnalysis {
   found: boolean
   slug: string
@@ -68,6 +75,8 @@ export interface OpponentTeamAnalysis {
     mostBanned?: OpponentNamedCount[]
     mostPicked?: OpponentNamedCount[]
   }
+  /** Foe-side draft actions — may or may not reflect this team's priorities. */
+  uncertain?: OpponentUncertainActions
   mapCivs?: OpponentMapCivGroup[]
   priorities?: string[]
   sets?: OpponentSetSummary[]

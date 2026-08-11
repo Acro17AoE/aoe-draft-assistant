@@ -26,7 +26,7 @@ from .liquipedia import (
     validate_liquipedia_access,
 )
 from .map_analysis import analyze_map_draft_events
-from .name_utils import names_match
+from .name_utils import team_names_match
 from .pro_analysis import analyze_civ_draft_events
 from .models import (
     TournamentCivDraftAgg,
@@ -1304,10 +1304,10 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
 
 
 def _team_matches_row(row: TournamentMatchRow, team_name: str) -> int | None:
-    """Return 1 or 2 if team matches opponent1/2, else None."""
-    if names_match(str(row.opponent1 or ""), team_name):
+    """Return 1 or 2 if team matches opponent1/2, else None (strict identity)."""
+    if team_names_match(str(row.opponent1 or ""), team_name):
         return 1
-    if names_match(str(row.opponent2 or ""), team_name):
+    if team_names_match(str(row.opponent2 or ""), team_name):
         return 2
     return None
 
@@ -1340,12 +1340,15 @@ def list_tournament_teams(db: Session, slug: str) -> dict[str, Any]:
 def _side_from_draft(draft: dict[str, Any], team_name: str) -> str | None:
     host = (draft.get("nameHost") or "").strip()
     guest = (draft.get("nameGuest") or "").strip()
-    if names_match(host, team_name):
+    if team_names_match(host, team_name):
         return "HOST"
-    if names_match(guest, team_name):
+    if team_names_match(guest, team_name):
         return "GUEST"
     return None
 
+
+def _foe_side(side: str) -> str:
+    return "GUEST" if side.upper() == "HOST" else "HOST"
 
 def _option_label(draft: dict[str, Any], option_id: str) -> str:
     for option in (draft.get("preset") or {}).get("draftOptions") or []:
@@ -1444,6 +1447,15 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
             "sets": [],
             "maps": {},
             "civs": {},
+            "uncertain": {
+                "mapsBannedAgainst": [],
+                "mapsPickedByOpponent": [],
+                "civsBannedAgainst": [],
+                "note": (
+                    "Actions by the other side in these drafts. They may overlap with this team's "
+                    "priorities, or simply reflect what opponents chose to ban/pick."
+                ),
+            },
             "mapCivs": [],
             "priorities": [],
             "attribution": liquipedia_attribution(),
@@ -1456,6 +1468,7 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
         if _team_matches_row(row, needle) is not None
     ]
 
+    # Confirmed = actions by the analyzed team.
     map_pick_counts: Counter[str] = Counter()
     map_ban_counts: Counter[str] = Counter()
     map_pick_order_sum: dict[str, float] = defaultdict(float)
@@ -1469,6 +1482,17 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
     civ_pick_order_weight: Counter[str] = Counter()
     civ_ban_order_sum: dict[str, float] = defaultdict(float)
     civ_ban_order_weight: Counter[str] = Counter()
+
+    # Uncertain = foe-side actions in the same drafts (may or may not reflect team priorities).
+    foe_map_ban_counts: Counter[str] = Counter()
+    foe_map_pick_counts: Counter[str] = Counter()
+    foe_map_ban_order_sum: dict[str, float] = defaultdict(float)
+    foe_map_ban_order_weight: Counter[str] = Counter()
+    foe_map_pick_order_sum: dict[str, float] = defaultdict(float)
+    foe_map_pick_order_weight: Counter[str] = Counter()
+    foe_civ_ban_counts: Counter[str] = Counter()
+    foe_civ_ban_order_sum: dict[str, float] = defaultdict(float)
+    foe_civ_ban_order_weight: Counter[str] = Counter()
 
     map_civ_plays: Counter[tuple[str, str]] = Counter()
     map_civ_wins: Counter[tuple[str, str]] = Counter()
@@ -1542,6 +1566,23 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
                         analysis.get("banOrderAvg") or {},
                         analysis.get("banCounts") or {},
                     )
+                    foe_analysis = analyze_map_draft_events(
+                        list(draft.get("events") or []), _foe_side(side)
+                    )
+                    foe_map_ban_counts.update(foe_analysis.get("banCounts") or {})
+                    foe_map_pick_counts.update(foe_analysis.get("pickCounts") or {})
+                    _merge_order_avgs(
+                        foe_map_ban_order_sum,
+                        foe_map_ban_order_weight,
+                        foe_analysis.get("banOrderAvg") or {},
+                        foe_analysis.get("banCounts") or {},
+                    )
+                    _merge_order_avgs(
+                        foe_map_pick_order_sum,
+                        foe_map_pick_order_weight,
+                        foe_analysis.get("pickOrderAvg") or {},
+                        foe_analysis.get("pickCounts") or {},
+                    )
                     map_draft_n += 1
             except Exception as exc:
                 logger.warning("map draft %s for team analysis failed: %s", map_draft_id, exc)
@@ -1573,6 +1614,22 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
                     civ_ban_counts.update(bans)
                     _merge_order_avgs(civ_pick_order_sum, civ_pick_order_weight, pick_avgs, picks)
                     _merge_order_avgs(civ_ban_order_sum, civ_ban_order_weight, ban_avgs, bans)
+
+                    foe_analysis = analyze_civ_draft_events(
+                        list(draft.get("events") or []), _foe_side(side)
+                    )
+                    foe_bans = {
+                        civ_display_name(str(k)) or str(k): int(v)
+                        for k, v in (foe_analysis.get("banCounts") or {}).items()
+                    }
+                    foe_ban_avgs = {
+                        civ_display_name(str(k)) or str(k): float(v)
+                        for k, v in (foe_analysis.get("banOrderAvg") or {}).items()
+                    }
+                    foe_civ_ban_counts.update(foe_bans)
+                    _merge_order_avgs(
+                        foe_civ_ban_order_sum, foe_civ_ban_order_weight, foe_ban_avgs, foe_bans
+                    )
                     civ_draft_n += 1
             except Exception as exc:
                 logger.warning("civ draft %s for team analysis failed: %s", civ_draft_id, exc)
@@ -1625,23 +1682,46 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
     top_civ_bans = _ranked_named(civ_ban_counts, civ_ban_order_sum, civ_ban_order_weight)
     top_civ_picks = _ranked_named(civ_pick_counts, civ_pick_order_sum, civ_pick_order_weight)
 
+    uncertain_map_bans = _ranked_named(
+        foe_map_ban_counts, foe_map_ban_order_sum, foe_map_ban_order_weight
+    )
+    uncertain_map_picks = _ranked_named(
+        foe_map_pick_counts, foe_map_pick_order_sum, foe_map_pick_order_weight
+    )
+    uncertain_civ_bans = _ranked_named(
+        foe_civ_ban_counts, foe_civ_ban_order_sum, foe_civ_ban_order_weight
+    )
+
     priorities: list[str] = []
     if top_map_bans:
         priorities.append(
-            "Likely map bans: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_map_bans[:3])
+            "Their map bans: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_map_bans[:3])
         )
     if top_map_picks:
         priorities.append(
-            "Likely map picks: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_map_picks[:3])
+            "Their map picks: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_map_picks[:3])
         )
     if top_civ_bans:
         priorities.append(
-            "Likely civ bans: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_civ_bans[:3])
+            "Their civ bans: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_civ_bans[:3])
         )
     if top_civ_picks:
         priorities.append(
-            "Likely civ picks: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_civ_picks[:3])
+            "Their civ picks: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_civ_picks[:3])
         )
+    if uncertain_map_bans or uncertain_civ_bans:
+        bits: list[str] = []
+        if uncertain_map_bans:
+            bits.append(
+                "maps denied vs them: "
+                + ", ".join(f"{row['name']} ({row['count']})" for row in uncertain_map_bans[:3])
+            )
+        if uncertain_civ_bans:
+            bits.append(
+                "civs denied vs them: "
+                + ", ".join(f"{row['name']} ({row['count']})" for row in uncertain_civ_bans[:3])
+            )
+        priorities.append("Uncertain (opponent actions) — " + "; ".join(bits))
     if map_civs:
         sample = map_civs[0]
         top = sample["civs"][:2]
@@ -1665,6 +1745,15 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
         "civs": {
             "mostBanned": top_civ_bans,
             "mostPicked": top_civ_picks,
+        },
+        "uncertain": {
+            "mapsBannedAgainst": uncertain_map_bans,
+            "mapsPickedByOpponent": uncertain_map_picks,
+            "civsBannedAgainst": uncertain_civ_bans,
+            "note": (
+                "Actions by the other side in these drafts. They may overlap with this team's "
+                "priorities, or simply reflect what opponents chose to ban/pick."
+            ),
         },
         "mapCivs": map_civs,
         "priorities": priorities,

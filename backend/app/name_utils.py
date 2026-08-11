@@ -37,3 +37,16 @@ def names_match(left: str, right: str) -> bool:
         if len(token) >= 4 and token in a:
             return True
     return False
+
+
+def team_names_match(left: str, right: str) -> bool:
+    """Strict team identity for tournament filtering (no fuzzy substring matches)."""
+    a = normalize_name(left)
+    b = normalize_name(right)
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    compact_a = compact_name(left)
+    compact_b = compact_name(right)
+    return bool(compact_a and compact_b and compact_a == compact_b)

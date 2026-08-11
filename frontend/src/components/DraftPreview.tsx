@@ -149,7 +149,7 @@ function OpponentPrioritiesBlock({
           )}
           <div className="draft-preview-opponent-cols">
             <div>
-              <h4>Map bans / picks</h4>
+              <h4>Their map bans / picks</h4>
               <p className="hint">
                 Ban: {(analysis.maps?.mostBanned ?? []).slice(0, 3).map((r) => r.name).join(', ') || '—'}
               </p>
@@ -158,7 +158,7 @@ function OpponentPrioritiesBlock({
               </p>
             </div>
             <div>
-              <h4>Civ bans / picks</h4>
+              <h4>Their civ bans / picks</h4>
               <p className="hint">
                 Ban: {(analysis.civs?.mostBanned ?? []).slice(0, 3).map((r) => r.name).join(', ') || '—'}
               </p>
@@ -167,6 +167,21 @@ function OpponentPrioritiesBlock({
               </p>
             </div>
           </div>
+          {(analysis.uncertain?.mapsBannedAgainst?.length ||
+            analysis.uncertain?.civsBannedAgainst?.length) ? (
+            <p className="hint draft-preview-uncertain">
+              Uncertain (denied vs them) — maps:{' '}
+              {(analysis.uncertain?.mapsBannedAgainst ?? [])
+                .slice(0, 3)
+                .map((r) => r.name)
+                .join(', ') || '—'}
+              ; civs:{' '}
+              {(analysis.uncertain?.civsBannedAgainst ?? [])
+                .slice(0, 3)
+                .map((r) => r.name)
+                .join(', ') || '—'}
+            </p>
+          ) : null}
           {(analysis.mapCivs ?? []).length ? (
             <div className="draft-preview-opponent-mapcivs">
               <h4>Preferred civs by map</h4>

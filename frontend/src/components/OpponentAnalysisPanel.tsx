@@ -30,7 +30,11 @@ function NamedList({
         <ol>
           {items.map((row) => (
             <li key={`${title}-${row.name}`}>
-              {kind === 'map' ? <MapIcon name={row.name} /> : <img src={civIconUrl(row.name)} alt="" className="opponent-analysis-icon" />}
+              {kind === 'map' ? (
+                <MapIcon name={row.name} />
+              ) : (
+                <img src={civIconUrl(row.name)} alt="" className="opponent-analysis-icon" />
+              )}
               <span>{row.name}</span>
               <span className="opponent-analysis-meta">
                 {row.count}
@@ -53,13 +57,19 @@ interface OpponentAnalysisPanelProps {
 export function OpponentAnalysisPanel({ analysis, busy, error }: OpponentAnalysisPanelProps) {
   if (!analysis && !busy && !error) return null
 
+  const uncertain = analysis?.uncertain
+  const hasUncertain =
+    (uncertain?.mapsBannedAgainst?.length ?? 0) > 0 ||
+    (uncertain?.mapsPickedByOpponent?.length ?? 0) > 0 ||
+    (uncertain?.civsBannedAgainst?.length ?? 0) > 0
+
   return (
     <section className="panel opponent-analysis-panel">
       <header className="opponent-analysis-header">
         <h2>Opponent analysis</h2>
         {analysis?.team ? (
           <p className="hint">
-            {analysis.team} · {analysis.matchCount ?? 0} match(es) in tournament cache
+            {analysis.team} · {analysis.matchCount ?? 0} set(s) they played
             {analysis.mapDraftCount != null ? ` · ${analysis.mapDraftCount} map drafts` : ''}
             {analysis.civDraftCount != null ? ` · ${analysis.civDraftCount} civ drafts` : ''}
           </p>
@@ -76,15 +86,34 @@ export function OpponentAnalysisPanel({ analysis, busy, error }: OpponentAnalysi
               ))}
             </ul>
           ) : null}
+          <h3 className="opponent-analysis-section-title">Their actions (confirmed)</h3>
           <div className="opponent-analysis-grid">
             <NamedList title="Map bans" rows={analysis.maps?.mostBanned} kind="map" />
             <NamedList title="Map picks" rows={analysis.maps?.mostPicked} kind="map" />
             <NamedList title="Civ bans" rows={analysis.civs?.mostBanned} kind="civ" />
             <NamedList title="Civ picks" rows={analysis.civs?.mostPicked} kind="civ" />
           </div>
+          {hasUncertain ? (
+            <div className="opponent-analysis-uncertain">
+              <h3 className="opponent-analysis-section-title">Denied by opponents (uncertain)</h3>
+              <p className="hint opponent-analysis-uncertain-note">
+                {uncertain?.note ??
+                  'Actions by the other side in these drafts — may overlap with this team’s priorities, or just reflect opponent choices.'}
+              </p>
+              <div className="opponent-analysis-grid">
+                <NamedList title="Maps banned vs them" rows={uncertain?.mapsBannedAgainst} kind="map" />
+                <NamedList
+                  title="Maps picked by opponents"
+                  rows={uncertain?.mapsPickedByOpponent}
+                  kind="map"
+                />
+                <NamedList title="Civs banned vs them" rows={uncertain?.civsBannedAgainst} kind="civ" />
+              </div>
+            </div>
+          ) : null}
           {(analysis.mapCivs ?? []).length ? (
             <div className="opponent-analysis-mapcivs">
-              <h3>Civs by map</h3>
+              <h3>Civs by map (their games)</h3>
               <div className="opponent-analysis-mapciv-grid">
                 {(analysis.mapCivs ?? []).map((group) => (
                   <article key={group.mapName} className="opponent-analysis-mapciv panel">
@@ -127,10 +156,13 @@ export function mapHintsFromAnalysis(
     hints[key] = bucket
   }
   for (const row of analysis?.maps?.mostBanned ?? []) {
-    add(row.name, 'Likely ban')
+    add(row.name, 'Their ban')
   }
   for (const row of analysis?.maps?.mostPicked ?? []) {
-    add(row.name, 'Likely pick')
+    add(row.name, 'Their pick')
+  }
+  for (const row of analysis?.uncertain?.mapsBannedAgainst ?? []) {
+    add(row.name, 'Denied vs them?')
   }
   return hints
 }
