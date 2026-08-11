@@ -69,3 +69,38 @@ def team_names_match(left: str, right: str) -> bool:
     core_a = team_core_compact(left)
     core_b = team_core_compact(right)
     return bool(core_a and core_b and core_a == core_b)
+
+
+_ROSTER_TAG_RE = re.compile(r"[\s_]+[A-Za-z]$")
+
+
+def strip_roster_tag(name: str) -> str:
+    """Strip trailing captain-mode roster letters: 'NOC A' / 'NOC_B' → 'NOC'."""
+    trimmed = name.strip()
+    if not trimmed:
+        return trimmed
+    return _ROSTER_TAG_RE.sub("", trimmed).strip() or trimmed
+
+
+def draft_seat_matches(seat: str, org_name: str) -> bool:
+    """Match aoe2cm host/guest seats to Liquipedia org names.
+
+    Handles short tags ('NOC A' ↔ 'Nocturna_eSports') and longer seat labels
+    ('Onimaru Barbetacos' ↔ 'Onimaru_Esports') without merging distinct orgs
+    like Nocturna vs Nocturna_eSports_B in Liquipedia match filters.
+    """
+    if team_names_match(seat, org_name):
+        return True
+    seat_core = team_core_compact(strip_roster_tag(seat))
+    org_core = team_core_compact(org_name)
+    if not seat_core or not org_core:
+        return False
+    if seat_core == org_core:
+        return True
+    # Short captain-mode tags: NOC / NOC A
+    if 3 <= len(seat_core) <= 4 and org_core.startswith(seat_core):
+        return True
+    # Seat uses a longer label that still starts with the org core
+    if len(org_core) >= 4 and seat_core.startswith(org_core):
+        return True
+    return False

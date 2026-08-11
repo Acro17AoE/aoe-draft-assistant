@@ -26,7 +26,7 @@ from .liquipedia import (
     validate_liquipedia_access,
 )
 from .map_analysis import analyze_map_draft_events
-from .name_utils import team_names_match
+from .name_utils import draft_seat_matches, team_names_match
 from .pro_analysis import analyze_civ_draft_events
 from .models import (
     TournamentCivDraftAgg,
@@ -1345,15 +1345,25 @@ def _side_from_draft(
 ) -> str | None:
     host = (draft.get("nameHost") or "").strip()
     guest = (draft.get("nameGuest") or "").strip()
-    if team_names_match(host, team_name):
+    team_host = draft_seat_matches(host, team_name)
+    team_guest = draft_seat_matches(guest, team_name)
+    if team_host and not team_guest:
         return "HOST"
-    if team_names_match(guest, team_name):
+    if team_guest and not team_host:
         return "GUEST"
-    # If only the foe name matches a draft seat, the analyzed team is the other seat.
-    if foe_name:
-        if team_names_match(host, foe_name):
+
+    foe = (foe_name or "").strip()
+    if foe:
+        foe_host = draft_seat_matches(host, foe)
+        foe_guest = draft_seat_matches(guest, foe)
+        if foe_host and not foe_guest:
             return "GUEST"
-        if team_names_match(guest, foe_name):
+        if foe_guest and not foe_host:
+            return "HOST"
+        # One seat is clearly the foe, the other is the analyzed team (even if tagged oddly).
+        if foe_host and team_guest:
+            return "GUEST"
+        if foe_guest and team_host:
             return "HOST"
     return None
 
