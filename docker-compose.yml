@@ -1,0 +1,33 @@
+# DRAFT — self-hosted Docker Compose stack
+# Copy .env.example → .env and set secrets locally (never commit .env).
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
+      DATABASE_URL: sqlite:////data/app.db
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      LIQUIPEDIA_API_KEY: ${LIQUIPEDIA_API_KEY:-}
+      LIQUIPEDIA_USER_AGENT: ${LIQUIPEDIA_USER_AGENT:-}
+      LIQUIPEDIA_CONTACT: ${LIQUIPEDIA_CONTACT:-}
+    volumes:
+      - app-data:/data
+    expose:
+      - "8000"
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.web
+    restart: unless-stopped
+    depends_on:
+      - api
+    expose:
+      - "80"
+
+volumes:
+  app-data:

@@ -1,0 +1,15 @@
+.git
+.gitignore
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+**/node_modules
+frontend/dist
+backend/.venv
+*.md
+.cursor
+agent-tools
+config/*.json
+!config/aoe-civ-presets-init.json
