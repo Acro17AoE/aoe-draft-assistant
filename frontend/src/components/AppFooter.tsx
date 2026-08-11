@@ -1,7 +1,7 @@
 const GCU_RULES_URL = 'https://www.xbox.com/en-us/developers/rules'
 const LIQUIPEDIA_AOE_URL = 'https://liquipedia.net/ageofempires/Main_Page'
 const SOURCE_REPO_URL = 'https://github.com/Acro17AoE/aoe-draft-assistant'
-const LIQUIPEDIA_ICON = 'https://liquipedia.net/static/img/favicon/favicon-32x32.png'
+const LIQUIPEDIA_ICON = '/liquipedia-favicon.ico'
 
 function GitHubIcon() {
   return (

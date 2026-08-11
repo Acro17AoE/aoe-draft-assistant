@@ -77,7 +77,7 @@ function OverviewPanel({
 
   return (
     <div className="aoe-data-overview">
-      <article className="aoe-data-spotlight panel">
+      <article className="aoe-data-spotlight panel aoe-data-spotlight-featured">
         <div className="aoe-data-spotlight-icon">
           <img src={civIconUrl('Persians')} alt="" />
         </div>
@@ -92,16 +92,18 @@ function OverviewPanel({
 
       <section className="aoe-data-funfacts">
         {funFacts.map((fact) => (
-          <article key={fact.id} className="aoe-data-funfact panel">
-            <div className="aoe-data-funfact-icons">
+          <article key={fact.id} className="aoe-data-spotlight panel">
+            <div
+              className={`aoe-data-spotlight-icon${fact.civs.length > 1 ? ' aoe-data-spotlight-icon-stack' : ''}`}
+            >
               {fact.civs.map((civ) => (
                 <img key={civ} src={civIconUrl(civ)} alt="" title={civ} />
               ))}
             </div>
-            <p>
-              <strong>{fact.title}</strong>
-              <span> — {fact.body}</span>
-            </p>
+            <div>
+              <h3>{fact.title}</h3>
+              <p>{fact.body}</p>
+            </div>
           </article>
         ))}
       </section>
