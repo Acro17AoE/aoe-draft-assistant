@@ -122,7 +122,7 @@ export function formatTournamentDatasetStatus(
   const matches = status.matchCount ?? 0
   const pairs = status.draftPairCount ?? status.draftCount ?? 0
   const pairLabel = pairs === 1 ? 'draft pair' : 'draft pairs'
-  let line = `Ready. ${matches} matches, ${pairs} ${pairLabel}`
+  let line = `Ready. ${matches} played matches, ${pairs} ${pairLabel}`
   if (status.statusDetail) {
     line += `. ${status.statusDetail}`
   }

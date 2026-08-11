@@ -47,6 +47,13 @@ def _ensure_sqlite_columns() -> None:
                     "ADD COLUMN neutral_counts_json TEXT DEFAULT '{}'"
                 )
             )
+        if "ban_order_json" not in names:
+            conn.execute(
+                text(
+                    "ALTER TABLE tournament_draft_rows "
+                    "ADD COLUMN ban_order_json TEXT DEFAULT '{}'"
+                )
+            )
 
 
 def init_db() -> None:

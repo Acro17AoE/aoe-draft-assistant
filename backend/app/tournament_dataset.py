@@ -51,9 +51,39 @@ def _normalize_map_name(name: str) -> str:
     return re.sub(r"\s+", " ", name.strip())
 
 
-def _draft_pair_count(rows: list[TournamentMatchRow]) -> int:
+def _draft_pair_count(rows: list[TournamentMatchRow], *, played_only: bool = False) -> int:
     """Matches with both civ and map aoe2cm drafts linked on Liquipedia."""
-    return sum(1 for row in rows if row.civ_draft_id and row.map_draft_id)
+    total = 0
+    for row in rows:
+        if played_only and not _match_has_result(row):
+            continue
+        if row.civ_draft_id and row.map_draft_id:
+            total += 1
+    return total
+
+
+def _match_has_result(row: TournamentMatchRow) -> bool:
+    """True when Liquipedia lists a finished match (series or game winner)."""
+    if str(row.winner or "").strip() in ("1", "2"):
+        return True
+    try:
+        games = json.loads(row.games_json or "[]")
+    except json.JSONDecodeError:
+        games = []
+    for game in games:
+        if isinstance(game, dict) and str(game.get("winner") or "").strip() in ("1", "2"):
+            return True
+    return False
+
+
+def _count_played_matches(rows: list[TournamentMatchRow]) -> int:
+    return sum(1 for row in rows if _match_has_result(row))
+
+
+def _is_admin_pick_event(event: dict) -> bool:
+    player = str(event.get("player") or "NONE").upper()
+    executing = str(event.get("executingPlayer") or "NONE").upper()
+    return player == "NONE" and executing == "NONE"
 
 
 def _pending_draft_fetches(db: Session, slug: str) -> int:
@@ -115,18 +145,24 @@ def analyze_draft_events_all_sides(
     *,
     pool_options: list[str] | None = None,
 ) -> dict[str, Any]:
-    """Aggregate picks/bans, pick order, and optional leftover (neutral) pool options."""
+    """Aggregate picks/bans, order indices, and map admin-pick (neutral) leftovers."""
     pick_counts: Counter[str] = Counter()
     ban_counts: Counter[str] = Counter()
     pick_order_sum: dict[str, float] = defaultdict(float)
     pick_order_count: Counter[str] = Counter()
+    ban_order_sum: dict[str, float] = defaultdict(float)
+    ban_order_count: Counter[str] = Counter()
     pick_index = 0
+    ban_index = 0
+    is_map_draft = pool_options is not None
 
     remaining: dict[str, str] = {}
     for name in pool_options or []:
         key = re.sub(r"[^a-z0-9]+", " ", name.lower()).strip()
         if key:
             remaining[key] = name
+
+    neutral_counts: Counter[str] = Counter()
 
     for event in events:
         action = (event.get("actionType") or event.get("action") or "").lower()
@@ -136,7 +172,13 @@ def analyze_draft_events_all_sides(
         label = str(option).strip()
         if not label:
             continue
+
         if action in ("pick", "steal"):
+            if is_map_draft and _is_admin_pick_event(event):
+                neutral_counts[label] += 1
+                if remaining:
+                    _remove_from_remaining(remaining, label)
+                continue
             pick_index += 1
             pick_counts[label] += 1
             pick_order_sum[label] += pick_index
@@ -144,24 +186,32 @@ def analyze_draft_events_all_sides(
             if remaining:
                 _remove_from_remaining(remaining, label)
         elif action == "ban":
+            ban_index += 1
             ban_counts[label] += 1
+            ban_order_sum[label] += ban_index
+            ban_order_count[label] += 1
             if remaining:
                 _remove_from_remaining(remaining, label)
 
-    avg_order = {
+    avg_pick_order = {
         civ: (pick_order_sum[civ] / pick_order_count[civ])
         for civ in pick_order_count
         if pick_order_count[civ]
     }
-    # Neutral = last remaining pool option after bans/picks (typical map-draft leftover).
-    neutral_counts: Counter[str] = Counter()
-    if pool_options is not None and len(remaining) == 1:
+    avg_ban_order = {
+        civ: (ban_order_sum[civ] / ban_order_count[civ])
+        for civ in ban_order_count
+        if ban_order_count[civ]
+    }
+    # Fallback: single leftover pool option after bans/picks (no explicit admin event).
+    if is_map_draft and not neutral_counts and len(remaining) == 1:
         neutral_counts[next(iter(remaining.values()))] += 1
 
     return {
         "pickCounts": dict(pick_counts),
         "banCounts": dict(ban_counts),
-        "pickOrderAvg": avg_order,
+        "pickOrderAvg": avg_pick_order,
+        "banOrderAvg": avg_ban_order,
         "neutralCounts": dict(neutral_counts),
         "eventCount": len(events),
     }
@@ -595,8 +645,13 @@ async def sync_tournament_dataset(
             if force:
                 pending.append((did, dtype))
                 continue
-            # Backfill neutrals for map drafts stored before meta support.
-            if dtype == "map" and (existing.neutral_counts_json or "{}") in ("{}", ""):
+            # Backfill map admin-pick neutrals / ban order for older cached rows.
+            if dtype == "map" and (
+                (existing.neutral_counts_json or "{}") in ("{}", "")
+                or (existing.ban_order_json or "{}") in ("{}", "")
+            ):
+                pending.append((did, dtype))
+            if dtype == "civ" and (existing.ban_order_json or "{}") in ("{}", ""):
                 pending.append((did, dtype))
 
         dataset.status_detail = f"Fetching {len(pending)} aoe2cm draft(s)…"
@@ -613,6 +668,7 @@ async def sync_tournament_dataset(
                     existing.pick_counts_json = json.dumps(analysis["pickCounts"], ensure_ascii=True)
                     existing.ban_counts_json = json.dumps(analysis["banCounts"], ensure_ascii=True)
                     existing.pick_order_json = json.dumps(analysis["pickOrderAvg"], ensure_ascii=True)
+                    existing.ban_order_json = json.dumps(analysis["banOrderAvg"], ensure_ascii=True)
                     existing.neutral_counts_json = json.dumps(
                         analysis["neutralCounts"], ensure_ascii=True
                     )
@@ -627,6 +683,7 @@ async def sync_tournament_dataset(
                         pick_counts_json=json.dumps(analysis["pickCounts"], ensure_ascii=True),
                         ban_counts_json=json.dumps(analysis["banCounts"], ensure_ascii=True),
                         pick_order_json=json.dumps(analysis["pickOrderAvg"], ensure_ascii=True),
+                        ban_order_json=json.dumps(analysis["banOrderAvg"], ensure_ascii=True),
                         neutral_counts_json=json.dumps(analysis["neutralCounts"], ensure_ascii=True),
                         event_count=int(analysis["eventCount"]),
                     )
@@ -645,10 +702,11 @@ async def sync_tournament_dataset(
                 select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == dataset.slug)
             ).all()
         )
-        draft_pairs = _draft_pair_count(match_rows)
+        draft_pairs = _draft_pair_count(match_rows, played_only=True)
+        played_matches = _count_played_matches(match_rows)
         pending_after = _pending_draft_fetches(db, dataset.slug)
 
-        dataset.match_count = len(match_rows)
+        dataset.match_count = played_matches
         dataset.draft_count = draft_pairs
         dataset.last_match_date = latest_date
         dataset.last_synced_at = utcnow()
@@ -780,9 +838,11 @@ def dataset_status(db: Session, slug: str) -> dict[str, Any]:
     match_rows = list(
         db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all()
     )
-    draft_pairs = _draft_pair_count(match_rows)
-    if draft_pairs != row.draft_count:
+    draft_pairs = _draft_pair_count(match_rows, played_only=True)
+    played_matches = _count_played_matches(match_rows)
+    if draft_pairs != row.draft_count or played_matches != row.match_count:
         row.draft_count = draft_pairs
+        row.match_count = played_matches
         db.commit()
     return {
         "found": True,
@@ -795,7 +855,7 @@ def dataset_status(db: Session, slug: str) -> dict[str, Any]:
         "statusDetail": row.status_detail,
         "lastSyncedAt": row.last_synced_at.isoformat() if row.last_synced_at else None,
         "lastMatchDate": row.last_match_date,
-        "matchCount": row.match_count,
+        "matchCount": played_matches,
         "draftCount": draft_pairs,
         "draftPairCount": draft_pairs,
         "pendingDraftCount": pending_drafts,
@@ -1011,10 +1071,29 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
     map_neutrals = _sum_json_counts(map_drafts, "neutral_counts_json")
     civ_bans = _sum_json_counts(civ_drafts, "ban_counts_json")
     civ_picks = _sum_json_counts(civ_drafts, "pick_counts_json")
-    civ_neutrals = _sum_json_counts(civ_drafts, "neutral_counts_json")
 
     map_draft_n = max(len(map_drafts), 1)
     civ_draft_n = max(len(civ_drafts), 1)
+
+    pick_order_sum: dict[str, float] = defaultdict(float)
+    pick_order_count: Counter[str] = Counter()
+    ban_order_sum: dict[str, float] = defaultdict(float)
+    ban_order_count: Counter[str] = Counter()
+    for draft in civ_drafts:
+        picks = json.loads(draft.pick_counts_json or "{}")
+        bans = json.loads(draft.ban_counts_json or "{}")
+        pick_orders = json.loads(draft.pick_order_json or "{}")
+        ban_orders = json.loads(draft.ban_order_json or "{}")
+        for civ, avg in pick_orders.items():
+            weight = int(picks.get(civ) or 0)
+            if weight:
+                pick_order_sum[str(civ)] += float(avg) * weight
+                pick_order_count[str(civ)] += weight
+        for civ, avg in ban_orders.items():
+            weight = int(bans.get(civ) or 0)
+            if weight:
+                ban_order_sum[str(civ)] += float(avg) * weight
+                ban_order_count[str(civ)] += weight
 
     # Global civ rates table
     civ_names = set(civ_plays) | set(civ_bans) | set(civ_picks)
@@ -1024,6 +1103,16 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
         wins = int(civ_wins.get(civ, 0))
         picks = int(civ_picks.get(civ, 0))
         bans = int(civ_bans.get(civ, 0))
+        avg_pick = (
+            round(pick_order_sum[civ] / pick_order_count[civ], 2)
+            if pick_order_count.get(civ)
+            else None
+        )
+        avg_ban = (
+            round(ban_order_sum[civ] / ban_order_count[civ], 2)
+            if ban_order_count.get(civ)
+            else None
+        )
         rates.append(
             {
                 "civ": civ,
@@ -1034,6 +1123,8 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
                 "bans": bans,
                 "pickRate": round((picks / civ_draft_n) * 100, 1),
                 "banRate": round((bans / civ_draft_n) * 100, 1),
+                "avgPickOrder": avg_pick,
+                "avgBanOrder": avg_ban,
             }
         )
     rates.sort(key=lambda item: (-(item["bans"] or 0), -(item["picks"] or 0), item["civ"]))
@@ -1087,7 +1178,6 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
             "leastPlayed": _top_named_counts(civ_plays, reverse=False),
             "mostBanned": _top_named_counts(civ_bans, reverse=True),
             "mostPicked": _top_named_counts(civ_picks, reverse=True),
-            "mostNeutral": _top_named_counts(civ_neutrals, reverse=True),
             "highestWinRate": [
                 {"name": row["civ"], "count": row["plays"], "winRate": row["winRate"]}
                 for row in highest_wr

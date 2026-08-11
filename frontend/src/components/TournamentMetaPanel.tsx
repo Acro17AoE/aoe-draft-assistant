@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { civIconUrl } from '../lib/civs'
 import { resolveMapDisplay } from '../lib/maps'
 import { syncTournamentStats, formatTournamentDatasetStatus } from '../lib/tournamentStats'
@@ -108,6 +108,90 @@ function formatSyncLabel(
   return formatTournamentDatasetStatus(
     overview?.status ?? (event ? { status: event.status, matchCount: event.matchCount, draftCount: event.draftCount, draftPairCount: event.draftPairCount } : null),
     busy,
+  )
+}
+
+type RateSortKey =
+  | 'civ'
+  | 'banRate'
+  | 'pickRate'
+  | 'avgBanOrder'
+  | 'avgPickOrder'
+  | 'winRate'
+  | 'plays'
+
+function CivRatesTable({ rates }: { rates: MetaCivRate[] }) {
+  const [sortKey, setSortKey] = useState<RateSortKey>('banRate')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+
+  const sorted = useMemo(() => {
+    const rows = [...rates]
+    rows.sort((left, right) => {
+      if (sortKey === 'civ') {
+        const cmp = left.civ.localeCompare(right.civ)
+        return sortDir === 'asc' ? cmp : -cmp
+      }
+      const leftVal = left[sortKey]
+      const rightVal = right[sortKey]
+      const leftNum = typeof leftVal === 'number' ? leftVal : -1
+      const rightNum = typeof rightVal === 'number' ? rightVal : -1
+      const cmp = leftNum - rightNum
+      if (cmp !== 0) return sortDir === 'asc' ? cmp : -cmp
+      return left.civ.localeCompare(right.civ)
+    })
+    return rows
+  }, [rates, sortDir, sortKey])
+
+  const toggleSort = (key: RateSortKey) => {
+    if (sortKey === key) {
+      setSortDir((dir) => (dir === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setSortKey(key)
+    setSortDir(key === 'civ' ? 'asc' : 'desc')
+  }
+
+  const header = (key: RateSortKey, label: string) => (
+    <th>
+      <button type="button" className="tournament-meta-sort-btn" onClick={() => toggleSort(key)}>
+        {label}
+        {sortKey === key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+      </button>
+    </th>
+  )
+
+  return (
+    <table className="tournament-meta-table">
+      <thead>
+        <tr>
+          {header('civ', 'Civ')}
+          {header('banRate', 'Ban %')}
+          {header('avgBanOrder', 'Ban #')}
+          {header('pickRate', 'Pick %')}
+          {header('avgPickOrder', 'Pick #')}
+          {header('winRate', 'WR')}
+          {header('plays', 'Plays')}
+        </tr>
+      </thead>
+      <tbody>
+        {sorted.map((row) => (
+          <tr key={row.civ}>
+            <td>
+              <span className="tournament-meta-civ-cell">
+                <CivIcon name={row.civ} />
+                {row.civ}
+              </span>
+            </td>
+            <td>{row.banRate ?? 0}%</td>
+            <td>{row.avgBanOrder ?? '—'}</td>
+            <td>{row.pickRate ?? 0}%</td>
+            <td>{row.avgPickOrder ?? '—'}</td>
+            <td>{row.winRate != null ? `${row.winRate}%` : '—'}</td>
+            <td>{row.plays ?? 0}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   )
 }
 
@@ -242,7 +326,7 @@ export function TournamentMetaPanel() {
               <RankingList title="Least played" items={maps.leastPlayed} kind="map" />
               <RankingList title="Most banned" items={maps.mostBanned} kind="map" />
               <RankingList title="Most picked" items={maps.mostPicked} kind="map" />
-              <RankingList title="Most neutral" items={maps.mostNeutral} kind="map" />
+              <RankingList title="Admin pick (neutral)" items={maps.mostNeutral} kind="map" />
             </div>
           </section>
 
@@ -261,33 +345,7 @@ export function TournamentMetaPanel() {
               {rates.length === 0 ? (
                 <p className="hint">No civ draft rates yet (needs `|civdraft=` on Liquipedia matches).</p>
               ) : (
-                <table className="tournament-meta-table">
-                  <thead>
-                    <tr>
-                      <th>Civ</th>
-                      <th>Ban %</th>
-                      <th>Pick %</th>
-                      <th>WR</th>
-                      <th>Plays</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rates.slice(0, 40).map((row) => (
-                      <tr key={row.civ}>
-                        <td>
-                          <span className="tournament-meta-civ-cell">
-                            <CivIcon name={row.civ} />
-                            {row.civ}
-                          </span>
-                        </td>
-                        <td>{row.banRate ?? 0}%</td>
-                        <td>{row.pickRate ?? 0}%</td>
-                        <td>{row.winRate != null ? `${row.winRate}%` : '—'}</td>
-                        <td>{row.plays ?? 0}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <CivRatesTable rates={rates} />
               )}
             </div>
           </section>

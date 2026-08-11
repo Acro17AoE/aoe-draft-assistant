@@ -15,6 +15,8 @@ export interface MetaCivRate {
   bans?: number
   pickRate?: number | null
   banRate?: number | null
+  avgPickOrder?: number | null
+  avgBanOrder?: number | null
 }
 
 export interface MetaPerMap {

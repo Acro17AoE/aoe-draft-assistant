@@ -174,6 +174,7 @@ class TournamentDraftRow(Base):
     pick_counts_json: Mapped[str] = mapped_column(Text, default="{}")
     ban_counts_json: Mapped[str] = mapped_column(Text, default="{}")
     pick_order_json: Mapped[str] = mapped_column(Text, default="{}")
+    ban_order_json: Mapped[str] = mapped_column(Text, default="{}")
     neutral_counts_json: Mapped[str] = mapped_column(Text, default="{}")
     event_count: Mapped[int] = mapped_column(Integer, default=0)
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
