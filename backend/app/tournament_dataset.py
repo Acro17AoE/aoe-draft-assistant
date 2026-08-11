@@ -25,6 +25,9 @@ from .liquipedia import (
     to_pagename,
     validate_liquipedia_access,
 )
+from .map_analysis import analyze_map_draft_events
+from .name_utils import names_match
+from .pro_analysis import analyze_civ_draft_events
 from .models import (
     TournamentCivDraftAgg,
     TournamentDataset,
@@ -1298,3 +1301,375 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
         "perMap": per_map,
         "attribution": liquipedia_attribution(),
     }
+
+
+def _team_matches_row(row: TournamentMatchRow, team_name: str) -> int | None:
+    """Return 1 or 2 if team matches opponent1/2, else None."""
+    if names_match(str(row.opponent1 or ""), team_name):
+        return 1
+    if names_match(str(row.opponent2 or ""), team_name):
+        return 2
+    return None
+
+
+def list_tournament_teams(db: Session, slug: str) -> dict[str, Any]:
+    status = dataset_status(db, slug)
+    if not status.get("found"):
+        return {"found": False, "slug": slug, "teams": [], "attribution": liquipedia_attribution()}
+
+    counts: Counter[str] = Counter()
+    for row in db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all():
+        for name in (row.opponent1, row.opponent2):
+            label = str(name or "").strip()
+            if label:
+                counts[label] += 1
+
+    teams = [
+        {"name": name, "matchCount": count}
+        for name, count in sorted(counts.items(), key=lambda item: (-item[1], item[0].lower()))
+    ]
+    return {
+        "found": True,
+        "slug": slug,
+        "teams": teams,
+        "attribution": liquipedia_attribution(),
+        "status": status,
+    }
+
+
+def _side_from_draft(draft: dict[str, Any], team_name: str) -> str | None:
+    host = (draft.get("nameHost") or "").strip()
+    guest = (draft.get("nameGuest") or "").strip()
+    if names_match(host, team_name):
+        return "HOST"
+    if names_match(guest, team_name):
+        return "GUEST"
+    return None
+
+
+def _option_label(draft: dict[str, Any], option_id: str) -> str:
+    for option in (draft.get("preset") or {}).get("draftOptions") or []:
+        if not isinstance(option, dict):
+            continue
+        if str(option.get("id") or "") == option_id:
+            return str(option.get("name") or option_id)
+        if str(option.get("name") or "") == option_id:
+            return str(option.get("name") or option_id)
+    return option_id
+
+
+def _draft_event_timeline(draft: dict[str, Any], *, team_side: str | None) -> list[dict[str, Any]]:
+    timeline: list[dict[str, Any]] = []
+    pick_index = 0
+    ban_index = 0
+    for event in draft.get("events") or []:
+        if not isinstance(event, dict):
+            continue
+        action = (event.get("actionType") or event.get("action") or "").lower()
+        if action not in ("pick", "ban", "snipe", "steal"):
+            continue
+        option_id = str(event.get("chosenOptionId") or "").strip()
+        if not option_id:
+            continue
+        player = str(event.get("executingPlayer") or event.get("player") or "NONE").upper()
+        label = _option_label(draft, option_id)
+        order: int | None = None
+        if action in ("pick", "steal"):
+            if player != "NONE":
+                pick_index += 1
+                order = pick_index
+        elif action in ("ban", "snipe"):
+            ban_index += 1
+            order = ban_index
+        timeline.append(
+            {
+                "action": "ban" if action in ("ban", "snipe") else "pick",
+                "optionId": option_id,
+                "name": label,
+                "side": player,
+                "isTeam": bool(team_side and player == team_side.upper()),
+                "order": order,
+            }
+        )
+    return timeline
+
+
+def _merge_order_avgs(
+    order_sum: dict[str, float],
+    order_weight: Counter[str],
+    avgs: dict[str, Any],
+    counts: dict[str, Any],
+) -> None:
+    for key, avg in avgs.items():
+        weight = int(counts.get(key) or 0)
+        if weight <= 0:
+            continue
+        order_sum[str(key)] += float(avg) * weight
+        order_weight[str(key)] += weight
+
+
+def _ranked_named(
+    counts: Counter[str],
+    order_sum: dict[str, float],
+    order_weight: Counter[str],
+    *,
+    limit: int = 8,
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for name, count in counts.most_common(limit):
+        avg = None
+        if order_weight.get(name):
+            avg = round(order_sum[name] / order_weight[name], 2)
+        rows.append({"name": name, "count": int(count), "avgOrder": avg})
+    return rows
+
+
+async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> dict[str, Any]:
+    status = dataset_status(db, slug)
+    if not status.get("found"):
+        return {
+            "found": False,
+            "slug": slug,
+            "team": team_name,
+            "attribution": liquipedia_attribution(),
+        }
+
+    needle = team_name.strip()
+    if not needle:
+        return {
+            "found": True,
+            "slug": slug,
+            "team": team_name,
+            "matchCount": 0,
+            "sets": [],
+            "maps": {},
+            "civs": {},
+            "mapCivs": [],
+            "priorities": [],
+            "attribution": liquipedia_attribution(),
+            "status": status,
+        }
+
+    match_rows = [
+        row
+        for row in db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all()
+        if _team_matches_row(row, needle) is not None
+    ]
+
+    map_pick_counts: Counter[str] = Counter()
+    map_ban_counts: Counter[str] = Counter()
+    map_pick_order_sum: dict[str, float] = defaultdict(float)
+    map_pick_order_weight: Counter[str] = Counter()
+    map_ban_order_sum: dict[str, float] = defaultdict(float)
+    map_ban_order_weight: Counter[str] = Counter()
+
+    civ_pick_counts: Counter[str] = Counter()
+    civ_ban_counts: Counter[str] = Counter()
+    civ_pick_order_sum: dict[str, float] = defaultdict(float)
+    civ_pick_order_weight: Counter[str] = Counter()
+    civ_ban_order_sum: dict[str, float] = defaultdict(float)
+    civ_ban_order_weight: Counter[str] = Counter()
+
+    map_civ_plays: Counter[tuple[str, str]] = Counter()
+    map_civ_wins: Counter[tuple[str, str]] = Counter()
+
+    sets: list[dict[str, Any]] = []
+    map_draft_n = 0
+    civ_draft_n = 0
+
+    for row in sorted(match_rows, key=lambda item: (item.match_date or "", item.match_key)):
+        side_index = _team_matches_row(row, needle)
+        if side_index is None:
+            continue
+        foe = row.opponent2 if side_index == 1 else row.opponent1
+        try:
+            games = json.loads(row.games_json or "[]")
+        except json.JSONDecodeError:
+            games = []
+
+        set_games: list[dict[str, Any]] = []
+        for game in games:
+            if not isinstance(game, dict):
+                continue
+            map_name = _normalize_map_name(str(game.get("map") or ""))
+            winner = str(game.get("winner") or "").strip()
+            team_civs = game.get("civs1") if side_index == 1 else game.get("civs2")
+            opp_civs = game.get("civs2") if side_index == 1 else game.get("civs1")
+            team_labels = [
+                civ_display_name(str(civ)) or str(civ) for civ in (team_civs or []) if str(civ).strip()
+            ]
+            opp_labels = [
+                civ_display_name(str(civ)) or str(civ) for civ in (opp_civs or []) if str(civ).strip()
+            ]
+            team_won = winner == str(side_index)
+            if map_name:
+                for civ in team_labels:
+                    map_civ_plays[(map_name, civ)] += 1
+                    if team_won:
+                        map_civ_wins[(map_name, civ)] += 1
+            set_games.append(
+                {
+                    "map": map_name or None,
+                    "teamCivs": team_labels,
+                    "opponentCivs": opp_labels,
+                    "winner": "team" if team_won else ("opponent" if winner in ("1", "2") else None),
+                }
+            )
+
+        map_timeline: list[dict[str, Any]] = []
+        civ_timeline: list[dict[str, Any]] = []
+        map_draft_id = extract_draft_id(row.map_draft_id) if row.map_draft_id else None
+        civ_draft_id = extract_draft_id(row.civ_draft_id) if row.civ_draft_id else None
+
+        if map_draft_id:
+            try:
+                draft = await fetch_draft(map_draft_id)
+                side = _side_from_draft(draft, needle)
+                map_timeline = _draft_event_timeline(draft, team_side=side)
+                if side:
+                    analysis = analyze_map_draft_events(list(draft.get("events") or []), side)
+                    map_pick_counts.update(analysis.get("pickCounts") or {})
+                    map_ban_counts.update(analysis.get("banCounts") or {})
+                    _merge_order_avgs(
+                        map_pick_order_sum,
+                        map_pick_order_weight,
+                        analysis.get("pickOrderAvg") or {},
+                        analysis.get("pickCounts") or {},
+                    )
+                    _merge_order_avgs(
+                        map_ban_order_sum,
+                        map_ban_order_weight,
+                        analysis.get("banOrderAvg") or {},
+                        analysis.get("banCounts") or {},
+                    )
+                    map_draft_n += 1
+            except Exception as exc:
+                logger.warning("map draft %s for team analysis failed: %s", map_draft_id, exc)
+
+        if civ_draft_id:
+            try:
+                draft = await fetch_draft(civ_draft_id)
+                side = _side_from_draft(draft, needle)
+                civ_timeline = _draft_event_timeline(draft, team_side=side)
+                if side:
+                    analysis = analyze_civ_draft_events(list(draft.get("events") or []), side)
+                    picks = {
+                        civ_display_name(str(k)) or str(k): int(v)
+                        for k, v in (analysis.get("pickCounts") or {}).items()
+                    }
+                    bans = {
+                        civ_display_name(str(k)) or str(k): int(v)
+                        for k, v in (analysis.get("banCounts") or {}).items()
+                    }
+                    pick_avgs = {
+                        civ_display_name(str(k)) or str(k): float(v)
+                        for k, v in (analysis.get("pickOrderAvg") or {}).items()
+                    }
+                    ban_avgs = {
+                        civ_display_name(str(k)) or str(k): float(v)
+                        for k, v in (analysis.get("banOrderAvg") or {}).items()
+                    }
+                    civ_pick_counts.update(picks)
+                    civ_ban_counts.update(bans)
+                    _merge_order_avgs(civ_pick_order_sum, civ_pick_order_weight, pick_avgs, picks)
+                    _merge_order_avgs(civ_ban_order_sum, civ_ban_order_weight, ban_avgs, bans)
+                    civ_draft_n += 1
+            except Exception as exc:
+                logger.warning("civ draft %s for team analysis failed: %s", civ_draft_id, exc)
+
+        sets.append(
+            {
+                "matchKey": row.match_key,
+                "stage": row.stage,
+                "date": row.match_date,
+                "opponent": foe,
+                "winner": (
+                    "team"
+                    if str(row.winner or "") == str(side_index)
+                    else ("opponent" if str(row.winner or "") in ("1", "2") else None)
+                ),
+                "mapDraftId": map_draft_id,
+                "civDraftId": civ_draft_id,
+                "mapDraftUrl": f"https://aoe2cm.net/draft/{map_draft_id}" if map_draft_id else None,
+                "civDraftUrl": f"https://aoe2cm.net/draft/{civ_draft_id}" if civ_draft_id else None,
+                "mapTimeline": map_timeline,
+                "civTimeline": civ_timeline,
+                "games": set_games,
+            }
+        )
+
+    map_civs: list[dict[str, Any]] = []
+    by_map: dict[str, list[tuple[str, int, int]]] = defaultdict(list)
+    for (map_name, civ), plays in map_civ_plays.items():
+        wins = map_civ_wins.get((map_name, civ), 0)
+        by_map[map_name].append((civ, plays, wins))
+    for map_name in sorted(by_map.keys(), key=lambda name: (-sum(p for _, p, _ in by_map[name]), name)):
+        rows = sorted(by_map[map_name], key=lambda item: (-item[1], item[0]))[:5]
+        map_civs.append(
+            {
+                "mapName": map_name,
+                "civs": [
+                    {
+                        "civ": civ,
+                        "plays": plays,
+                        "wins": wins,
+                        "winRate": round((wins / plays) * 100, 1) if plays else None,
+                    }
+                    for civ, plays, wins in rows
+                ],
+            }
+        )
+
+    top_map_bans = _ranked_named(map_ban_counts, map_ban_order_sum, map_ban_order_weight)
+    top_map_picks = _ranked_named(map_pick_counts, map_pick_order_sum, map_pick_order_weight)
+    top_civ_bans = _ranked_named(civ_ban_counts, civ_ban_order_sum, civ_ban_order_weight)
+    top_civ_picks = _ranked_named(civ_pick_counts, civ_pick_order_sum, civ_pick_order_weight)
+
+    priorities: list[str] = []
+    if top_map_bans:
+        priorities.append(
+            "Likely map bans: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_map_bans[:3])
+        )
+    if top_map_picks:
+        priorities.append(
+            "Likely map picks: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_map_picks[:3])
+        )
+    if top_civ_bans:
+        priorities.append(
+            "Likely civ bans: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_civ_bans[:3])
+        )
+    if top_civ_picks:
+        priorities.append(
+            "Likely civ picks: " + ", ".join(f"{row['name']} ({row['count']})" for row in top_civ_picks[:3])
+        )
+    if map_civs:
+        sample = map_civs[0]
+        top = sample["civs"][:2]
+        if top:
+            priorities.append(
+                f"On {sample['mapName']}: "
+                + ", ".join(f"{row['civ']} ({row['plays']})" for row in top)
+            )
+
+    return {
+        "found": True,
+        "slug": slug,
+        "team": needle,
+        "matchCount": len(match_rows),
+        "mapDraftCount": map_draft_n,
+        "civDraftCount": civ_draft_n,
+        "maps": {
+            "mostBanned": top_map_bans,
+            "mostPicked": top_map_picks,
+        },
+        "civs": {
+            "mostBanned": top_civ_bans,
+            "mostPicked": top_civ_picks,
+        },
+        "mapCivs": map_civs,
+        "priorities": priorities,
+        "sets": sets,
+        "attribution": liquipedia_attribution(),
+        "status": status,
+    }
+

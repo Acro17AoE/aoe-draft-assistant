@@ -7,9 +7,17 @@ interface MapDraftBoardProps {
   nameHost?: string
   nameGuest?: string
   draftStatus?: DraftStatus | null
+  /** Lowercased map name → hint tags (e.g. Likely ban / Likely pick). */
+  mapHints?: Record<string, string[]>
 }
 
-export function MapDraftBoard({ items, nameHost, nameGuest, draftStatus }: MapDraftBoardProps) {
+export function MapDraftBoard({
+  items,
+  nameHost,
+  nameGuest,
+  draftStatus,
+  mapHints = {},
+}: MapDraftBoardProps) {
   const available = items.filter((item) => item.status === 'available')
   const ownPicks = items.filter((item) => item.status === 'own_pick')
   const opponentPicks = items.filter((item) => item.status === 'opponent_pick')
@@ -34,7 +42,7 @@ export function MapDraftBoard({ items, nameHost, nameGuest, draftStatus }: MapDr
           <h3>Available pool ({available.length})</h3>
           <div className="draft-grid map-grid">
             {available.map((item) => (
-              <MapCard key={item.id} item={item} />
+              <MapCard key={item.id} item={item} hints={mapHints[item.name.trim().toLowerCase()]} />
             ))}
           </div>
         </div>
@@ -48,7 +56,11 @@ export function MapDraftBoard({ items, nameHost, nameGuest, draftStatus }: MapDr
               <h4>Your team</h4>
               {Array.from({ length: maxPickRows }).map((_, index) => {
                 const item = ownPicks[index]
-                return item ? <MapCard key={item.id} item={item} /> : <div key={`own-${index}`} className="pick-slot empty" />
+                return item ? (
+                  <MapCard key={item.id} item={item} hints={mapHints[item.name.trim().toLowerCase()]} />
+                ) : (
+                  <div key={`own-${index}`} className="pick-slot empty" />
+                )
               })}
             </div>
             {adminPicks.length ? (
@@ -56,7 +68,11 @@ export function MapDraftBoard({ items, nameHost, nameGuest, draftStatus }: MapDr
                 <h4>Admin</h4>
                 {Array.from({ length: maxPickRows }).map((_, index) => {
                   const item = adminPicks[index]
-                  return item ? <MapCard key={item.id} item={item} /> : <div key={`admin-${index}`} className="pick-slot empty" />
+                  return item ? (
+                    <MapCard key={item.id} item={item} hints={mapHints[item.name.trim().toLowerCase()]} />
+                  ) : (
+                    <div key={`admin-${index}`} className="pick-slot empty" />
+                  )
                 })}
               </div>
             ) : null}
@@ -64,7 +80,11 @@ export function MapDraftBoard({ items, nameHost, nameGuest, draftStatus }: MapDr
               <h4>Opponent</h4>
               {Array.from({ length: maxPickRows }).map((_, index) => {
                 const item = opponentPicks[index]
-                return item ? <MapCard key={item.id} item={item} /> : <div key={`opp-${index}`} className="pick-slot empty" />
+                return item ? (
+                  <MapCard key={item.id} item={item} hints={mapHints[item.name.trim().toLowerCase()]} />
+                ) : (
+                  <div key={`opp-${index}`} className="pick-slot empty" />
+                )
               })}
             </div>
           </div>
@@ -76,7 +96,7 @@ export function MapDraftBoard({ items, nameHost, nameGuest, draftStatus }: MapDr
           <h3>Banned ({banned.length})</h3>
           <div className="draft-grid map-grid">
             {banned.map((item) => (
-              <MapCard key={item.id} item={item} />
+              <MapCard key={item.id} item={item} hints={mapHints[item.name.trim().toLowerCase()]} />
             ))}
           </div>
         </div>
@@ -85,7 +105,7 @@ export function MapDraftBoard({ items, nameHost, nameGuest, draftStatus }: MapDr
   )
 }
 
-function MapCard({ item }: { item: MapBoardItem }) {
+function MapCard({ item, hints }: { item: MapBoardItem; hints?: string[] }) {
   return (
     <article className={`draft-card map-card status-${item.status}`}>
       {item.imageUrl ? (
@@ -97,6 +117,15 @@ function MapCard({ item }: { item: MapBoardItem }) {
       )}
       <span>{item.name}</span>
       {item.status === 'admin_pick' ? <em className="admin-tag">Admin</em> : null}
+      {hints?.length ? (
+        <div className="map-card-hints">
+          {hints.map((hint) => (
+            <em key={hint} className={`map-hint ${hint.toLowerCase().includes('ban') ? 'ban' : 'pick'}`}>
+              {hint}
+            </em>
+          ))}
+        </div>
+      ) : null}
     </article>
   )
 }

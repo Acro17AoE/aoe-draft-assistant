@@ -124,6 +124,8 @@ export interface MapSessionConfig {
   mode?: MapDraftMode
   mapDraftUrl: string
   ownTeamName: string
+  /** Liquipedia/tournament opponent for pre-draft scouting (optional). */
+  opponentTeamName?: string
   singleMap?: string
   singleMapFormat?: SetFormat
   selectFormat?: SetFormat

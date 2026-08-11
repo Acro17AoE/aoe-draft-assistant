@@ -845,6 +845,31 @@ select:focus {
   font-size: 0.82rem;
 }
 
+.map-card-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  justify-content: center;
+  margin-top: 0.2rem;
+}
+
+.map-hint {
+  font-size: 0.62rem;
+  font-style: normal;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  border: 1px solid var(--laca-border);
+  opacity: 0.9;
+}
+
+.map-hint.ban {
+  color: #f0a0a0;
+}
+
+.map-hint.pick {
+  color: var(--laca-yellow);
+}
+
 .civ-card .tier-tag {
   position: absolute;
   top: 6px;
@@ -5983,6 +6008,306 @@ td {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+}
+
+.opponent-analysis-panel {
+  margin-top: 0.75rem;
+}
+
+.opponent-analysis-header h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+}
+
+.opponent-analysis-priorities {
+  margin: 0.4rem 0 0.65rem;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.82rem;
+}
+
+.opponent-analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.55rem;
+}
+
+.opponent-analysis-list h4 {
+  margin: 0 0 0.3rem;
+  font-size: 0.8rem;
+}
+
+.opponent-analysis-list ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.opponent-analysis-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+}
+
+.opponent-analysis-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.opponent-analysis-meta {
+  margin-left: auto;
+  opacity: 0.75;
+  font-size: 0.72rem;
+}
+
+.opponent-analysis-mapcivs {
+  margin-top: 0.75rem;
+}
+
+.opponent-analysis-mapcivs h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+}
+
+.opponent-analysis-mapciv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.45rem;
+}
+
+.opponent-analysis-mapciv header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.3rem;
+}
+
+.opponent-analysis-mapciv h4 {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.opponent-analysis-mapciv ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.opponent-analysis-mapciv li {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.74rem;
+}
+
+.draft-preview-opponent {
+  padding: 0.65rem 0.75rem;
+}
+
+.draft-preview-opponent h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.draft-preview-opponent-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin-top: 0.45rem;
+}
+
+.draft-preview-opponent-cols h4,
+.draft-preview-opponent-mapcivs h4,
+.draft-preview-opponent-sets h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.78rem;
+}
+
+.draft-preview-set-list {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.draft-preview-set-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.draft-preview-set-list button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  text-align: left;
+  border: 1px solid var(--laca-border);
+  background: transparent;
+  color: inherit;
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+}
+
+.draft-preview-set-list button img {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+}
+
+.draft-preview-set-civ-icons {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.draft-preview-set-civ-icons img {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+}
+
+.opponent-set-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.opponent-set-modal {
+  width: min(920px, 100%);
+  max-height: min(85vh, 900px);
+  overflow: auto;
+  padding: 0.85rem 1rem;
+}
+
+.opponent-set-modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 0.65rem;
+}
+
+.opponent-set-modal-header h3 {
+  margin: 0;
+}
+
+.opponent-set-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.opponent-set-timeline h4,
+.opponent-set-games h4 {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+}
+
+.opponent-set-timeline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.opponent-set-event {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+
+.opponent-set-event img {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+}
+
+.opponent-set-event.action-ban {
+  border-color: rgba(240, 160, 160, 0.35);
+}
+
+.opponent-set-event.action-pick {
+  border-color: rgba(201, 162, 39, 0.35);
+}
+
+.opponent-set-event.is-team {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.opponent-set-action {
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  opacity: 0.75;
+  min-width: 2.4rem;
+}
+
+.opponent-set-games {
+  margin-top: 0.75rem;
+}
+
+.opponent-set-games ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.opponent-set-games li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+}
+
+.opponent-set-games li > img {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+}
+
+.opponent-set-game-civs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: auto;
+}
+
+.opponent-set-game-civs img {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+}
+
+.opponent-set-links {
+  margin-top: 0.65rem;
+}
+
+@media (max-width: 800px) {
+  .opponent-set-modal-grid,
+  .draft-preview-opponent-cols {
+    grid-template-columns: 1fr;
+  }
 }
 
 .draft-preview-header {

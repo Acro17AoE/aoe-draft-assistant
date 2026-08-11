@@ -6,7 +6,7 @@ import asyncio
 import logging
 import re
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -76,6 +76,12 @@ def analyze_civ_draft_events(events: list[dict], opponent_side: str) -> dict[str
     opponent = opponent_side.upper()
     pick_counts: Counter[str] = Counter()
     ban_counts: Counter[str] = Counter()
+    pick_order_sum: dict[str, float] = defaultdict(float)
+    pick_order_count: Counter[str] = Counter()
+    ban_order_sum: dict[str, float] = defaultdict(float)
+    ban_order_count: Counter[str] = Counter()
+    pick_index = 0
+    ban_index = 0
 
     for event in events:
         action = (event.get("actionType") or event.get("action") or "").lower()
@@ -83,16 +89,32 @@ def analyze_civ_draft_events(events: list[dict], opponent_side: str) -> dict[str
         option = event.get("chosenOptionId")
         if not option or player == "NONE":
             continue
-        if action == "pick" and player == opponent:
+        if action in ("pick", "steal") and player == opponent:
+            pick_index += 1
             pick_counts[option] += 1
-        elif action == "ban" and player == opponent:
+            pick_order_sum[option] += pick_index
+            pick_order_count[option] += 1
+        elif action in ("ban", "snipe") and player == opponent:
+            ban_index += 1
             ban_counts[option] += 1
+            ban_order_sum[option] += ban_index
+            ban_order_count[option] += 1
 
     return {
         "pickCounts": dict(pick_counts),
         "banCounts": dict(ban_counts),
         "topPicks": [name for name, _ in pick_counts.most_common(6)],
         "topBans": [name for name, _ in ban_counts.most_common(6)],
+        "pickOrderAvg": {
+            key: pick_order_sum[key] / pick_order_count[key]
+            for key in pick_order_count
+            if pick_order_count[key]
+        },
+        "banOrderAvg": {
+            key: ban_order_sum[key] / ban_order_count[key]
+            for key in ban_order_count
+            if ban_order_count[key]
+        },
     }
 
 

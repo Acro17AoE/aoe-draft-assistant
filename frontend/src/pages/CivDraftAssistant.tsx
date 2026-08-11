@@ -18,6 +18,10 @@ import { playersPerSide } from '../lib/results'
 import { useCivDraftSettings } from '../lib/useCivDraftSettings'
 import { useCivMapAssignments } from '../lib/useCivMapAssignments'
 import { useDraftStream } from '../lib/useDraftStream'
+import {
+  useOpponentTeamAnalysis,
+  useOpponentTournamentTeams,
+} from '../lib/useOpponentAnalysis'
 import { trackAnalyticsEvent } from '../lib/analytics'
 import { extractDraftId } from '../lib/civs'
 import type { CivSessionConfig, MapPriorityPreset } from '../types/draft'
@@ -40,6 +44,13 @@ export function CivDraftAssistant({
 }: CivDraftAssistantProps) {
   const mapSession = useMapSessionSync(visible)
   const { settings } = useCivDraftSettings()
+  const { status: opponentStatus } = useOpponentTournamentTeams(presetTournamentName)
+  const opponentSlug = opponentStatus?.found ? opponentStatus.slug : undefined
+  const {
+    analysis: opponentAnalysis,
+    busy: opponentAnalysisBusy,
+    error: opponentAnalysisError,
+  } = useOpponentTeamAnalysis(opponentSlug, mapSession?.opponentTeamName)
   const [civSession, setCivSession] = useState<CivSessionConfig>(() => {
     const saved = loadCivSession<Partial<CivSessionConfig>>() ?? {}
     return {
@@ -213,6 +224,10 @@ export function CivDraftAssistant({
           presetTournamentName={presetTournamentName}
           tournamentFormat={tournamentFormat}
           compact
+          opponentTeamName={mapSession?.opponentTeamName}
+          opponentAnalysis={opponentAnalysis}
+          opponentAnalysisBusy={opponentAnalysisBusy}
+          opponentAnalysisError={opponentAnalysisError}
         />
       ) : null}
 

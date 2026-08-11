@@ -11,10 +11,12 @@ from ..models import User
 from ..tournament_dataset import (
     draft_stats,
     list_meta_events,
+    list_tournament_teams,
     map_stats,
     meta_overview,
     resolve_tournament_stats,
     sync_tournament_dataset,
+    team_tournament_analysis,
 )
 
 router = APIRouter(prefix="/api/tournament-stats", tags=["tournament-stats"])
@@ -83,3 +85,16 @@ def get_draft_stats_full(
     db: Session = Depends(get_db),
 ) -> dict:
     return draft_stats(db, slug, full=True, limit=80)
+
+
+@router.get("/{slug}/teams")
+def get_tournament_teams(slug: str, db: Session = Depends(get_db)) -> dict:
+    return list_tournament_teams(db, slug)
+
+
+@router.get("/{slug}/teams/{team_name}/analysis")
+async def get_team_analysis(slug: str, team_name: str, db: Session = Depends(get_db)) -> dict:
+    try:
+        return await team_tournament_analysis(db, slug, team_name)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc

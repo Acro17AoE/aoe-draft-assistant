@@ -8,6 +8,7 @@ import {
 } from '../lib/mapDraftSession'
 import { maxGamesForSetFormat, SET_FORMAT_LABELS, SET_FORMATS } from '../lib/results'
 import type { SetFormat } from '../types/results'
+import type { TournamentTeamSummary } from '../lib/opponentAnalysis'
 import { MapSlotSelect } from './MapSlotSelect'
 
 interface MapDraftSetupProps {
@@ -15,9 +16,53 @@ interface MapDraftSetupProps {
   presetMaps?: string[]
   onChange: (value: MapSessionConfig) => void
   error?: string | null
+  opponentTeams?: TournamentTeamSummary[]
+  opponentTeamsBusy?: boolean
+  opponentTeamsHint?: string | null
 }
 
-export function MapDraftSetup({ value, presetMaps = [], onChange, error }: MapDraftSetupProps) {
+function OpponentTeamSelect({
+  value,
+  teams,
+  busy,
+  hint,
+  onChange,
+}: {
+  value: string
+  teams: TournamentTeamSummary[]
+  busy?: boolean
+  hint?: string | null
+  onChange: (team: string) => void
+}) {
+  return (
+    <label>
+      Opponent (tournament)
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={busy || (!teams.length && !value)}
+      >
+        <option value="">No opponent selected</option>
+        {teams.map((team) => (
+          <option key={team.name} value={team.name}>
+            {team.name} ({team.matchCount})
+          </option>
+        ))}
+      </select>
+      {hint ? <span className="hint">{hint}</span> : null}
+    </label>
+  )
+}
+
+export function MapDraftSetup({
+  value,
+  presetMaps = [],
+  onChange,
+  error,
+  opponentTeams = [],
+  opponentTeamsBusy = false,
+  opponentTeamsHint = null,
+}: MapDraftSetupProps) {
   const mode: MapDraftMode = value.mode ?? 'standard'
   const presetMapPool = useMemo(() => buildPresetMapPool(presetMaps), [presetMaps.join('|')])
 
@@ -76,6 +121,15 @@ export function MapDraftSetup({ value, presetMaps = [], onChange, error }: MapDr
   }
 
   const draftIdValid = extractDraftId(value.mapDraftUrl).length >= 4
+  const opponentSelect = (
+    <OpponentTeamSelect
+      value={value.opponentTeamName ?? ''}
+      teams={opponentTeams}
+      busy={opponentTeamsBusy}
+      hint={opponentTeamsHint}
+      onChange={(team) => update({ opponentTeamName: team })}
+    />
+  )
 
   return (
     <section className="panel setup-form map-draft-setup" data-tour="map-setup">
@@ -113,6 +167,7 @@ export function MapDraftSetup({ value, presetMaps = [], onChange, error }: MapDr
               placeholder="e.g. Darius"
             />
           </label>
+          {opponentSelect}
           {draftIdValid && value.ownTeamName.trim() ? (
             <p className="hint">Draft stream active when link and team are set.</p>
           ) : null}
@@ -130,6 +185,7 @@ export function MapDraftSetup({ value, presetMaps = [], onChange, error }: MapDr
               placeholder="e.g. Darius"
             />
           </label>
+          {opponentSelect}
           <label>
             Map
             <select
@@ -174,6 +230,7 @@ export function MapDraftSetup({ value, presetMaps = [], onChange, error }: MapDr
               placeholder="e.g. Darius"
             />
           </label>
+          {opponentSelect}
           <label>
             Series format
             <select

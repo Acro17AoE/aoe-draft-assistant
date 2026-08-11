@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, defaultdict
 
 
 def _normalize_map_name(name: str) -> str:
@@ -32,6 +32,12 @@ def analyze_map_draft_events(events: list[dict], opponent_side: str) -> dict[str
     bans: list[str] = []
     pick_order: Counter[str] = Counter()
     ban_targets: Counter[str] = Counter()
+    pick_order_sum: dict[str, float] = defaultdict(float)
+    pick_order_count: Counter[str] = Counter()
+    ban_order_sum: dict[str, float] = defaultdict(float)
+    ban_order_count: Counter[str] = Counter()
+    pick_index = 0
+    ban_index = 0
 
     for event in events:
         action = (event.get("actionType") or event.get("action") or "").lower()
@@ -40,12 +46,18 @@ def analyze_map_draft_events(events: list[dict], opponent_side: str) -> dict[str
         if not option or player == "NONE":
             continue
 
-        if action == "pick" and player == opponent:
+        if action in ("pick", "steal") and player == opponent:
+            pick_index += 1
             picks.append(option)
             pick_order[option] += 1
-        elif action == "ban" and player == opponent:
+            pick_order_sum[option] += pick_index
+            pick_order_count[option] += 1
+        elif action in ("ban", "snipe") and player == opponent:
+            ban_index += 1
             bans.append(option)
             ban_targets[option] += 1
+            ban_order_sum[option] += ban_index
+            ban_order_count[option] += 1
 
     frequently_picked = [name for name, _ in pick_order.most_common(5)]
     frequently_banned = [name for name, _ in ban_targets.most_common(5)]
@@ -57,6 +69,16 @@ def analyze_map_draft_events(events: list[dict], opponent_side: str) -> dict[str
         "antiPrioMaps": frequently_banned,
         "pickCounts": dict(pick_order),
         "banCounts": dict(ban_targets),
+        "pickOrderAvg": {
+            key: pick_order_sum[key] / pick_order_count[key]
+            for key in pick_order_count
+            if pick_order_count[key]
+        },
+        "banOrderAvg": {
+            key: ban_order_sum[key] / ban_order_count[key]
+            for key in ban_order_count
+            if ban_order_count[key]
+        },
     }
 
 
