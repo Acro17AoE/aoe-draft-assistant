@@ -54,6 +54,13 @@ def _ensure_sqlite_columns() -> None:
                     "ADD COLUMN ban_order_json TEXT DEFAULT '{}'"
                 )
             )
+        if "analysis_revision" not in names:
+            conn.execute(
+                text(
+                    "ALTER TABLE tournament_draft_rows "
+                    "ADD COLUMN analysis_revision INTEGER DEFAULT 0"
+                )
+            )
 
 
 def init_db() -> None:

@@ -45,6 +45,8 @@ logger = logging.getLogger(__name__)
 LPDB_MAX_REQUESTS_PER_SYNC = 55
 META_TOP_N = 3
 META_MIN_MAP_CIV_SAMPLE = 2
+# Bump when draft event parsing / civ label normalization changes (triggers re-fetch).
+DRAFT_ANALYSIS_REVISION = 2
 
 
 def _normalize_map_name(name: str) -> str:
@@ -126,6 +128,60 @@ def _pool_from_draft(draft: dict[str, Any]) -> list[str]:
     return names
 
 
+def _option_labels_from_draft(draft: dict[str, Any]) -> dict[str, str]:
+    """Map aoe2cm option id / name → display label from preset draftOptions."""
+    labels: dict[str, str] = {}
+    for option in (draft.get("preset") or {}).get("draftOptions") or []:
+        if not isinstance(option, dict):
+            continue
+        option_id = str(option.get("id") or "").strip()
+        name = str(option.get("name") or option_id).strip()
+        if option_id:
+            labels[option_id] = name
+        if name:
+            labels[name] = name
+    return labels
+
+
+def _resolve_event_label(
+    raw: str,
+    option_labels: dict[str, str] | None,
+    *,
+    normalize_civ: bool,
+) -> str:
+    text = str(raw).strip()
+    if not text:
+        return text
+    label = (option_labels or {}).get(text) or text
+    if normalize_civ:
+        return civ_display_name(label) or label
+    return label
+
+
+def _normalize_civ_count_dict(data: dict[str, Any]) -> dict[str, int]:
+    totals: Counter[str] = Counter()
+    for key, value in data.items():
+        label = civ_display_name(str(key)) or str(key)
+        totals[label] += int(value or 0)
+    return dict(totals)
+
+
+def _normalize_civ_order_dict(data: dict[str, Any], weights: dict[str, int]) -> dict[str, float]:
+    """Merge per-draft order averages when alias keys collapse to one civ."""
+    order_sum: dict[str, float] = defaultdict(float)
+    order_weight: Counter[str] = Counter()
+    for key, value in data.items():
+        label = civ_display_name(str(key)) or str(key)
+        weight = int(weights.get(str(key)) or weights.get(label) or 1)
+        order_sum[label] += float(value) * weight
+        order_weight[label] += weight
+    return {
+        civ: order_sum[civ] / order_weight[civ]
+        for civ in order_weight
+        if order_weight[civ]
+    }
+
+
 def _remove_from_remaining(remaining: dict[str, str], option: str) -> None:
     """Remove option from remaining pool keyed by normalized name → display name."""
     needle = re.sub(r"[^a-z0-9]+", " ", option.lower()).strip()
@@ -144,6 +200,8 @@ def analyze_draft_events_all_sides(
     events: list[dict],
     *,
     pool_options: list[str] | None = None,
+    option_labels: dict[str, str] | None = None,
+    normalize_civ: bool = False,
 ) -> dict[str, Any]:
     """Aggregate picks/bans, order indices, and map admin-pick (neutral) leftovers."""
     pick_counts: Counter[str] = Counter()
@@ -169,7 +227,7 @@ def analyze_draft_events_all_sides(
         option = event.get("chosenOptionId") or event.get("option")
         if not option:
             continue
-        label = str(option).strip()
+        label = _resolve_event_label(str(option), option_labels, normalize_civ=normalize_civ)
         if not label:
             continue
 
@@ -185,7 +243,7 @@ def analyze_draft_events_all_sides(
             pick_order_count[label] += 1
             if remaining:
                 _remove_from_remaining(remaining, label)
-        elif action == "ban":
+        elif action in ("ban", "snipe"):
             ban_index += 1
             ban_counts[label] += 1
             ban_order_sum[label] += ban_index
@@ -651,8 +709,11 @@ async def sync_tournament_dataset(
                 or (existing.ban_order_json or "{}") in ("{}", "")
             ):
                 pending.append((did, dtype))
-            if dtype == "civ" and (existing.ban_order_json or "{}") in ("{}", ""):
-                pending.append((did, dtype))
+            if dtype == "civ":
+                if int(getattr(existing, "analysis_revision", 0) or 0) < DRAFT_ANALYSIS_REVISION:
+                    pending.append((did, dtype))
+                elif (existing.ban_order_json or "{}") in ("{}", ""):
+                    pending.append((did, dtype))
 
         dataset.status_detail = f"Fetching {len(pending)} aoe2cm draft(s)…"
         db.commit()
@@ -661,8 +722,14 @@ async def sync_tournament_dataset(
             try:
                 draft = await fetch_draft(draft_id)
                 events = list(draft.get("events") or [])
+                option_labels = _option_labels_from_draft(draft)
                 pool = _pool_from_draft(draft) if draft_type == "map" else None
-                analysis = analyze_draft_events_all_sides(events, pool_options=pool)
+                analysis = analyze_draft_events_all_sides(
+                    events,
+                    pool_options=pool,
+                    option_labels=option_labels,
+                    normalize_civ=(draft_type == "civ"),
+                )
                 existing = known_rows.get((draft_id, draft_type))
                 if existing:
                     existing.pick_counts_json = json.dumps(analysis["pickCounts"], ensure_ascii=True)
@@ -673,6 +740,7 @@ async def sync_tournament_dataset(
                         analysis["neutralCounts"], ensure_ascii=True
                     )
                     existing.event_count = int(analysis["eventCount"])
+                    existing.analysis_revision = DRAFT_ANALYSIS_REVISION
                     existing.fetched_at = utcnow()
                     db.add(existing)
                 else:
@@ -686,6 +754,7 @@ async def sync_tournament_dataset(
                         ban_order_json=json.dumps(analysis["banOrderAvg"], ensure_ascii=True),
                         neutral_counts_json=json.dumps(analysis["neutralCounts"], ensure_ascii=True),
                         event_count=int(analysis["eventCount"]),
+                        analysis_revision=DRAFT_ANALYSIS_REVISION,
                     )
                     db.add(row)
                     known_rows[(draft_id, draft_type)] = row
@@ -750,12 +819,14 @@ def recompute_aggregates(db: Session, slug: str) -> None:
                 continue
             winner = game.get("winner")
             for civ in game.get("civs1") or []:
-                key = (map_name, str(civ))
+                civ_name = civ_display_name(str(civ)) or str(civ)
+                key = (map_name, civ_name)
                 map_civ_plays[key] += 1
                 if winner == "1":
                     map_civ_wins[key] += 1
             for civ in game.get("civs2") or []:
-                key = (map_name, str(civ))
+                civ_name = civ_display_name(str(civ)) or str(civ)
+                key = (map_name, civ_name)
                 map_civ_plays[key] += 1
                 if winner == "2":
                     map_civ_wins[key] += 1
@@ -790,18 +861,21 @@ def recompute_aggregates(db: Session, slug: str) -> None:
                 TournamentDraftRow.draft_type == "civ",
             )
         ).all():
-            picks = json.loads(draft.pick_counts_json or "{}")
-            bans = json.loads(draft.ban_counts_json or "{}")
-            orders = json.loads(draft.pick_order_json or "{}")
+            picks = _normalize_civ_count_dict(json.loads(draft.pick_counts_json or "{}"))
+            bans = _normalize_civ_count_dict(json.loads(draft.ban_counts_json or "{}"))
+            orders = _normalize_civ_order_dict(
+                json.loads(draft.pick_order_json or "{}"),
+                {**{k: v for k, v in picks.items()}, **{k: v for k, v in bans.items()}},
+            )
             for civ, count in picks.items():
                 pick_counts[str(civ)] += int(count)
             for civ, count in bans.items():
                 ban_counts[str(civ)] += int(count)
             for civ, avg in orders.items():
-                # Weight by picks in this draft if available
-                weight = int(picks.get(civ) or 1)
-                order_sum[str(civ)] += float(avg) * weight
-                order_count[str(civ)] += weight
+                weight = int(picks.get(civ) or 0)
+                if weight:
+                    order_sum[str(civ)] += float(avg) * weight
+                    order_count[str(civ)] += weight
 
     civs = set(pick_counts) | set(ban_counts) | set(order_sum)
     for civ in civs:
@@ -965,6 +1039,22 @@ def _sum_json_counts(rows: list[TournamentDraftRow], field: str) -> Counter[str]
     return totals
 
 
+def _sum_civ_json_counts(rows: list[TournamentDraftRow], field: str) -> Counter[str]:
+    totals: Counter[str] = Counter()
+    for draft in rows:
+        raw = getattr(draft, field, None) or "{}"
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(data, dict):
+            continue
+        normalized = _normalize_civ_count_dict(data)
+        for key, value in normalized.items():
+            totals[key] += int(value or 0)
+    return totals
+
+
 def list_meta_events(db: Session) -> dict[str, Any]:
     events = []
     for slug, entry in list_meta_registry_entries():
@@ -1031,12 +1121,12 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
                 map_plays[map_name] += 1
             winner = game.get("winner")
             for civ in game.get("civs1") or []:
-                label = str(civ)
+                label = civ_display_name(str(civ)) or str(civ)
                 civ_plays[label] += 1
                 if winner == "1":
                     civ_wins[label] += 1
             for civ in game.get("civs2") or []:
-                label = str(civ)
+                label = civ_display_name(str(civ)) or str(civ)
                 civ_plays[label] += 1
                 if winner == "2":
                     civ_wins[label] += 1
@@ -1069,8 +1159,8 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
     map_bans = _sum_json_counts(map_drafts, "ban_counts_json")
     map_picks = _sum_json_counts(map_drafts, "pick_counts_json")
     map_neutrals = _sum_json_counts(map_drafts, "neutral_counts_json")
-    civ_bans = _sum_json_counts(civ_drafts, "ban_counts_json")
-    civ_picks = _sum_json_counts(civ_drafts, "pick_counts_json")
+    civ_bans = _sum_civ_json_counts(civ_drafts, "ban_counts_json")
+    civ_picks = _sum_civ_json_counts(civ_drafts, "pick_counts_json")
 
     map_draft_n = max(len(map_drafts), 1)
     civ_draft_n = max(len(civ_drafts), 1)
@@ -1080,20 +1170,26 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
     ban_order_sum: dict[str, float] = defaultdict(float)
     ban_order_count: Counter[str] = Counter()
     for draft in civ_drafts:
-        picks = json.loads(draft.pick_counts_json or "{}")
-        bans = json.loads(draft.ban_counts_json or "{}")
-        pick_orders = json.loads(draft.pick_order_json or "{}")
-        ban_orders = json.loads(draft.ban_order_json or "{}")
+        picks = _normalize_civ_count_dict(json.loads(draft.pick_counts_json or "{}"))
+        bans = _normalize_civ_count_dict(json.loads(draft.ban_counts_json or "{}"))
+        pick_orders = _normalize_civ_order_dict(
+            json.loads(draft.pick_order_json or "{}"),
+            picks,
+        )
+        ban_orders = _normalize_civ_order_dict(
+            json.loads(draft.ban_order_json or "{}"),
+            bans,
+        )
         for civ, avg in pick_orders.items():
             weight = int(picks.get(civ) or 0)
             if weight:
-                pick_order_sum[str(civ)] += float(avg) * weight
-                pick_order_count[str(civ)] += weight
+                pick_order_sum[civ] += float(avg) * weight
+                pick_order_count[civ] += weight
         for civ, avg in ban_orders.items():
             weight = int(bans.get(civ) or 0)
             if weight:
-                ban_order_sum[str(civ)] += float(avg) * weight
-                ban_order_count[str(civ)] += weight
+                ban_order_sum[civ] += float(avg) * weight
+                ban_order_count[civ] += weight
 
     # Global civ rates table
     civ_names = set(civ_plays) | set(civ_bans) | set(civ_picks)

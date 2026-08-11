@@ -91,6 +91,60 @@ CIV_CODE_TO_NAME: dict[str, str] = {
     "wu": "Wu",
 }
 
+CANONICAL_CIV_NAMES: frozenset[str] = frozenset(CIV_CODE_TO_NAME.values())
+
+# Free-text / aoe2cm spellings → canonical civ name (mirrors frontend CIV_NAME_ALIASES).
+CIV_NAME_ALIASES: dict[str, str] = {
+    "maya": "Mayans",
+    "inca": "Incas",
+    "aztec": "Aztecs",
+    "hindustani": "Hindustanis",
+    "hindustan": "Hindustanis",
+    "italian": "Italians",
+    "viking": "Vikings",
+    "mongol": "Mongols",
+    "frank": "Franks",
+    "briton": "Britons",
+    "korean": "Koreans",
+    "spanish": "Spanish",
+    "turk": "Turks",
+    "saracen": "Saracens",
+    "persian": "Persians",
+    "persians": "Persians",
+    "hun": "Huns",
+    "goth": "Goths",
+    "celt": "Celts",
+    "slav": "Slavs",
+    "magyar": "Magyars",
+    "malian": "Malians",
+    "malay": "Malay",
+    "khmer": "Khmer",
+    "burmese": "Burmese",
+    "vietnamese": "Vietnamese",
+    "bengali": "Bengalis",
+    "dravidian": "Dravidians",
+    "gurjara": "Gurjaras",
+    "roman": "Romans",
+    "armenian": "Armenians",
+    "georgian": "Georgians",
+    "bohemian": "Bohemians",
+    "burgundian": "Burgundians",
+    "sicilian": "Sicilians",
+    "bulgarian": "Bulgarians",
+    "lithuanian": "Lithuanians",
+    "polish": "Poles",
+    "portuguese": "Portuguese",
+    "teuton": "Teutons",
+    "tatar": "Tatars",
+    "cuman": "Cumans",
+    "mayans": "Mayans",
+    "incas": "Incas",
+}
+
+
+def _civ_slug(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", name.lower())
+
 
 # LPDB v3 projection fields (aligned with https://api.liquipedia.net/documentation/api/v3
 # / liquipydia models). Avoid legacy columns such as tournament.series or match.matchid.
@@ -225,7 +279,20 @@ def civ_display_name(raw: str | None) -> str | None:
     code = re.sub(r"[^a-z]", "", text.lower())
     if code in CIV_CODE_TO_NAME:
         return CIV_CODE_TO_NAME[code]
-    # Already a full name
+    slug = _civ_slug(text)
+    alias = CIV_NAME_ALIASES.get(slug)
+    if alias:
+        return alias
+    for civ in CANONICAL_CIV_NAMES:
+        if civ.lower() == text.lower():
+            return civ
+    if slug:
+        for civ in CANONICAL_CIV_NAMES:
+            civ_slug = _civ_slug(civ)
+            if civ_slug == slug:
+                return civ
+            if len(slug) >= 3 and (civ_slug.startswith(slug) or slug.startswith(civ_slug)):
+                return civ
     if text[:1].isupper() and len(text) > 3:
         return text
     return text.title()
