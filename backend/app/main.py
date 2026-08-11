@@ -25,6 +25,7 @@ from .models import User, WorkspaceMember
 from .workspace_stream import get_workspace_subscription
 from .aoe2recs import compute_map_play_counts, fetch_tournament, suggest_tournaments
 from .map_analysis import analyze_map_draft_events, extract_own_map_picks, merge_map_insights
+from .routers.aoe_data_router import router as aoe_data_router
 from .routers.admin_router import analytics_router, router as admin_router
 from .routers.aoestats_router import router as aoestats_router
 from .routers.auth_router import router as auth_router
@@ -62,6 +63,7 @@ app.add_middleware(
 
 app.include_router(admin_router)
 app.include_router(analytics_router)
+app.include_router(aoe_data_router)
 app.include_router(aoestats_router)
 app.include_router(auth_router)
 app.include_router(user_documents_router)

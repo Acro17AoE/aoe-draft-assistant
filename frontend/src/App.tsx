@@ -5,6 +5,7 @@ import { PresetsTab } from './pages/PresetsTab'
 // Pro Analysis tab disabled for now.
 // import { ProAnalysisTab } from './pages/ProAnalysisTab'
 import { AnalysisTab } from './pages/AnalysisTab'
+import { AoeDataTab } from './pages/AoeDataTab'
 import { ResultsTab, useResultsState } from './pages/ResultsTab'
 import { tournamentsWithResults } from './lib/results'
 import { SettingsTab } from './pages/SettingsTab'
@@ -29,7 +30,7 @@ import {
 } from './lib/onboarding'
 import './App.css'
 
-type AppTab = 'presets' | 'map' | 'civ' | 'results' | 'analysis' | 'pro' | 'settings' | 'admin'
+type AppTab = 'presets' | 'map' | 'civ' | 'results' | 'analysis' | 'aoedata' | 'pro' | 'settings' | 'admin'
 function App() {
   const [tab, setTab] = useState<AppTab>('presets')
   const [tourOpen, setTourOpen] = useState(false)
@@ -176,6 +177,14 @@ function App() {
           </button>
           <button
             type="button"
+            data-tour="nav-aoedata"
+            className={tab === 'aoedata' ? 'active' : ''}
+            onClick={() => setTab('aoedata')}
+          >
+            AoE in Data
+          </button>
+          <button
+            type="button"
             data-tour="nav-settings"
             className={tab === 'settings' ? 'active' : ''}
             onClick={() => setTab('settings')}
@@ -227,6 +236,9 @@ function App() {
         </div>
         <div className="tab-panel" hidden={tab !== 'analysis'}>
           <AnalysisTab tournaments={analysisTournaments} />
+        </div>
+        <div className="tab-panel" hidden={tab !== 'aoedata'}>
+          <AoeDataTab />
         </div>
         <div className="tab-panel" hidden={tab !== 'settings'}>
           <SettingsTab />
