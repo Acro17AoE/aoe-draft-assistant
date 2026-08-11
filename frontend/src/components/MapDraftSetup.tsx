@@ -8,7 +8,7 @@ import {
 } from '../lib/mapDraftSession'
 import { maxGamesForSetFormat, SET_FORMAT_LABELS, SET_FORMATS } from '../lib/results'
 import type { SetFormat } from '../types/results'
-import type { TournamentTeamSummary } from '../lib/opponentAnalysis'
+// import type { TournamentTeamSummary } from '../lib/opponentAnalysis'
 import { MapSlotSelect } from './MapSlotSelect'
 
 interface MapDraftSetupProps {
@@ -16,11 +16,12 @@ interface MapDraftSetupProps {
   presetMaps?: string[]
   onChange: (value: MapSessionConfig) => void
   error?: string | null
-  opponentTeams?: TournamentTeamSummary[]
-  opponentTeamsBusy?: boolean
-  opponentTeamsHint?: string | null
+  // opponentTeams?: TournamentTeamSummary[]
+  // opponentTeamsBusy?: boolean
+  // opponentTeamsHint?: string | null
 }
 
+/*
 function OpponentTeamSelect({
   value,
   teams,
@@ -53,15 +54,16 @@ function OpponentTeamSelect({
     </label>
   )
 }
+*/
 
 export function MapDraftSetup({
   value,
   presetMaps = [],
   onChange,
   error,
-  opponentTeams = [],
-  opponentTeamsBusy = false,
-  opponentTeamsHint = null,
+  // opponentTeams = [],
+  // opponentTeamsBusy = false,
+  // opponentTeamsHint = null,
 }: MapDraftSetupProps) {
   const mode: MapDraftMode = value.mode ?? 'standard'
   const presetMapPool = useMemo(() => buildPresetMapPool(presetMaps), [presetMaps.join('|')])
@@ -121,6 +123,7 @@ export function MapDraftSetup({
   }
 
   const draftIdValid = extractDraftId(value.mapDraftUrl).length >= 4
+  /*
   const opponentSelect = (
     <OpponentTeamSelect
       value={value.opponentTeamName ?? ''}
@@ -130,6 +133,7 @@ export function MapDraftSetup({
       onChange={(team) => update({ opponentTeamName: team })}
     />
   )
+  */
 
   return (
     <section className="panel setup-form map-draft-setup" data-tour="map-setup">
@@ -167,7 +171,7 @@ export function MapDraftSetup({
               placeholder="e.g. Darius"
             />
           </label>
-          {opponentSelect}
+          {/* {opponentSelect} */}
           {draftIdValid && value.ownTeamName.trim() ? (
             <p className="hint">Draft stream active when link and team are set.</p>
           ) : null}
@@ -185,7 +189,7 @@ export function MapDraftSetup({
               placeholder="e.g. Darius"
             />
           </label>
-          {opponentSelect}
+          {/* {opponentSelect} */}
           <label>
             Map
             <select
@@ -230,7 +234,7 @@ export function MapDraftSetup({
               placeholder="e.g. Darius"
             />
           </label>
-          {opponentSelect}
+          {/* {opponentSelect} */}
           <label>
             Series format
             <select

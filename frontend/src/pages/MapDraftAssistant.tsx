@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { DraftPreview } from '../components/DraftPreview'
 import { MapDraftBoard } from '../components/MapDraftBoard'
+/*
 import {
   mapHintsFromAnalysis,
   OpponentAnalysisPanel,
 } from '../components/OpponentAnalysisPanel'
+*/
 import { isMapSessionReady, getSessionMapPicks } from '../lib/mapSession'
 import { MapDraftSetup } from '../components/MapDraftSetup'
 import { SelectMapsPanel } from '../components/SelectMapsPanel'
@@ -25,10 +27,12 @@ import {
   sanitizeMapSessionForPresetPool,
 } from '../lib/mapDraftSession'
 import { loadMapSession, saveMapSession } from '../lib/presets'
+/*
 import {
   useOpponentTeamAnalysis,
   useOpponentTournamentTeams,
 } from '../lib/useOpponentAnalysis'
+*/
 import type { MapPriorityPreset, MapSessionConfig } from '../types/draft'
 import type { TournamentFormat } from '../types/results'
 
@@ -74,6 +78,7 @@ export function MapDraftAssistant({
 
   const { draft: mapDraft, error: streamError } = useDraftStream(session.mapDraftUrl, streamActive)
 
+  /*
   const {
     status: opponentStatus,
     teams: opponentTeams,
@@ -108,6 +113,7 @@ export function MapDraftAssistant({
   ])
 
   const mapHints = useMemo(() => mapHintsFromAnalysis(opponentAnalysis), [opponentAnalysis])
+  */
 
   useEffect(() => {
     if (streamError) setError(streamError)
@@ -176,7 +182,7 @@ export function MapDraftAssistant({
     return []
   }, [session, mode, mapDraft])
 
-  const showOpponentReport = Boolean(session.opponentTeamName?.trim())
+  // const showOpponentReport = Boolean(session.opponentTeamName?.trim())
 
   return (
     <main className="layout assistant-layout">
@@ -185,11 +191,14 @@ export function MapDraftAssistant({
         presetMaps={presetMaps}
         onChange={updateSession}
         error={error}
+        /*
         opponentTeams={opponentTeams}
         opponentTeamsBusy={opponentTeamsBusy}
         opponentTeamsHint={opponentTeamsHint}
+        */
       />
 
+      {/*
       {showOpponentReport ? (
         <OpponentAnalysisPanel
           analysis={opponentAnalysis}
@@ -197,6 +206,7 @@ export function MapDraftAssistant({
           error={opponentError}
         />
       ) : null}
+      */}
 
       {ready && mode === 'standard' ? (
         <MapDraftBoard
@@ -204,7 +214,7 @@ export function MapDraftAssistant({
           nameHost={mapDraft?.nameHost}
           nameGuest={mapDraft?.nameGuest}
           draftStatus={draftStatus}
-          mapHints={showOpponentReport ? mapHints : undefined}
+          // mapHints={showOpponentReport ? mapHints : undefined}
         />
       ) : null}
 
@@ -232,20 +242,24 @@ export function MapDraftAssistant({
           tournamentFormat={tournamentFormat}
           showCivDraftHint
           onOpenCivDraft={onOpenCivDraft}
+          /*
           opponentTeamName={session.opponentTeamName}
           opponentAnalysis={opponentAnalysis}
           opponentAnalysisBusy={opponentBusy}
           opponentAnalysisError={opponentError}
+          */
         />
       ) : (
         <DraftPreview
           presets={presets}
           mapNames={[]}
           presetTournamentName={presetTournamentName}
+          /*
           opponentTeamName={session.opponentTeamName}
           opponentAnalysis={opponentAnalysis}
           opponentAnalysisBusy={opponentBusy}
           opponentAnalysisError={opponentError}
+          */
         />
       )}
     </main>
