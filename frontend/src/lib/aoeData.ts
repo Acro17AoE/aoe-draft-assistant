@@ -44,7 +44,10 @@ export interface AoeDataSimilarityResponse {
   neighbors: AoeDataSimilarityNeighbor[]
   patchLabel?: string
   method?: string
+  mode?: AoeDataDnaMode
 }
+
+export type AoeDataDnaMode = 'overall' | 'military' | 'eco'
 
 export interface AoeDataSynergy {
   id: string
@@ -102,8 +105,13 @@ export async function fetchAoeDataIntersection(keys: string[]): Promise<AoeDataI
   return response.json()
 }
 
-export async function fetchAoeDataSimilarity(civ: string): Promise<AoeDataSimilarityResponse> {
-  const response = await fetch(`/api/aoe-data/civ-similarity/${encodeURIComponent(civ)}`)
+export async function fetchAoeDataSimilarity(
+  civ: string,
+  mode: AoeDataDnaMode = 'overall',
+): Promise<AoeDataSimilarityResponse> {
+  const response = await fetch(
+    `/api/aoe-data/civ-similarity/${encodeURIComponent(civ)}?mode=${encodeURIComponent(mode)}`,
+  )
   if (!response.ok) throw new Error(await readError(response, 'Similarity failed'))
   return response.json()
 }
@@ -132,7 +140,7 @@ export const AOE_DATA_SECTIONS: { id: AoeDataSection; label: string; blurb: stri
   {
     id: 'dna',
     label: 'Civilization DNA',
-    blurb: 'Structural similarity from tech-tree access (Jaccard).',
+    blurb: 'Overall, military, or eco similarity from tech-tree access (Jaccard).',
   },
   {
     id: 'synergies',

@@ -61,9 +61,16 @@ async def aoe_data_entity(entity_type: str, entity_id: str) -> dict:
 async def aoe_data_civ_similarity(
     civ_name: str,
     limit: int = Query(8, ge=1, le=20),
+    mode: str = Query(
+        "overall",
+        description="overall | military | eco",
+    ),
 ) -> dict:
+    normalized = mode.lower().strip()
+    if normalized not in {"overall", "military", "eco"}:
+        raise HTTPException(status_code=400, detail="mode must be overall, military, or eco")
     try:
-        return await game_data.civ_similarity(civ_name, limit=limit)
+        return await game_data.civ_similarity(civ_name, limit=limit, mode=normalized)  # type: ignore[arg-type]
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Game data unavailable: {exc}") from exc
 

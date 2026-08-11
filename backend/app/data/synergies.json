@@ -28,42 +28,42 @@
   },
   {
     "id": "slavs-archer-civs",
-    "title": "Slavs + Archer civs",
+    "title": "A smoother opening",
     "civA": "Slavs",
     "civB": "Britons",
     "partnerLabel": "Archer civs",
     "category": "military",
     "strength": "high",
-    "explanation": "Der Slaven-Teambonus (+5 Bevölkerung in Militärgebäuden) hilft Civs mit schwachem oder ohne Eco-Bonus dabei, auf offenen Karten früh Archer-Pop-Builds zu spielen."
+    "explanation": "The Slav team bonus (+5 population in military buildings) helps civs with a weak or missing eco bonus play early archer pop builds on open maps."
   },
   {
     "id": "teutons-monk-rush",
-    "title": "Teutons + Monk rush civs",
+    "title": "The resistant mirror",
     "civA": "Teutons",
     "civB": "Aztecs",
     "partnerLabel": "Monk rush civs",
     "category": "team",
     "strength": "high",
-    "explanation": "Der Teutonen-Teambonus macht Mönchs-Rushes deutlich schwerer durch gegnerische Mönche zu stoppen."
+    "explanation": "The Teuton team bonus makes monk rushes much harder to stop with opposing monks."
   },
   {
     "id": "teutons-unique-unit",
-    "title": "Teutons + Unique unit civs",
+    "title": "You shall not convert",
     "civA": "Teutons",
     "civB": "Spanish",
     "partnerLabel": "Unique unit civs",
     "category": "team",
     "strength": "high",
-    "explanation": "Eine häufige Antwort auf Unique-Unit-Spiel wie Conquistadores sind Mönche. Mit Teutonenbonus ist dieser Ansatz nur schwer durchsetzbar."
+    "explanation": "A common answer to unique-unit plays like Conquistadors is monks. With the Teuton bonus, that approach is much harder to pull off."
   },
   {
     "id": "malians-bombard-cannon",
-    "title": "Malians + Bombard cannon civs",
+    "title": "I do not even need to treb.",
     "civA": "Malians",
     "civB": "Portuguese",
     "partnerLabel": "Bombard cannon civs",
     "category": "military",
     "strength": "medium",
-    "explanation": "Malians' schnellere Chemistry kann helfen, starke Timings mit Bombard Cannons zu treffen."
+    "explanation": "Malians' faster Chemistry can help hit strong Bombard Cannon timings."
   }
 ]

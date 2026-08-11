@@ -5381,38 +5381,36 @@ td {
 
 .aoe-data-funfacts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 0.55rem;
+  gap: 0.45rem;
   margin-bottom: 0.75rem;
 }
 
 .aoe-data-funfact {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.7rem;
-  align-items: start;
-}
-
-.aoe-data-funfact h3 {
-  margin: 0 0 0.3rem;
-  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.7rem;
 }
 
 .aoe-data-funfact p {
   margin: 0;
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.aoe-data-funfact strong {
+  font-weight: 650;
 }
 
 .aoe-data-funfact-icons {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  flex-shrink: 0;
+  gap: 0.2rem;
 }
 
 .aoe-data-funfact-icons img {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
 }
 
@@ -5620,6 +5618,11 @@ td {
 .aoe-data-dna-controls label {
   display: grid;
   gap: 0.25rem;
+}
+
+.aoe-data-dna-modes {
+  margin-top: 0.55rem;
+  margin-bottom: 0;
 }
 
 .aoe-data-dna-grid {

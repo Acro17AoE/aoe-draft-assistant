@@ -8,7 +8,7 @@ import re
 import time
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import httpx
 
@@ -24,11 +24,70 @@ TECHTREE_STRINGS_URL = (
 )
 TECHTREE_SOURCE = "SiegeEngineers/aoe2techtree (MIT)"
 PATCH_LABEL = "aoe2techtree snapshot"
+CACHE_VERSION = 3
 
 CACHE_TTL_SECONDS = 6 * 60 * 60
-RARE_TECH_WEIGHT = 2.0
-MILITARY_TECH_WEIGHT = 1.0
-COMMON_TECH_WEIGHT = 0.3
+RARE_WEIGHT = 2.0
+DEFAULT_WEIGHT = 1.0
+COMMON_WEIGHT = 0.3
+
+# Economy tech IDs from SiegeEngineers data.json (gathering / farms / trade / civilian).
+ECO_TECH_IDS = frozenset(
+    {
+        "8",  # Town Watch
+        "12",  # Crop Rotation
+        "13",  # Heavy Plow
+        "14",  # Horse Collar
+        "15",  # Guilds
+        "17",  # Banking
+        "19",  # Cartography
+        "22",  # Loom
+        "23",  # Coinage
+        "48",  # Caravan
+        "54",  # Stone Cutting
+        "55",  # Gold Mining
+        "182",  # Gold Shaft Mining
+        "202",  # Double-Bit Axe
+        "203",  # Bow Saw
+        "213",  # Wheelbarrow
+        "221",  # Two-Man Saw
+        "249",  # Hand Cart
+        "278",  # Stone Mining
+        "279",  # Stone Shaft Mining
+        "280",  # Town Patrol
+        "373",  # Shipwright
+        "374",  # Careening
+        "375",  # Dry Dock
+        "906",  # Fishing Lines
+    }
+)
+
+# Common eco building / unit IDs (SiegeEngineers catalog).
+ECO_BUILDING_IDS = frozenset(
+    {
+        "45",  # Dock
+        "50",  # Farm
+        "68",  # Mill
+        "70",  # House
+        "84",  # Market
+        "109",  # Town Center
+        "199",  # Fish Trap
+        "562",  # Lumber Camp
+        "584",  # Mining Camp
+        "621",  # Town Center (secondary)
+    }
+)
+ECO_UNIT_IDS = frozenset(
+    {
+        "13",  # Fishing Ship
+        "17",  # Trade Cog
+        "83",  # Villager
+        "128",  # Trade Cart
+        "331",  # Fishing Ship (alt)
+    }
+)
+
+DnaMode = Literal["overall", "military", "eco"]
 
 _cache_expires_at = 0.0
 _cache: dict[str, Any] | None = None
@@ -40,18 +99,41 @@ def _normalize_query(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
 
 
+def _clean_display_label(label: str) -> str:
+    clean = re.sub(r"<br\s*/?>", " ", label, flags=re.I)
+    clean = re.sub(r"<[^>]+>", "", clean)
+    return re.sub(r"\s+", " ", clean).strip()
+
+
 def _entity_display_name(
     internal_name: str,
     language_name_id: int | None,
     strings: dict[str, str],
 ) -> str:
     if language_name_id is not None:
-        label = strings.get(str(language_name_id + 10000))
-        if label:
-            clean = re.sub(r"<[^>]+>", "", label).strip()
+        # Units/buildings use +9000; techs use +10000 in the English string table.
+        for offset in (9000, 10000, 0):
+            raw = strings.get(str(language_name_id + offset))
+            if not raw or not isinstance(raw, str):
+                continue
+            if raw.lstrip().lower().startswith("create ") or raw.lstrip().lower().startswith(
+                "research "
+            ):
+                continue
+            clean = _clean_display_label(raw)
             if clean:
                 return clean
     return internal_name.replace("_", " ")
+
+
+def _entity_domain(entity_type: str, entity_id: str) -> str:
+    if entity_type == "tech":
+        return "eco" if entity_id in ECO_TECH_IDS else "military"
+    if entity_type == "building":
+        return "eco" if entity_id in ECO_BUILDING_IDS else "military"
+    if entity_type == "unit":
+        return "eco" if entity_id in ECO_UNIT_IDS else "military"
+    return "military"
 
 
 def _load_synergies() -> list[dict[str, Any]]:
@@ -74,7 +156,7 @@ async def _fetch_json(url: str) -> Any:
 async def _load_techtree() -> dict[str, Any]:
     global _cache, _cache_expires_at
     now = time.time()
-    if _cache and now < _cache_expires_at:
+    if _cache and now < _cache_expires_at and _cache.get("cacheVersion") == CACHE_VERSION:
         return _cache
 
     raw_data, strings = await _fetch_json(TECHTREE_DATA_URL), await _fetch_json(TECHTREE_STRINGS_URL)
@@ -83,7 +165,9 @@ async def _load_techtree() -> dict[str, Any]:
 
     entities: dict[str, dict[str, Any]] = {}
     civ_names: list[str] = []
-    civ_tech_sets: dict[str, set[str]] = {}
+    civ_entity_sets: dict[str, set[str]] = {}
+    civ_eco_sets: dict[str, set[str]] = {}
+    civ_military_sets: dict[str, set[str]] = {}
     tech_to_civs: dict[str, list[str]] = defaultdict(list)
     unit_to_civs: dict[str, list[str]] = defaultdict(list)
     building_to_civs: dict[str, list[str]] = defaultdict(list)
@@ -108,11 +192,13 @@ async def _load_techtree() -> dict[str, Any]:
             language_id_int = int(language_id) if language_id is not None else None
             display = _entity_display_name(internal, language_id_int, strings)
             key = f"{entity_type}:{entity_id}"
+            domain = _entity_domain(entity_type.lower(), str(entity_id))
             entities[key] = {
                 "id": str(entity_id),
                 "type": entity_type.lower(),
                 "internalName": internal,
                 "name": display,
+                "domain": domain,
                 "searchText": _normalize_query(f"{display} {internal}"),
             }
 
@@ -124,45 +210,73 @@ async def _load_techtree() -> dict[str, Any]:
         tech_ids = {str(item) for item in (payload.get("Tech") or [])}
         unit_ids = {str(item) for item in (payload.get("Unit") or [])}
         building_ids = {str(item) for item in (payload.get("Building") or [])}
-        civ_tech_sets[canonical] = {f"Tech:{tid}" for tid in tech_ids}
+
+        entity_keys: set[str] = set()
+        eco_keys: set[str] = set()
+        military_keys: set[str] = set()
         for tid in tech_ids:
+            key = f"Tech:{tid}"
+            entity_keys.add(key)
+            if _entity_domain("tech", tid) == "eco":
+                eco_keys.add(key)
+            else:
+                military_keys.add(key)
             tech_to_civs[tid].append(canonical)
         for uid in unit_ids:
+            key = f"Unit:{uid}"
+            entity_keys.add(key)
+            if _entity_domain("unit", uid) == "eco":
+                eco_keys.add(key)
+            else:
+                military_keys.add(key)
             unit_to_civs[uid].append(canonical)
         for bid in building_ids:
+            key = f"Building:{bid}"
+            entity_keys.add(key)
+            if _entity_domain("building", bid) == "eco":
+                eco_keys.add(key)
+            else:
+                military_keys.add(key)
             building_to_civs[bid].append(canonical)
+
+        civ_entity_sets[canonical] = entity_keys
+        civ_eco_sets[canonical] = eco_keys
+        civ_military_sets[canonical] = military_keys
 
     civ_names = sorted(set(civ_names))
     for mapping in (tech_to_civs, unit_to_civs, building_to_civs):
         for key in mapping:
             mapping[key] = sorted(set(mapping[key]))
 
-    tech_frequency: Counter[str] = Counter()
-    for tech_set in civ_tech_sets.values():
-        tech_frequency.update(tech_set)
+    entity_frequency: Counter[str] = Counter()
+    for entity_set in civ_entity_sets.values():
+        entity_frequency.update(entity_set)
 
-    tech_weights: dict[str, float] = {}
+    entity_weights: dict[str, float] = {}
     civ_count = max(len(civ_names), 1)
-    for tech_key, count in tech_frequency.items():
+    for entity_key, count in entity_frequency.items():
         share = count / civ_count
         if share >= 0.85:
-            tech_weights[tech_key] = COMMON_TECH_WEIGHT
+            entity_weights[entity_key] = COMMON_WEIGHT
         elif share <= 0.25:
-            tech_weights[tech_key] = RARE_TECH_WEIGHT
+            entity_weights[entity_key] = RARE_WEIGHT
         else:
-            tech_weights[tech_key] = MILITARY_TECH_WEIGHT
+            entity_weights[entity_key] = DEFAULT_WEIGHT
 
     _cache = {
+        "cacheVersion": CACHE_VERSION,
         "patchLabel": PATCH_LABEL,
         "source": TECHTREE_SOURCE,
         "civCount": len(civ_names),
         "civNames": civ_names,
         "entities": entities,
-        "civTechSets": civ_tech_sets,
+        "civEntitySets": civ_entity_sets,
+        "civEcoSets": civ_eco_sets,
+        "civMilitarySets": civ_military_sets,
         "techToCivs": dict(tech_to_civs),
         "unitToCivs": dict(unit_to_civs),
         "buildingToCivs": dict(building_to_civs),
-        "techWeights": tech_weights,
+        "entityWeights": entity_weights,
         "techCount": sum(1 for key in entities if key.startswith("Tech:")),
         "unitCount": sum(1 for key in entities if key.startswith("Unit:")),
         "buildingCount": sum(1 for key in entities if key.startswith("Building:")),
@@ -201,7 +315,7 @@ async def search_entities(query: str, *, limit: int = 20) -> list[dict[str, Any]
                     "totalCivs": data["civCount"],
                 }
             )
-    results.sort(key=lambda item: (item["civCount"], item["name"]))
+    results.sort(key=lambda item: (-(1 if item["type"] == "unit" and needle in _normalize_query(item["name"]) else 0), item["civCount"], item["name"]))
     return results[:limit]
 
 
@@ -268,33 +382,53 @@ def _weighted_jaccard(
     if not union:
         return 0.0
     intersection = left & right
-    inter_weight = sum(weights.get(key, MILITARY_TECH_WEIGHT) for key in intersection)
-    union_weight = sum(weights.get(key, MILITARY_TECH_WEIGHT) for key in union)
+    inter_weight = sum(weights.get(key, DEFAULT_WEIGHT) for key in intersection)
+    union_weight = sum(weights.get(key, DEFAULT_WEIGHT) for key in union)
     if union_weight <= 0:
         return 0.0
     return inter_weight / union_weight
 
 
-async def civ_similarity(civ_name: str, *, limit: int = 8) -> dict[str, Any]:
+def _sets_for_mode(data: dict[str, Any], mode: DnaMode) -> dict[str, set[str]]:
+    if mode == "eco":
+        return data["civEcoSets"]
+    if mode == "military":
+        return data["civMilitarySets"]
+    return data["civEntitySets"]
+
+
+async def civ_similarity(
+    civ_name: str,
+    *,
+    limit: int = 8,
+    mode: DnaMode = "overall",
+) -> dict[str, Any]:
     data = await _load_techtree()
     canonical = civ_display_name(civ_name) or civ_name
-    source_set = data["civTechSets"].get(canonical)
-    if not source_set:
-        return {"civ": canonical, "found": False, "neighbors": []}
-    weights = data["techWeights"]
+    sets = _sets_for_mode(data, mode)
+    source_set = sets.get(canonical)
+    if source_set is None:
+        return {"civ": canonical, "found": False, "neighbors": [], "mode": mode}
+    weights = data["entityWeights"]
     neighbors: list[dict[str, Any]] = []
     for other in data["civNames"]:
         if other == canonical:
             continue
-        score = _weighted_jaccard(source_set, data["civTechSets"][other], weights)
+        score = _weighted_jaccard(source_set, sets[other], weights)
         neighbors.append({"civ": other, "similarity": round(score * 100, 1)})
     neighbors.sort(key=lambda item: (-item["similarity"], item["civ"]))
+    labels = {
+        "overall": "Overall tech-tree access (Jaccard)",
+        "military": "Military DNA — units, military buildings & combat tech",
+        "eco": "Eco DNA — economy tech, farms, trade & civilian buildings",
+    }
     return {
         "civ": canonical,
         "found": True,
+        "mode": mode,
         "neighbors": neighbors[:limit],
         "patchLabel": data["patchLabel"],
-        "method": "weighted Jaccard over tech-tree access",
+        "method": labels.get(mode, labels["overall"]),
     }
 
 

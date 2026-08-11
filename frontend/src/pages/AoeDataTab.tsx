@@ -98,10 +98,10 @@ function OverviewPanel({
                 <img key={civ} src={civIconUrl(civ)} alt="" title={civ} />
               ))}
             </div>
-            <div>
-              <h3>{fact.title}</h3>
-              <p>{fact.body}</p>
-            </div>
+            <p>
+              <strong>{fact.title}</strong>
+              <span> — {fact.body}</span>
+            </p>
           </article>
         ))}
       </section>

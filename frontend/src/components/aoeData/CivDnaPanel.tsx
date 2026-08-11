@@ -3,12 +3,20 @@ import { civIconUrl } from '../../lib/civs'
 import {
   fetchAoeDataCivs,
   fetchAoeDataSimilarity,
+  type AoeDataDnaMode,
   type AoeDataSimilarityNeighbor,
 } from '../../lib/aoeData'
+
+const DNA_MODES: { id: AoeDataDnaMode; label: string }[] = [
+  { id: 'overall', label: 'Overall' },
+  { id: 'military', label: 'Military DNA' },
+  { id: 'eco', label: 'Eco DNA' },
+]
 
 export function CivDnaPanel() {
   const [civs, setCivs] = useState<string[]>([])
   const [selected, setSelected] = useState('Magyars')
+  const [mode, setMode] = useState<AoeDataDnaMode>('overall')
   const [neighbors, setNeighbors] = useState<AoeDataSimilarityNeighbor[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +47,7 @@ export function CivDnaPanel() {
     setError(null)
     void (async () => {
       try {
-        const data = await fetchAoeDataSimilarity(selected)
+        const data = await fetchAoeDataSimilarity(selected, mode)
         if (cancelled) return
         setNeighbors(data.neighbors)
       } catch (err) {
@@ -51,7 +59,14 @@ export function CivDnaPanel() {
     return () => {
       cancelled = true
     }
-  }, [selected])
+  }, [selected, mode])
+
+  const neighborTitle =
+    mode === 'military'
+      ? 'Closest military neighbors'
+      : mode === 'eco'
+        ? 'Closest eco neighbors'
+        : 'Closest structural neighbors'
 
   return (
     <div className="aoe-data-dna">
@@ -66,6 +81,18 @@ export function CivDnaPanel() {
             ))}
           </select>
         </label>
+        <div className="aoe-data-filter-row aoe-data-dna-modes" role="tablist" aria-label="DNA mode">
+          {DNA_MODES.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`chip${mode === item.id ? '' : ' muted'}`}
+              onClick={() => setMode(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
       {error ? <p className="set-replay-error">{error}</p> : null}
       {busy ? <p className="hint">Calculating neighbors…</p> : null}
@@ -76,7 +103,7 @@ export function CivDnaPanel() {
           <h4>{selected}</h4>
         </article>
         <section className="aoe-data-dna-neighbors panel">
-          <h4>Closest structural neighbors</h4>
+          <h4>{neighborTitle}</h4>
           {neighbors.length === 0 ? (
             <p className="hint">No neighbors loaded.</p>
           ) : (
@@ -97,9 +124,6 @@ export function CivDnaPanel() {
           )}
         </section>
       </div>
-      <p className="hint aoe-data-footnote">
-        Playstyle similarity (openings, observed meta) will be a separate layer in a later version.
-      </p>
     </div>
   )
 }
