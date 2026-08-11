@@ -1,5 +1,6 @@
 const GCU_RULES_URL = 'https://www.xbox.com/en-us/developers/rules'
 const LIQUIPEDIA_AOE_URL = 'https://liquipedia.net/ageofempires/Main_Page'
+const SOURCE_REPO_URL = 'https://github.com/Acro17AoE/aoe-draft-assistant'
 
 interface AppFooterProps {
   whiteMode?: boolean
@@ -29,12 +30,13 @@ export function AppFooter({ whiteMode = false, onToggleWhiteMode, onOpenFaq }: A
         ) : null}
       </div>
       <p className="app-footer-credits">
-        Created by <strong>Acro17</strong> (2025 – 2026)
-      </p>
-      <p className="app-footer-attribution">
-        Tournament and team data provided by{' '}
+        Created by <strong>Acro17</strong> (2026). Tournament and team data provided by{' '}
         <a href={LIQUIPEDIA_AOE_URL} target="_blank" rel="noopener noreferrer">
           Liquipedia
+        </a>
+        . Code:{' '}
+        <a href={SOURCE_REPO_URL} target="_blank" rel="noopener noreferrer">
+          GitHub
         </a>
         .
       </p>

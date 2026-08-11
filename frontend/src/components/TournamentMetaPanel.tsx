@@ -117,7 +117,6 @@ export function TournamentMetaPanel() {
   const [overview, setOverview] = useState<TournamentMetaOverview | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [attribution, setAttribution] = useState<TournamentMetaOverview['attribution'] | null>(null)
   const autoSynced = useRef<Set<string>>(new Set())
 
   const selected = events.find((event) => event.slug === selectedSlug) ?? null
@@ -125,14 +124,12 @@ export function TournamentMetaPanel() {
   const reloadEvents = useCallback(async () => {
     const response = await fetchMetaEvents()
     setEvents(response.events)
-    setAttribution(response.attribution)
     return response.events
   }, [])
 
   const reloadOverview = useCallback(async (slug: string) => {
     const data = await fetchMetaOverview(slug)
     setOverview(data)
-    if (data.attribution) setAttribution(data.attribution)
     return data
   }, [])
 
@@ -307,19 +304,6 @@ export function TournamentMetaPanel() {
             </div>
           </section>
         </>
-      ) : null}
-
-      {attribution ? (
-        <p className="hint tournament-meta-credit">
-          <a href={attribution.url} target="_blank" rel="noreferrer">
-            {attribution.text}
-          </a>
-          {' · '}
-          <a href={attribution.licenseUrl} target="_blank" rel="noreferrer">
-            {attribution.license}
-          </a>
-          . Ban/pick quality depends on `|civdraft=` / `|mapdraft=` on Liquipedia matches.
-        </p>
       ) : null}
     </div>
   )
