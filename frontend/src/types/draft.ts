@@ -94,6 +94,8 @@ export interface CivPriorityEntry {
   poolOrder?: number
   /** Mark as a key civ for draft recommendations (double-click in Presets). */
   keyCiv?: boolean
+  /** Mark as a nemesis civ — highlighted in prepared bans (double-click cycle in Presets). */
+  nemesisCiv?: boolean
   /** @deprecated Legacy import only — stripped on save */
   points?: number
   reason?: string

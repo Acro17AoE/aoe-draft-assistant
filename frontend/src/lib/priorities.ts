@@ -350,6 +350,18 @@ export function mapPresetHasKeyCivs(presets: MapPriorityPreset[], mapName: strin
   return normalizeTierEntries(preset.entries).some((entry) => entry.keyCiv)
 }
 
+export function collectNemesisCivIds(presets: MapPriorityPreset[], mapNames: string[]): Set<string> {
+  const ids = new Set<string>()
+  for (const mapName of mapNames) {
+    const preset = findPresetForMap(presets, mapName)
+    if (!preset) continue
+    for (const entry of normalizeTierEntries(preset.entries)) {
+      if (entry.nemesisCiv) ids.add(entry.civId)
+    }
+  }
+  return ids
+}
+
 export function isMapAdvancedPreset(presets: MapPriorityPreset[], mapName: string): boolean {
   const preset = findPresetForMap(presets, mapName)
   return Boolean(preset?.advancedMode && preset.pools?.length)

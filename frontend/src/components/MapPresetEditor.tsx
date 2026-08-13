@@ -38,6 +38,7 @@ function normalizeEntriesSnapshot(entries: CivPriorityEntry[]): string {
         tierRank: entry.tierRank ?? null,
         poolIds: entryPoolIds(entry),
         keyCiv: entry.keyCiv ?? false,
+        nemesisCiv: entry.nemesisCiv ?? false,
         reason: entry.reason ?? '',
       })),
   )
@@ -51,6 +52,7 @@ function serializePresetEntry(entry: CivPriorityEntry): CivPriorityEntry {
     tierRank: entry.tierRank,
     ...(poolIds.length ? { poolIds } : {}),
     ...(entry.keyCiv ? { keyCiv: true } : {}),
+    ...(entry.nemesisCiv ? { nemesisCiv: true } : {}),
     reason: entry.reason,
   }
 }

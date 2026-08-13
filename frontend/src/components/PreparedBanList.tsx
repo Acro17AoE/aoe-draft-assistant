@@ -1,13 +1,14 @@
-import { useMemo, type CSSProperties } from 'react'
+import { useMemo } from 'react'
 import { AOE2_CIVS, civIconUrl } from '../lib/civs'
 import { compareTierEntries } from '../lib/tiers'
-import type { CivPriorityEntry } from '../types/draft'
+import type { CivPriorityEntry, PriorityTier } from '../types/draft'
 
 interface PreparedBanListProps {
   preparedBanIds: string[]
   maxSlots: number
   ownBanSlots: number
   locked: boolean
+  nemesisCivIds?: Set<string>
   priorityEntries?: CivPriorityEntry[]
   onAdd: (civId: string) => void
   onRemove: (civId: string) => void
@@ -20,6 +21,7 @@ export function PreparedBanList({
   maxSlots,
   ownBanSlots,
   locked,
+  nemesisCivIds = new Set(),
   priorityEntries = [],
   onAdd,
   onRemove,
@@ -75,33 +77,23 @@ export function PreparedBanList({
         ) : null}
       </div>
 
-      <div
-        className="prepared-ban-slots"
-        style={{ '--prepared-ban-columns': Math.min(maxSlots, 14) } as CSSProperties}
-      >
-        {preparedBanIds.map((civId, index) => {
-          const priority = priorityByCiv.get(civId)
-          const tierClass = priority?.tier ? ` priority-${priority.tier.toLowerCase()}` : ''
-          return (
-            <button
-              key={`${civId}-${index}`}
-              type="button"
-              className={`prepared-ban-slot prepared-ban-slot-filled${tierClass}`}
-              onClick={() => onRemove(civId)}
-              disabled={locked}
-              title={locked ? civId : `Remove ${civId} from ban list`}
-            >
-              <em className="prepared-ban-rank">{index + 1}</em>
-              <img src={civIconUrl(civId)} alt="" loading="lazy" draggable={false} />
-              <span>{civId}</span>
-            </button>
-          )
-        })}
+      <div className="prepared-ban-slots">
+        {preparedBanIds.map((civId, index) => (
+          <PreparedBanTile
+            key={`${civId}-${index}`}
+            civId={civId}
+            rank={index + 1}
+            nemesis={nemesisCivIds.has(civId)}
+            tier={priorityByCiv.get(civId)?.tier}
+            disabled={locked}
+            onClick={() => onRemove(civId)}
+          />
+        ))}
         {!locked
           ? Array.from({ length: emptySlots }, (_, index) => (
               <div
                 key={`empty-${preparedBanIds.length + index}`}
-                className="prepared-ban-slot prepared-ban-slot-empty"
+                className="prepared-ban-slot-placeholder"
                 aria-hidden
               />
             ))
@@ -110,26 +102,64 @@ export function PreparedBanList({
 
       {!locked ? (
         <div className="prepared-ban-picker">
-          {pickerCivs.map((civId) => {
-            const priority = priorityByCiv.get(civId)
-            const tierClass = priority?.tier ? ` priority-${priority.tier.toLowerCase()}` : ''
-            const disabled = preparedBanIds.length >= maxSlots
-            return (
-              <button
-                key={civId}
-                type="button"
-                className={`prepared-ban-picker-civ${tierClass}${disabled ? ' prepared-ban-picker-civ-disabled' : ''}`}
-                disabled={disabled}
-                onClick={() => onAdd(civId)}
-                title={disabled ? 'Ban list full' : `Add ${civId}`}
-              >
-                <img src={civIconUrl(civId)} alt="" loading="lazy" draggable={false} />
-                <span>{civId}</span>
-              </button>
-            )
-          })}
+          {pickerCivs.map((civId) => (
+            <PreparedBanTile
+              key={civId}
+              civId={civId}
+              nemesis={nemesisCivIds.has(civId)}
+              tier={priorityByCiv.get(civId)?.tier}
+              disabled={preparedBanIds.length >= maxSlots}
+              onClick={() => onAdd(civId)}
+            />
+          ))}
         </div>
       ) : null}
     </section>
+  )
+}
+
+function PreparedBanTile({
+  civId,
+  rank,
+  nemesis,
+  tier,
+  disabled,
+  onClick,
+}: {
+  civId: string
+  rank?: number
+  nemesis: boolean
+  tier?: PriorityTier
+  disabled?: boolean
+  onClick: () => void
+}) {
+  const priorityClass = tier ? ` priority-${tier.toLowerCase()}` : ''
+  const nemesisClass = nemesis ? ' prepared-ban-tile-nemesis' : ''
+
+  return (
+    <button
+      type="button"
+      className={`prepared-ban-tile draft-card civ-card civ-card-tile civ-card-tile-sm${priorityClass}${nemesisClass}`}
+      disabled={disabled}
+      onClick={onClick}
+      title={
+        disabled && rank
+          ? civId
+          : nemesis
+            ? `Nemesis: ${civId}`
+            : rank
+              ? `Remove ${civId} from ban list`
+              : `Add ${civId}`
+      }
+    >
+      {rank ? <em className="rank-tag">{rank}</em> : null}
+      {nemesis ? (
+        <em className="prepared-ban-nemesis-tag" aria-label="Nemesis civ">
+          ☠
+        </em>
+      ) : null}
+      <img src={civIconUrl(civId)} alt="" loading="lazy" draggable={false} />
+      <span>{civId}</span>
+    </button>
   )
 }

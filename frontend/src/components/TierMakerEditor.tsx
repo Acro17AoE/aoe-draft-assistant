@@ -3,9 +3,11 @@ import { AOE2_CIVS, civIconUrl } from '../lib/civs'
 import {
   PRIORITY_TIERS,
   civIdsForTier,
+  civMarker,
+  cycleCivMarker,
   isPriorityTier,
   moveCivInTierList,
-  toggleKeyCiv,
+  type CivMarker,
 } from '../lib/tiers'
 import type { CivPriorityEntry, PriorityTier } from '../types/draft'
 
@@ -54,17 +56,20 @@ export function TierMakerEditor({
     return grouped
   }, [entries])
 
+  const markerByCiv = useMemo(() => {
+    const map = new Map<string, CivMarker>()
+    for (const entry of entries) {
+      map.set(entry.civId, civMarker(entry))
+    }
+    return map
+  }, [entries])
+
   const moveCiv = (civId: string, tier: PriorityTier | null, insertIndex?: number) => {
     onChange(moveCivInTierList(entries, civId, tier, insertIndex))
   }
 
-  const keyCivIds = useMemo(
-    () => new Set(entries.filter((entry) => entry.keyCiv).map((entry) => entry.civId)),
-    [entries],
-  )
-
-  const handleToggleKeyCiv = (civId: string) => {
-    onChange(toggleKeyCiv(entries, civId))
+  const handleCycleCivMarker = (civId: string) => {
+    onChange(cycleCivMarker(entries, civId))
   }
 
   const handleDrop = (tier: PriorityTier | null, insertIndex: number | undefined, event: DragEvent) => {
@@ -81,14 +86,25 @@ export function TierMakerEditor({
       <div className="tier-maker-header">
         <p className="hint tier-maker-hint">
           Within each tier, left = strongest preference, right = weakest.
-          <span
-            className="tier-maker-key-civ-hint"
-            title="Double Click Civ Icon to declare Key Civ"
-          >
-            <span className="tier-maker-key-civ-star" aria-hidden>
-              ★
+          <span className="tier-maker-civ-legend">
+            <span
+              className="tier-maker-key-civ-hint"
+              title="Double click civ icon: none → key → nemesis"
+            >
+              <span className="tier-maker-key-civ-star" aria-hidden>
+                ★
+              </span>
+              <span className="tier-maker-key-civ-label">= Key civ</span>
             </span>
-            <span className="tier-maker-key-civ-label">= Key civ</span>
+            <span
+              className="tier-maker-key-civ-hint"
+              title="Double click civ icon: none → key → nemesis"
+            >
+              <span className="tier-maker-nemesis-skull" aria-hidden>
+                ☠
+              </span>
+              <span className="tier-maker-key-civ-label">= Nemesis civ</span>
+            </span>
           </span>
         </p>
         {onAdvancedToggle ? (
@@ -108,8 +124,8 @@ export function TierMakerEditor({
           key={tier}
           tier={tier}
           civIds={civsByTier.get(tier) ?? []}
-          keyCivIds={keyCivIds}
-          onToggleKeyCiv={handleToggleKeyCiv}
+          markerByCiv={markerByCiv}
+          onCycleCivMarker={handleCycleCivMarker}
           dragOver={dragOverTier === tier}
           dragInsertIndex={dragOverTier === tier ? dragInsertIndex : null}
           onDragOver={(index) => {
@@ -127,8 +143,8 @@ export function TierMakerEditor({
         tier={null}
         label="Unranked"
         civIds={civsByTier.get('unranked') ?? []}
-        keyCivIds={keyCivIds}
-        onToggleKeyCiv={handleToggleKeyCiv}
+        markerByCiv={markerByCiv}
+        onCycleCivMarker={handleCycleCivMarker}
         dragOver={dragOverTier === 'unranked'}
         dragInsertIndex={dragOverTier === 'unranked' ? dragInsertIndex : null}
         onDragOver={() => {
@@ -152,8 +168,8 @@ function TierRow({
   tier,
   label,
   civIds,
-  keyCivIds,
-  onToggleKeyCiv,
+  markerByCiv,
+  onCycleCivMarker,
   dragOver,
   dragInsertIndex,
   onDragOver,
@@ -164,8 +180,8 @@ function TierRow({
   tier: PriorityTier | null
   label?: string
   civIds: string[]
-  keyCivIds: Set<string>
-  onToggleKeyCiv: (civId: string) => void
+  markerByCiv: Map<string, CivMarker>
+  onCycleCivMarker: (civId: string) => void
   dragOver: boolean
   dragInsertIndex: number | null
   onDragOver: (insertIndex: number | null) => void
@@ -193,8 +209,8 @@ function TierRow({
             {dragInsertIndex === index ? <span className="tier-maker-insert-marker" aria-hidden /> : null}
             <TierCivChip
               civId={civId}
-              isKeyCiv={keyCivIds.has(civId)}
-              onToggleKeyCiv={() => onToggleKeyCiv(civId)}
+              marker={markerByCiv.get(civId) ?? 'none'}
+              onCycleCivMarker={() => onCycleCivMarker(civId)}
               onDragOver={() => onDragOver(index)}
               onDrop={(event) => {
                 event.stopPropagation()
@@ -217,20 +233,23 @@ function TierRow({
 
 function TierCivChip({
   civId,
-  isKeyCiv,
-  onToggleKeyCiv,
+  marker,
+  onCycleCivMarker,
   onDragOver,
   onDrop,
 }: {
   civId: string
-  isKeyCiv: boolean
-  onToggleKeyCiv: () => void
+  marker: CivMarker
+  onCycleCivMarker: () => void
   onDragOver: () => void
   onDrop: (event: DragEvent) => void
 }) {
+  const markerClass =
+    marker === 'key' ? ' tier-maker-civ-key' : marker === 'nemesis' ? ' tier-maker-civ-nemesis' : ''
+
   return (
     <div
-      className={`tier-maker-civ${isKeyCiv ? ' tier-maker-civ-key' : ''}`}
+      className={`tier-maker-civ${markerClass}`}
       draggable
       onDragStart={(event) => {
         const payload: DragPayload = { civId }
@@ -240,7 +259,7 @@ function TierCivChip({
       onDoubleClick={(event) => {
         event.preventDefault()
         event.stopPropagation()
-        onToggleKeyCiv()
+        onCycleCivMarker()
       }}
       onDragOver={(event) => {
         event.preventDefault()
@@ -253,9 +272,14 @@ function TierCivChip({
       role="button"
       tabIndex={0}
     >
-      {isKeyCiv ? (
+      {marker === 'key' ? (
         <span className="tier-maker-key-civ-badge" aria-label="Key civ">
           ★
+        </span>
+      ) : null}
+      {marker === 'nemesis' ? (
+        <span className="tier-maker-nemesis-badge" aria-label="Nemesis civ">
+          ☠
         </span>
       ) : null}
       <img src={civIconUrl(civId)} alt="" loading="lazy" draggable={false} />

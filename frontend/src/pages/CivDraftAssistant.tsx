@@ -13,7 +13,7 @@ import { countOwnBanSlots, isBanPhaseComplete } from '../lib/draftBans'
 import { mapNamesMatch, resolveMapDisplaysFromPicks, uniqueMapNames } from '../lib/maps'
 import { getSaturatedMaps } from '../lib/civMapAssignments'
 import { readReadyMapSession, useMapSessionSync, getSessionMapPicks } from '../lib/mapSession'
-import { getTopPicksPerMap, mergePriorityEntriesForMaps } from '../lib/priorities'
+import { getTopPicksPerMap, mergePriorityEntriesForMaps, collectNemesisCivIds } from '../lib/priorities'
 import { CLOUD_HYDRATED, cloudHydratedIncludesKey, DOC_KEYS, hasPendingCloudSave, isWorkspaceHydrating, LOCAL_STORAGE_KEYS } from '../lib/cloudStorage'
 import { loadCivSession, saveCivSession } from '../lib/presets'
 import { playersPerSide } from '../lib/results'
@@ -217,6 +217,11 @@ export function CivDraftAssistant({
     [presets, presetMapNames, settings],
   )
 
+  const nemesisCivIds = useMemo(
+    () => collectNemesisCivIds(presets, presetMapNames),
+    [presets, presetMapNames],
+  )
+
   const {
     preparedBanIds,
     preparedBansLocked,
@@ -268,6 +273,7 @@ export function CivDraftAssistant({
           maxSlots={preparedBanCapacity}
           ownBanSlots={ownBanSlots}
           locked={preparedBansLocked}
+          nemesisCivIds={nemesisCivIds}
           priorityEntries={prepPriorityMerge.entries}
           onAdd={addPreparedBan}
           onRemove={removePreparedBan}

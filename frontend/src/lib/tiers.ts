@@ -94,6 +94,7 @@ export function normalizeTierEntries(entries: CivPriorityEntry[]): CivPriorityEn
       poolRank: entry.poolRank,
       reason: entry.reason,
       keyCiv: entry.keyCiv || undefined,
+      nemesisCiv: entry.nemesisCiv || undefined,
     }
   })
 
@@ -120,6 +121,7 @@ export function normalizeTierEntries(entries: CivPriorityEntry[]): CivPriorityEn
         poolRank: entry.poolRank,
         reason: entry.reason,
         keyCiv: entry.keyCiv || undefined,
+      nemesisCiv: entry.nemesisCiv || undefined,
       })
     }
   }
@@ -170,6 +172,7 @@ export function moveCivInTierList(
     poolId: existing?.poolId,
     poolRank: existing?.poolRank,
     keyCiv: existing?.keyCiv,
+    nemesisCiv: existing?.nemesisCiv,
   })
 
   const ranked = tierSiblings.map((entry, rank) => ({ ...entry, tierRank: rank }))
@@ -178,13 +181,31 @@ export function moveCivInTierList(
   return compactTierRanks([...others, ...ranked])
 }
 
-export function toggleKeyCiv(entries: CivPriorityEntry[], civId: string): CivPriorityEntry[] {
+export type CivMarker = 'none' | 'key' | 'nemesis'
+
+export function civMarker(entry: Pick<CivPriorityEntry, 'keyCiv' | 'nemesisCiv'>): CivMarker {
+  if (entry.nemesisCiv) return 'nemesis'
+  if (entry.keyCiv) return 'key'
+  return 'none'
+}
+
+export function cycleCivMarker(entries: CivPriorityEntry[], civId: string): CivPriorityEntry[] {
   return entries.map((entry) => {
     if (entry.civId !== civId) return entry
-    if (entry.keyCiv) {
-      const { keyCiv: _keyCiv, ...rest } = entry
-      return rest
+    const current = civMarker(entry)
+    if (current === 'none') {
+      return { ...entry, keyCiv: true }
     }
-    return { ...entry, keyCiv: true }
+    if (current === 'key') {
+      const { keyCiv: _keyCiv, ...rest } = entry
+      return { ...rest, nemesisCiv: true }
+    }
+    const { keyCiv: _keyCiv, nemesisCiv: _nemesisCiv, ...rest } = entry
+    return rest
   })
+}
+
+/** @deprecated Use cycleCivMarker */
+export function toggleKeyCiv(entries: CivPriorityEntry[], civId: string): CivPriorityEntry[] {
+  return cycleCivMarker(entries, civId)
 }
