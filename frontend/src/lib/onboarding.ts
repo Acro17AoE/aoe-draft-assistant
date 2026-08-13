@@ -40,7 +40,14 @@ export const TOUR_STEPS: TourStep[] = [
     tab: 'presets',
     target: 'presets-editor',
     title: 'TierMaker editor',
-    body: 'Pick a map, then drag civs into S / A / B / C / D / F. Order within a tier matters (left = stronger). Optional Advanced mode adds pools like Halb SO, Paladin, and Flank.',
+    body: 'Pick a map, then drag civs into S / A / B / C / D / F. Order within a tier matters (left = stronger). Optional Advanced mode adds pools (Halb SO, Paladin, Flank) and a Max picks limit per pool.',
+  },
+  {
+    id: 'presets-markers',
+    tab: 'presets',
+    target: 'presets-tier-markers',
+    title: 'Key & Nemesis civs',
+    body: 'Double-click a civ icon to cycle: none → ★ Key → ☠ Nemesis → none. Key civs surface on the live Civ Draft board; Nemesis civs are highlighted in Prepared bans. See the legend next to the tier hint.',
   },
   {
     id: 'nav-map',
@@ -61,14 +68,21 @@ export const TOUR_STEPS: TourStep[] = [
     tab: 'civ',
     target: 'nav-civ',
     title: 'Civ Draft',
-    body: 'Before Go, review Draft Preview. Then the live board: tiers, pressure, Top 3 picks, and drag-and-drop map assignment.',
+    body: 'Review Draft Preview, plan Prepared bans, then Go for the live board: Top 3, Key civs, pool pressure, and drag-and-drop map assignment.',
   },
   {
     id: 'civ-setup',
     tab: 'civ',
     target: 'civ-setup',
     title: 'Paste & Go',
-    body: 'Paste the aoe2cm civ draft link and click Go. Map Draft (with your team name) must be set up first.',
+    body: 'Paste the aoe2cm civ draft link. Map Draft (with your team name) must be set up first. Once the link is valid, Prepared bans appears below so you can plan ban order before Go.',
+  },
+  {
+    id: 'prepared-bans',
+    tab: 'civ',
+    target: 'prepared-bans',
+    title: 'Prepared bans',
+    body: 'Plan up to 2× your own ban slots. Click civs in priority order, then Set to lock. Nemesis civs from Presets show in red with ☠. Change reopens the list; the panel hides when bans are done.',
   },
   {
     id: 'nav-results',
@@ -95,7 +109,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: 'done',
     tab: 'presets',
     title: 'You’re ready',
-    body: 'Typical flow: Presets → Map Draft → Civ Draft. Start again anytime with the New Here? button in the top bar.',
+    body: 'Typical flow: Presets (tiers, pools, Key/Nemesis) → Map Draft → Civ Draft (Prepared bans → Go). Start again anytime with New Here? in the top bar.',
   },
 ]
 

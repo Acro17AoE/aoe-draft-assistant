@@ -86,7 +86,7 @@ export function TierMakerEditor({
       <div className="tier-maker-header">
         <p className="hint tier-maker-hint">
           Within each tier, left = strongest preference, right = weakest.
-          <span className="tier-maker-civ-legend">
+          <span className="tier-maker-civ-legend" data-tour="presets-tier-markers">
             <span
               className="tier-maker-key-civ-hint"
               title="Double click civ icon: none → key → nemesis"
