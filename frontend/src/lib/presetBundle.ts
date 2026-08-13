@@ -107,6 +107,10 @@ function normalizeImportedPreset(raw: unknown): MapPriorityPreset {
           .map((pool) => ({
             id: pool.id.trim(),
             name: typeof pool.name === 'string' ? pool.name.trim() : pool.id.trim(),
+            maxPicks:
+              typeof pool.maxPicks === 'number' && pool.maxPicks > 0
+                ? Math.floor(pool.maxPicks)
+                : undefined,
           }))
           .filter((pool) => pool.id && pool.name)
       : undefined,

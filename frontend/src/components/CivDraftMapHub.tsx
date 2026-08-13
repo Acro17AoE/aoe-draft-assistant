@@ -5,6 +5,7 @@ import {
   getMapPoolPressure,
   getMapTierPressure,
   isMapAdvancedPreset,
+  presetsHaveKeyCivs,
   type MapPoolPressureEntry,
   type MapTierPressure,
   type MapTopPickGroup,
@@ -44,6 +45,7 @@ interface CivDraftMapHubProps {
 interface MapColumnData {
   map: MapPickDisplay
   picks: CivBoardItem[]
+  keyCivs: CivBoardItem[]
   tierPressure: MapTierPressure
   poolPressure: MapPoolPressureEntry[]
   advancedMode: boolean
@@ -130,24 +132,56 @@ export function CivDraftMapHub({
     [topPicksPerMap],
   )
 
+  const showKeyCivColumn = useMemo(
+    () => presetsHaveKeyCivs(presets, mapNames),
+    [presets, mapNames],
+  )
+
+  const uniqueMapCount = useMemo(() => {
+    const unique = new Set(maps.map((map) => normalizeMapName(map.name)))
+    return unique.size
+  }, [maps])
+  const showSingleMapLayout = uniqueMapCount === 1
+
+  const poolPressureContext = useMemo(
+    () =>
+      showSingleMapLayout
+        ? undefined
+        : {
+            mode: 'map-assigned' as const,
+            ownPicks: picks,
+            assignments,
+            mapNames,
+          },
+    [showSingleMapLayout, picks, assignments, mapNames],
+  )
+
   const columns: MapColumnData[] = useMemo(
     () =>
       maps.map((map) => {
         const group = topByMapId.get(map.id)
         const saturated = saturatedMaps.includes(map.id)
+        const mapPoolContext = poolPressureContext
+          ? { ...poolPressureContext, mapId: map.id }
+          : undefined
         return {
           map,
           picks: group?.picks ?? [],
+          keyCivs: group?.keyCivs ?? [],
           tierPressure:
             group?.tierPressure ?? getMapTierPressure(presets, map.name, allItems),
-          poolPressure:
-            group?.poolPressure ?? getMapPoolPressure(presets, map.name, allItems),
+          poolPressure: getMapPoolPressure(
+            presets,
+            map.name,
+            allItems,
+            mapPoolContext,
+          ),
           advancedMode:
             group?.advancedMode ?? isMapAdvancedPreset(presets, map.name),
           saturated,
         }
       }),
-    [maps, topByMapId, saturatedMaps, presets, allItems],
+    [maps, topByMapId, saturatedMaps, presets, allItems, poolPressureContext],
   )
 
   const unassignedPicks = picksInFlex(picks, assignments, mapNames)
@@ -174,11 +208,6 @@ export function CivDraftMapHub({
     onAssign(payload.civId, resolvedTarget)
   }
 
-  const uniqueMapCount = useMemo(() => {
-    const unique = new Set(columns.map((column) => normalizeMapName(column.map.name)))
-    return unique.size
-  }, [columns])
-  const showSingleMapLayout = uniqueMapCount === 1
   const singleMapColumn = showSingleMapLayout ? columns[0]! : null
   // One unique map: AVAILABLE ranking is enough; Top 3 per column is redundant.
   const showTopPicks = showTopPicksSection && !showSingleMapLayout
@@ -191,7 +220,7 @@ export function CivDraftMapHub({
         fullMapMode,
         column.saturated,
         draftFinished,
-        column.picks.length > 0,
+        column.picks.length > 0 || (showKeyCivColumn && column.keyCivs.length > 0),
       )
       return mode !== 'hidden'
     })
@@ -220,6 +249,8 @@ export function CivDraftMapHub({
               advancedMode={singleMapColumn.advancedMode}
               tierPressure={singleMapColumn.tierPressure}
               poolPressure={singleMapColumn.poolPressure}
+              multiMapMode={false}
+              civsPerMap={civsPerMap}
             />
           </div>
         ) : null}
@@ -340,19 +371,33 @@ export function CivDraftMapHub({
                     advancedMode={column.advancedMode}
                     tierPressure={column.tierPressure}
                     poolPressure={column.poolPressure}
+                    multiMapMode
+                    civsPerMap={civsPerMap}
                   />
                 ) : null}
 
                 {showTopPicks && topPickMode !== 'hidden' ? (
                   <div
-                    className={`civ-draft-map-section civ-draft-map-top-picks${topPickMode === 'dimmed' ? ' civ-draft-map-top-picks-dimmed' : ''}`}
+                    className={`civ-draft-map-section civ-draft-map-recommendations${topPickMode === 'dimmed' ? ' civ-draft-map-top-picks-dimmed' : ''}${showKeyCivColumn ? ' civ-draft-map-recommendations-split' : ''}`}
                   >
-                    <span className="civ-draft-map-section-label">Top 3 picks</span>
-                    <div className="civ-draft-top-picks-stack">
-                      {column.picks.map((item, index) => (
-                        <HubPickCard key={item.id} item={item} rank={index + 1} />
-                      ))}
+                    <div className="civ-draft-map-top-picks">
+                      <span className="civ-draft-map-section-label">Top 3 picks</span>
+                      <div className="civ-draft-top-picks-stack">
+                        {column.picks.map((item, index) => (
+                          <HubPickCard key={item.id} item={item} rank={index + 1} />
+                        ))}
+                      </div>
                     </div>
+                    {showKeyCivColumn ? (
+                      <div className="civ-draft-map-key-civs">
+                        <span className="civ-draft-map-section-label">Key civs</span>
+                        <div className="civ-draft-top-picks-stack">
+                          {column.keyCivs.map((item) => (
+                            <HubPickCard key={item.id} item={item} showKeyBadge />
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
               </div>
@@ -391,12 +436,41 @@ function MapPressureHint({
   advancedMode,
   tierPressure,
   poolPressure,
+  multiMapMode = false,
+  civsPerMap = 1,
 }: {
   advancedMode: boolean
   tierPressure: MapTierPressure
   poolPressure: MapPoolPressureEntry[]
+  multiMapMode?: boolean
+  civsPerMap?: number
 }) {
   if (advancedMode && poolPressure.length > 0) {
+    if (multiMapMode) {
+      return (
+        <div className="civ-draft-pool-assigned">
+          <span
+            className="civ-draft-map-section-label civ-draft-pool-pressure-heading"
+            title="Your picks from each pool assigned to this map"
+          >
+            Already picked
+          </span>
+          <div
+            className="civ-draft-pool-assigned-grid"
+            style={{ '--pool-columns': poolPressure.length } as CSSProperties}
+          >
+            {poolPressure.map((pool) => (
+              <PoolAssignedMeter
+                key={pool.id}
+                pool={pool}
+                slotCapacity={Math.max(pool.maxPicks ?? civsPerMap, 1)}
+              />
+            ))}
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="civ-draft-pool-pressure">
         <PoolPressureSection
@@ -417,6 +491,42 @@ function MapPressureHint({
   }
 
   return <MapTierPressureHint pressure={tierPressure} />
+}
+
+function PoolAssignedMeter({
+  pool,
+  slotCapacity,
+}: {
+  pool: MapPoolPressureEntry
+  slotCapacity: number
+}) {
+  const fillRatio = Math.min(1, pool.ownPicked / slotCapacity)
+  const atCap = pool.maxPicks != null && pool.maxPicks > 0 && pool.ownPicked >= pool.maxPicks
+
+  return (
+    <div
+      className={`civ-draft-pool-assigned-cell${atCap ? ' civ-draft-pool-assigned-full' : ''}`}
+      title={`${pool.name}: ${pool.ownPicked}${pool.maxPicks ? ` / ${pool.maxPicks}` : ''} on this map`}
+    >
+      <span className="civ-draft-pool-assigned-name">{pool.name}</span>
+      <div className="civ-draft-pool-assigned-track" aria-hidden>
+        <span
+          className="civ-draft-pool-assigned-fill"
+          style={{ height: `${Math.round(fillRatio * 100)}%` }}
+        />
+      </div>
+      <img
+        src={poolIconUrl(pool.name)}
+        alt=""
+        className="civ-draft-pool-assigned-icon"
+        draggable={false}
+      />
+      <span className="civ-draft-pool-assigned-count">
+        {pool.ownPicked}
+        {pool.maxPicks ? `/${pool.maxPicks}` : ''}
+      </span>
+    </div>
+  )
 }
 
 function PoolPressureSection({
@@ -496,7 +606,15 @@ function MapTierPressureHint({ pressure }: { pressure: MapTierPressure }) {
   )
 }
 
-function HubPickCard({ item, rank }: { item: CivBoardItem; rank: number }) {
+function HubPickCard({
+  item,
+  rank,
+  showKeyBadge = false,
+}: {
+  item: CivBoardItem
+  rank?: number
+  showKeyBadge?: boolean
+}) {
   const displayTier = item.priorityTier
   const priorityClass =
     item.status === 'available' && displayTier ? ` priority-${displayTier.toLowerCase()}` : ''
@@ -507,7 +625,12 @@ function HubPickCard({ item, rank }: { item: CivBoardItem; rank: number }) {
       className={`draft-card civ-card civ-card-tile civ-card-tile-sm status-${item.status}${priorityClass}${showMapTooltip ? ' has-map-tooltip' : ''} top-recommendation`}
       aria-label={showMapTooltip ? item.priorityReason : undefined}
     >
-      <em className="rank-tag">#{rank}</em>
+      {rank ? <em className="rank-tag">#{rank}</em> : null}
+      {showKeyBadge ? (
+        <em className="key-civ-tag" aria-label="Key civ">
+          ★
+        </em>
+      ) : null}
       <img src={item.imageUrl} alt={item.name} loading="lazy" />
       <span>{item.name}</span>
       {displayTier ? <em className="tier-tag">{displayTier}</em> : null}

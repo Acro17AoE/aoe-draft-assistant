@@ -194,6 +194,10 @@ export function normalizePresetPools(pools: CivPoolDefinition[] | undefined): Ci
     .map((pool) => ({
       id: pool.id.trim(),
       name: pool.name.trim(),
+      maxPicks:
+        typeof pool.maxPicks === 'number' && pool.maxPicks > 0
+          ? Math.floor(pool.maxPicks)
+          : undefined,
     }))
     .filter((pool) => {
       if (!pool.id || !pool.name || seen.has(pool.id)) return false

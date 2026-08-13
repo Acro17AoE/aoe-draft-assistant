@@ -5,6 +5,7 @@ import {
   civIdsForTier,
   isPriorityTier,
   moveCivInTierList,
+  toggleKeyCiv,
 } from '../lib/tiers'
 import type { CivPriorityEntry, PriorityTier } from '../types/draft'
 
@@ -57,6 +58,15 @@ export function TierMakerEditor({
     onChange(moveCivInTierList(entries, civId, tier, insertIndex))
   }
 
+  const keyCivIds = useMemo(
+    () => new Set(entries.filter((entry) => entry.keyCiv).map((entry) => entry.civId)),
+    [entries],
+  )
+
+  const handleToggleKeyCiv = (civId: string) => {
+    onChange(toggleKeyCiv(entries, civId))
+  }
+
   const handleDrop = (tier: PriorityTier | null, insertIndex: number | undefined, event: DragEvent) => {
     event.preventDefault()
     setDragOverTier(null)
@@ -71,6 +81,14 @@ export function TierMakerEditor({
       <div className="tier-maker-header">
         <p className="hint tier-maker-hint">
           Within each tier, left = strongest preference, right = weakest.
+          <span
+            className="tier-maker-key-civ-hint"
+            title="Double Click Civ Icon to declare Key Civ"
+          >
+            <span className="tier-maker-key-civ-star" aria-hidden>
+              ★
+            </span>
+          </span>
         </p>
         {onAdvancedToggle ? (
           <button
@@ -89,6 +107,8 @@ export function TierMakerEditor({
           key={tier}
           tier={tier}
           civIds={civsByTier.get(tier) ?? []}
+          keyCivIds={keyCivIds}
+          onToggleKeyCiv={handleToggleKeyCiv}
           dragOver={dragOverTier === tier}
           dragInsertIndex={dragOverTier === tier ? dragInsertIndex : null}
           onDragOver={(index) => {
@@ -106,6 +126,8 @@ export function TierMakerEditor({
         tier={null}
         label="Unranked"
         civIds={civsByTier.get('unranked') ?? []}
+        keyCivIds={keyCivIds}
+        onToggleKeyCiv={handleToggleKeyCiv}
         dragOver={dragOverTier === 'unranked'}
         dragInsertIndex={dragOverTier === 'unranked' ? dragInsertIndex : null}
         onDragOver={() => {
@@ -129,6 +151,8 @@ function TierRow({
   tier,
   label,
   civIds,
+  keyCivIds,
+  onToggleKeyCiv,
   dragOver,
   dragInsertIndex,
   onDragOver,
@@ -139,6 +163,8 @@ function TierRow({
   tier: PriorityTier | null
   label?: string
   civIds: string[]
+  keyCivIds: Set<string>
+  onToggleKeyCiv: (civId: string) => void
   dragOver: boolean
   dragInsertIndex: number | null
   onDragOver: (insertIndex: number | null) => void
@@ -166,6 +192,8 @@ function TierRow({
             {dragInsertIndex === index ? <span className="tier-maker-insert-marker" aria-hidden /> : null}
             <TierCivChip
               civId={civId}
+              isKeyCiv={keyCivIds.has(civId)}
+              onToggleKeyCiv={() => onToggleKeyCiv(civId)}
               onDragOver={() => onDragOver(index)}
               onDrop={(event) => {
                 event.stopPropagation()
@@ -188,21 +216,30 @@ function TierRow({
 
 function TierCivChip({
   civId,
+  isKeyCiv,
+  onToggleKeyCiv,
   onDragOver,
   onDrop,
 }: {
   civId: string
+  isKeyCiv: boolean
+  onToggleKeyCiv: () => void
   onDragOver: () => void
   onDrop: (event: DragEvent) => void
 }) {
   return (
     <div
-      className="tier-maker-civ"
+      className={`tier-maker-civ${isKeyCiv ? ' tier-maker-civ-key' : ''}`}
       draggable
       onDragStart={(event) => {
         const payload: DragPayload = { civId }
         event.dataTransfer.setData(DRAG_MIME, JSON.stringify(payload))
         event.dataTransfer.effectAllowed = 'move'
+      }}
+      onDoubleClick={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        onToggleKeyCiv()
       }}
       onDragOver={(event) => {
         event.preventDefault()
@@ -215,6 +252,11 @@ function TierCivChip({
       role="button"
       tabIndex={0}
     >
+      {isKeyCiv ? (
+        <span className="tier-maker-key-civ-badge" aria-label="Key civ">
+          ★
+        </span>
+      ) : null}
       <img src={civIconUrl(civId)} alt="" loading="lazy" draggable={false} />
       <span>{civId}</span>
     </div>

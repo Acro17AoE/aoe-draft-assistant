@@ -81,6 +81,20 @@ export function CivPoolEditor({
     onPoolsChange(pools.map((pool) => (pool.id === poolId ? { ...pool, name } : pool)))
   }
 
+  const setPoolMaxPicks = (poolId: string, raw: string) => {
+    const parsed = Number.parseInt(raw, 10)
+    onPoolsChange(
+      pools.map((pool) => {
+        if (pool.id !== poolId) return pool
+        if (!raw.trim() || !Number.isFinite(parsed) || parsed <= 0) {
+          const { maxPicks: _maxPicks, ...rest } = pool
+          return rest
+        }
+        return { ...pool, maxPicks: parsed }
+      }),
+    )
+  }
+
   const removePool = (poolId: string) => {
     onEntriesChange(entries.map((entry) => removeCivFromPool([entry], entry.civId, poolId)[0]!))
     onPoolsChange(pools.filter((pool) => pool.id !== poolId))
@@ -113,6 +127,7 @@ export function CivPoolEditor({
           civIds={civsByPool.get(pool.id) ?? []}
           dragOver={dragOverPool === pool.id}
           onRename={(name) => renamePool(pool.id, name)}
+          onMaxPicksChange={(value) => setPoolMaxPicks(pool.id, value)}
           onRemove={() => removePool(pool.id)}
           onRemoveCiv={(civId) => removeFromPool(civId, pool.id)}
           onDragOver={() => setDragOverPool(pool.id)}
@@ -143,6 +158,7 @@ function PoolRow({
   civIds,
   dragOver,
   onRename,
+  onMaxPicksChange,
   onRemove,
   onRemoveCiv,
   onDragOver,
@@ -156,6 +172,7 @@ function PoolRow({
   civIds: string[]
   dragOver: boolean
   onRename?: (name: string) => void
+  onMaxPicksChange?: (value: string) => void
   onRemove?: () => void
   onRemoveCiv?: (civId: string) => void
   onDragOver: () => void
@@ -180,6 +197,20 @@ function PoolRow({
               aria-label="Pool name"
               size={Math.max(pool.name.length, 4)}
             />
+            {onMaxPicksChange ? (
+              <label className="tier-maker-pool-max-label">
+                Max
+                <input
+                  type="number"
+                  min={1}
+                  className="tier-maker-pool-max-input"
+                  value={pool.maxPicks ?? ''}
+                  placeholder="∞"
+                  onChange={(event) => onMaxPicksChange(event.target.value)}
+                  aria-label={`Max picks for ${pool.name}`}
+                />
+              </label>
+            ) : null}
             <button
               type="button"
               className="delete-x tier-maker-pool-remove"

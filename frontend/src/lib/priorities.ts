@@ -7,6 +7,8 @@ import type {
   PriorityTier,
 } from '../types/draft'
 import type { CivDraftSettings } from '../types/settings'
+import type { MapAssignmentTarget } from './civMapAssignments'
+import { picksForMap } from './civMapAssignments'
 import { reasonPartsToPlainText } from './priorityReason'
 import { mapNamesMatch } from './maps'
 import { applyTierOverrideRules } from './tierAggregation'
@@ -207,6 +209,7 @@ export interface MapPoolPressureEntry {
   gone: number
   total: number
   ownPicked: number
+  maxPicks?: number
 }
 
 export interface MapTopPickGroup {
@@ -214,9 +217,19 @@ export interface MapTopPickGroup {
   mapName: string
   imageUrl?: string
   picks: CivBoardItem[]
+  keyCivs: CivBoardItem[]
   tierPressure: MapTierPressure
   poolPressure: MapPoolPressureEntry[]
   advancedMode: boolean
+}
+
+export interface MapPoolPressureContext {
+  mapId?: string
+  ownPicks?: CivBoardItem[]
+  assignments?: Record<string, MapAssignmentTarget>
+  mapNames?: string[]
+  /** draft-wide counts (1-map) vs per-map assignment counts (multi-map). */
+  mode?: 'draft-wide' | 'map-assigned'
 }
 
 interface CivMapRankScore {
@@ -321,9 +334,19 @@ export function getMapPoolPressure(
   presets: MapPriorityPreset[],
   mapName: string,
   allItems: CivBoardItem[],
+  context?: MapPoolPressureContext,
 ): MapPoolPressureEntry[] {
   const preset = findPresetForMap(presets, mapName)
-  return computeMapPoolPressure(preset, allItems)
+  return computeMapPoolPressure(preset, allItems, context)
+}
+
+export function presetsHaveKeyCivs(presets: MapPriorityPreset[], mapNames: string[]): boolean {
+  for (const mapName of mapNames) {
+    const preset = findPresetForMap(presets, mapName)
+    if (!preset) continue
+    if (normalizeTierEntries(preset.entries).some((entry) => entry.keyCiv)) return true
+  }
+  return false
 }
 
 export function isMapAdvancedPreset(presets: MapPriorityPreset[], mapName: string): boolean {
@@ -359,12 +382,35 @@ function computeMapTierPressure(
 function computeMapPoolPressure(
   preset: MapPriorityPreset | null,
   allItems: CivBoardItem[],
+  context?: MapPoolPressureContext,
 ): MapPoolPressureEntry[] {
   if (!preset?.advancedMode || !preset.pools?.length) return []
 
+  const mapAssignedCounts =
+    context?.mode === 'map-assigned' &&
+    context.mapId &&
+    context.ownPicks &&
+    context.assignments &&
+    context.mapNames
+      ? countPoolAssignmentsOnMap(
+          preset,
+          context.mapId,
+          context.ownPicks,
+          context.assignments,
+          context.mapNames,
+        )
+      : null
+
   const buckets = new Map<string, MapPoolPressureEntry>()
   for (const pool of preset.pools) {
-    buckets.set(pool.id, { id: pool.id, name: pool.name, gone: 0, total: 0, ownPicked: 0 })
+    buckets.set(pool.id, {
+      id: pool.id,
+      name: pool.name,
+      gone: 0,
+      total: 0,
+      ownPicked: 0,
+      maxPicks: pool.maxPicks,
+    })
   }
 
   for (const entry of normalizeTierEntries(preset.entries)) {
@@ -379,13 +425,63 @@ function computeMapPoolPressure(
       if (!bucket) continue
       bucket.total += 1
       if (gone) bucket.gone += 1
-      if (ownPicked) bucket.ownPicked += 1
+      if (mapAssignedCounts) {
+        bucket.ownPicked = mapAssignedCounts.get(poolId) ?? 0
+      } else if (ownPicked) {
+        bucket.ownPicked += 1
+      }
     }
   }
 
   return preset.pools
     .map((pool) => buckets.get(pool.id))
     .filter((entry): entry is MapPoolPressureEntry => Boolean(entry && entry.total > 0))
+}
+
+function countPoolAssignmentsOnMap(
+  preset: MapPriorityPreset,
+  mapId: string,
+  ownPicks: CivBoardItem[],
+  assignments: Record<string, MapAssignmentTarget>,
+  mapNames: string[],
+): Map<string, number> {
+  const counts = new Map<string, number>()
+  const assigned = picksForMap(ownPicks, mapId, assignments, mapNames)
+
+  for (const pick of assigned) {
+    const entry = findPresetEntry(preset, pick.id, pick.name)
+    if (!entry) continue
+    for (const poolId of entryPoolIds(entry)) {
+      counts.set(poolId, (counts.get(poolId) ?? 0) + 1)
+    }
+  }
+
+  return counts
+}
+
+function countPoolAssignmentsOnMapById(
+  preset: MapPriorityPreset | null,
+  mapId: string,
+  ownPicks: CivBoardItem[],
+  assignments: Record<string, MapAssignmentTarget>,
+  mapNames: string[],
+): Map<string, number> {
+  if (!preset) return new Map()
+  return countPoolAssignmentsOnMap(preset, mapId, ownPicks, assignments, mapNames)
+}
+
+function civBlockedByPoolCap(
+  preset: MapPriorityPreset,
+  entry: CivPriorityEntry,
+  poolCounts: Map<string, number>,
+): boolean {
+  for (const poolId of entryPoolIds(entry)) {
+    const pool = preset.pools?.find((item) => item.id === poolId)
+    const max = pool?.maxPicks
+    if (max == null || max <= 0) continue
+    if ((poolCounts.get(poolId) ?? 0) >= max) return true
+  }
+  return false
 }
 
 function boardItemForMap(
@@ -408,6 +504,9 @@ export function getTopPicksPerMap(
   allItems: CivBoardItem[],
   _saturatedMaps: string[] = [],
   limit = 3,
+  ownPicks: CivBoardItem[] = [],
+  assignments: Record<string, MapAssignmentTarget> = {},
+  mapNamesForAssignment: string[] = [],
 ): MapTopPickGroup[] {
   const available = allItems.filter((item) => item.status === 'available')
   if (!available.length || !mapDisplays.length) return []
@@ -421,12 +520,22 @@ export function getTopPicksPerMap(
       const tierPressure = computeMapTierPressure(preset, allItems)
       const poolPressure = computeMapPoolPressure(preset, allItems)
       const advancedMode = Boolean(preset?.advancedMode && preset.pools?.length)
+      const poolCounts = countPoolAssignmentsOnMapById(
+        preset,
+        map.id,
+        ownPicks,
+        assignments,
+        mapNamesForAssignment.length ? mapNamesForAssignment : allMapNames,
+      )
 
       const ranked: CivMapRankScore[] = []
       for (const item of available) {
         const civKeys = { id: item.id, name: item.name }
         const onMapTier = civTierOnPresetMap(preset, civKeys)
         if (!onMapTier) continue
+
+        const entry = preset ? findPresetEntry(preset, item.id, item.name) : undefined
+        if (entry && preset && civBlockedByPoolCap(preset, entry, poolCounts)) continue
 
         ranked.push({
           civId: item.id,
@@ -459,17 +568,35 @@ export function getTopPicksPerMap(
         return [boardItemForMap(base, reasonPart, score.onMapTier)]
       })
 
+      const keyCivs = preset
+        ? normalizeTierEntries(preset.entries)
+            .filter((entry) => entry.keyCiv && entry.tier)
+            .flatMap((entry) => {
+              const base =
+                itemById.get(entry.civId) ??
+                available.find((item) => item.name === entry.civId)
+              if (!base) return []
+
+              const reasonPart = buildReasonPart(preset, entry)
+              if (!reasonPart) return []
+
+              return [boardItemForMap(base, reasonPart, entry.tier)]
+            })
+            .sort(compareCivBoardItems)
+        : []
+
       return {
         mapId: map.id,
         mapName: map.name,
         imageUrl: map.imageUrl,
         picks,
+        keyCivs,
         tierPressure,
         poolPressure,
         advancedMode,
       }
     })
-    .filter((group) => group.picks.length > 0)
+    .filter((group) => group.picks.length > 0 || group.keyCivs.length > 0)
 }
 
 export function getTopRecommendations(items: CivBoardItem[], limit = 3): CivBoardItem[] {

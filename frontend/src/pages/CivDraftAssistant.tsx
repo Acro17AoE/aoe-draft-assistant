@@ -176,8 +176,18 @@ export function CivDraftAssistant({
   }, [civDraft, ownTeamName, priorityMerge.entries])
 
   const topPicksPerMap = useMemo(
-    () => getTopPicksPerMap(presets, mapPickDisplays, civItems, saturatedMaps),
-    [presets, mapPickDisplays, civItems, saturatedMaps],
+    () =>
+      getTopPicksPerMap(
+        presets,
+        mapPickDisplays,
+        civItems,
+        saturatedMaps,
+        3,
+        civItems.filter((item) => item.status === 'own_pick'),
+        assignments.own,
+        assignmentKeys,
+      ),
+    [presets, mapPickDisplays, civItems, saturatedMaps, assignments.own, assignmentKeys],
   )
 
   const civDraftStatus = useMemo(

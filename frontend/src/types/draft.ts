@@ -75,6 +75,8 @@ export interface MapBoardItem {
 export interface CivPoolDefinition {
   id: string
   name: string
+  /** Max civs from this pool assignable on this map (Advanced presets). */
+  maxPicks?: number
 }
 
 export interface CivPriorityEntry {
@@ -90,6 +92,8 @@ export interface CivPriorityEntry {
   poolRank?: number
   /** Resolved order index from preset pool list (runtime merge). */
   poolOrder?: number
+  /** Mark as a key civ for draft recommendations (double-click in Presets). */
+  keyCiv?: boolean
   /** @deprecated Legacy import only — stripped on save */
   points?: number
   reason?: string

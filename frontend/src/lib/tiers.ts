@@ -93,6 +93,7 @@ export function normalizeTierEntries(entries: CivPriorityEntry[]): CivPriorityEn
       poolId: poolIds?.[0],
       poolRank: entry.poolRank,
       reason: entry.reason,
+      keyCiv: entry.keyCiv || undefined,
     }
   })
 
@@ -118,6 +119,7 @@ export function normalizeTierEntries(entries: CivPriorityEntry[]): CivPriorityEn
         poolId: poolIds?.[0],
         poolRank: entry.poolRank,
         reason: entry.reason,
+        keyCiv: entry.keyCiv || undefined,
       })
     }
   }
@@ -164,10 +166,25 @@ export function moveCivInTierList(
     tier,
     tierRank: clamped,
     reason: existing?.reason,
+    poolIds: existing?.poolIds,
+    poolId: existing?.poolId,
+    poolRank: existing?.poolRank,
+    keyCiv: existing?.keyCiv,
   })
 
   const ranked = tierSiblings.map((entry, rank) => ({ ...entry, tierRank: rank }))
   const others = without.filter((entry) => entry.tier !== tier)
 
   return compactTierRanks([...others, ...ranked])
+}
+
+export function toggleKeyCiv(entries: CivPriorityEntry[], civId: string): CivPriorityEntry[] {
+  return entries.map((entry) => {
+    if (entry.civId !== civId) return entry
+    if (entry.keyCiv) {
+      const { keyCiv: _keyCiv, ...rest } = entry
+      return rest
+    }
+    return { ...entry, keyCiv: true }
+  })
 }

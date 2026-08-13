@@ -1344,6 +1344,115 @@ select:focus {
   align-items: center;
 }
 
+.civ-draft-map-recommendations-split {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.civ-draft-map-recommendations-split .civ-draft-map-top-picks,
+.civ-draft-map-recommendations-split .civ-draft-map-key-civs {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.civ-draft-hub .key-civ-tag {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  left: auto;
+  z-index: 4;
+  font-style: normal;
+  font-size: calc(var(--civ-tile-size-sm) * 0.18);
+  color: #ffd54a;
+  line-height: 1;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.85);
+}
+
+.civ-draft-pool-assigned {
+  display: grid;
+  gap: 0.3rem;
+  width: 100%;
+  justify-items: center;
+}
+
+.civ-draft-pool-assigned-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--pool-columns, 2), minmax(0, 1fr));
+  gap: clamp(0.12rem, 3cqi, 0.35rem);
+  width: 100%;
+  max-width: 100%;
+}
+
+.civ-draft-pool-assigned-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.civ-draft-pool-assigned-name {
+  font-size: clamp(0.46rem, 9cqi, 0.68rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #d7dde8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  text-align: center;
+}
+
+.civ-draft-pool-assigned-track {
+  position: relative;
+  width: clamp(0.65rem, 14cqi, 0.95rem);
+  height: clamp(1.8rem, 38cqi, 2.6rem);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.civ-draft-pool-assigned-fill {
+  display: block;
+  width: 100%;
+  background: linear-gradient(180deg, #ffd54a 0%, #e4a429 100%);
+  transition: height 0.18s ease;
+  min-height: 0;
+}
+
+.civ-draft-pool-assigned-full .civ-draft-pool-assigned-fill {
+  background: linear-gradient(180deg, #ff8a7a 0%, #e05545 100%);
+}
+
+.civ-draft-pool-assigned-icon {
+  width: clamp(0.95rem, 24cqi, 1.65rem);
+  height: clamp(0.95rem, 24cqi, 1.65rem);
+  object-fit: contain;
+}
+
+.civ-draft-pool-assigned-count {
+  font-size: clamp(0.62rem, 11cqi, 0.82rem);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #d7dde8;
+}
+
+@container map-col (max-width: 5.5rem) {
+  .civ-draft-pool-assigned-name {
+    display: none;
+  }
+}
+
 /* Hub tiles: larger art + labels; rank/tier overlap the portrait */
 .civ-draft-hub .civ-card.civ-card-tile-sm {
   padding: 0.1rem 0.08rem 0.05rem;
@@ -3319,6 +3428,20 @@ td {
   flex: 1;
 }
 
+.tier-maker-key-civ-hint {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+  cursor: help;
+}
+
+.tier-maker-key-civ-star {
+  color: #ffd54a;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
 .tier-maker-advanced-btn.active {
   background: rgba(176, 48, 176, 0.35);
   border-color: rgba(176, 48, 176, 0.65);
@@ -3382,6 +3505,26 @@ td {
   color: inherit;
   font: inherit;
   padding: 0;
+}
+
+.tier-maker-pool-max-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-muted, #9aa3b2);
+  white-space: nowrap;
+}
+
+.tier-maker-pool-max-input {
+  width: 2.4rem;
+  padding: 0.12rem 0.2rem;
+  font-size: 0.62rem;
+  border-radius: 4px;
+  border: 1px solid var(--laca-border);
+  background: var(--laca-panel-elevated, #1e222c);
+  color: inherit;
 }
 
 .tier-maker-pool-heading-label {
@@ -3696,6 +3839,22 @@ td {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
+}
+
+.tier-maker-key-civ-badge {
+  position: absolute;
+  top: 0.08rem;
+  right: 0.1rem;
+  z-index: 2;
+  font-size: 0.72rem;
+  color: #ffd54a;
+  line-height: 1;
+  pointer-events: none;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.85);
+}
+
+.tier-maker-civ-key {
+  border-color: rgba(255, 213, 74, 0.45);
 }
 
 .tier-maker-civ-pool-remove {
