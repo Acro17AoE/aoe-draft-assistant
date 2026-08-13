@@ -3,38 +3,62 @@ import { readLocalKey, writeLocalKey } from './cloudStorage'
 
 const STORAGE_KEY = 'aoe-draft-assistant.prepared-bans'
 
+export interface PreparedBanDraftEntry {
+  civIds: string[]
+  locked?: boolean
+}
+
 function storageKeyForDraft(civDraftUrl: string): string {
   const id = extractDraftId(civDraftUrl)
   return id || civDraftUrl.trim()
 }
 
-export function loadPreparedBans(civDraftUrl: string): string[] {
-  if (!civDraftUrl.trim()) return []
+function readStore(): Record<string, PreparedBanDraftEntry | string[]> {
   const raw = readLocalKey(STORAGE_KEY)
-  if (!raw) return []
+  if (!raw) return {}
   try {
-    const parsed = JSON.parse(raw) as Record<string, unknown>
-    const entry = parsed[storageKeyForDraft(civDraftUrl)]
-    if (!Array.isArray(entry)) return []
-    return entry.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    return JSON.parse(raw) as Record<string, PreparedBanDraftEntry | string[]>
   } catch {
-    return []
+    return {}
   }
 }
 
-export function savePreparedBans(civDraftUrl: string, civIds: string[]): void {
-  if (!civDraftUrl.trim()) return
-  const parsed = (() => {
-    const raw = readLocalKey(STORAGE_KEY)
-    if (!raw) return {} as Record<string, string[]>
-    try {
-      return JSON.parse(raw) as Record<string, string[]>
-    } catch {
-      return {}
+function normalizeEntry(raw: PreparedBanDraftEntry | string[] | undefined): PreparedBanDraftEntry {
+  if (!raw) return { civIds: [], locked: false }
+  if (Array.isArray(raw)) {
+    return {
+      civIds: raw.filter((item): item is string => typeof item === 'string' && item.trim().length > 0),
+      locked: false,
     }
-  })()
-  parsed[storageKeyForDraft(civDraftUrl)] = civIds
+  }
+  return {
+    civIds: Array.isArray(raw.civIds)
+      ? raw.civIds.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+      : [],
+    locked: Boolean(raw.locked),
+  }
+}
+
+export function loadPreparedBanEntry(civDraftUrl: string): PreparedBanDraftEntry {
+  if (!civDraftUrl.trim()) return { civIds: [], locked: false }
+  const parsed = readStore()
+  return normalizeEntry(parsed[storageKeyForDraft(civDraftUrl)])
+}
+
+export function loadPreparedBans(civDraftUrl: string): string[] {
+  return loadPreparedBanEntry(civDraftUrl).civIds
+}
+
+export function savePreparedBanEntry(civDraftUrl: string, entry: PreparedBanDraftEntry): void {
+  if (!civDraftUrl.trim()) return
+  const parsed = readStore()
+  parsed[storageKeyForDraft(civDraftUrl)] = entry
   writeLocalKey(STORAGE_KEY, JSON.stringify(parsed))
+}
+
+export function savePreparedBans(civDraftUrl: string, civIds: string[]): void {
+  const current = loadPreparedBanEntry(civDraftUrl)
+  savePreparedBanEntry(civDraftUrl, { ...current, civIds })
 }
 
 export function trimPreparedBans(civIds: string[], maxSlots: number): string[] {

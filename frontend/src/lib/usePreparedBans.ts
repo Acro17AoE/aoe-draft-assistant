@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { extractDraftId } from './civs'
-import { loadPreparedBans, savePreparedBans, trimPreparedBans } from './preparedBans'
+import {
+  loadPreparedBanEntry,
+  savePreparedBanEntry,
+  trimPreparedBans,
+} from './preparedBans'
 
 function draftKey(civDraftUrl: string): string {
   const id = extractDraftId(civDraftUrl)
@@ -9,15 +13,18 @@ function draftKey(civDraftUrl: string): string {
 
 export function usePreparedBans(civDraftUrl: string, maxSlots: number) {
   const [preparedBanIds, setPreparedBanIds] = useState<string[]>(() =>
-    trimPreparedBans(loadPreparedBans(civDraftUrl), maxSlots),
+    trimPreparedBans(loadPreparedBanEntry(civDraftUrl).civIds, maxSlots),
   )
+  const [locked, setLocked] = useState(() => loadPreparedBanEntry(civDraftUrl).locked ?? false)
   const draftKeyRef = useRef(draftKey(civDraftUrl))
 
   useEffect(() => {
     const nextKey = draftKey(civDraftUrl)
     if (nextKey !== draftKeyRef.current) {
       draftKeyRef.current = nextKey
-      setPreparedBanIds(trimPreparedBans(loadPreparedBans(civDraftUrl), maxSlots))
+      const entry = loadPreparedBanEntry(civDraftUrl)
+      setPreparedBanIds(trimPreparedBans(entry.civIds, maxSlots))
+      setLocked(entry.locked ?? false)
       return
     }
     setPreparedBanIds((current) => trimPreparedBans(current, maxSlots))
@@ -28,7 +35,8 @@ export function usePreparedBans(civDraftUrl: string, maxSlots: number) {
       setPreparedBanIds((current) => {
         if (current.includes(civId) || current.length >= maxSlots) return current
         const next = [...current, civId]
-        savePreparedBans(civDraftUrl, next)
+        savePreparedBanEntry(civDraftUrl, { civIds: next, locked: false })
+        setLocked(false)
         return next
       })
     },
@@ -39,16 +47,38 @@ export function usePreparedBans(civDraftUrl: string, maxSlots: number) {
     (civId: string) => {
       setPreparedBanIds((current) => {
         const next = current.filter((id) => id !== civId)
-        savePreparedBans(civDraftUrl, next)
+        savePreparedBanEntry(civDraftUrl, { civIds: next, locked: false })
+        setLocked(false)
         return next
       })
     },
     [civDraftUrl],
   )
 
+  const lockPreparedBans = useCallback(() => {
+    setPreparedBanIds((current) => {
+      const trimmed = trimPreparedBans(current, maxSlots)
+      savePreparedBanEntry(civDraftUrl, { civIds: trimmed, locked: true })
+      setLocked(true)
+      return trimmed
+    })
+  }, [civDraftUrl, maxSlots])
+
+  const unlockPreparedBans = useCallback(() => {
+    setPreparedBanIds((current) => {
+      const trimmed = trimPreparedBans(current, maxSlots)
+      savePreparedBanEntry(civDraftUrl, { civIds: trimmed, locked: false })
+      setLocked(false)
+      return trimmed
+    })
+  }, [civDraftUrl, maxSlots])
+
   return {
     preparedBanIds,
+    preparedBansLocked: locked,
     addPreparedBan,
     removePreparedBan,
+    lockPreparedBans,
+    unlockPreparedBans,
   }
 }

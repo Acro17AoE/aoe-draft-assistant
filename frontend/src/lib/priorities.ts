@@ -341,12 +341,13 @@ export function getMapPoolPressure(
 }
 
 export function presetsHaveKeyCivs(presets: MapPriorityPreset[], mapNames: string[]): boolean {
-  for (const mapName of mapNames) {
-    const preset = findPresetForMap(presets, mapName)
-    if (!preset) continue
-    if (normalizeTierEntries(preset.entries).some((entry) => entry.keyCiv)) return true
-  }
-  return false
+  return mapNames.some((mapName) => mapPresetHasKeyCivs(presets, mapName))
+}
+
+export function mapPresetHasKeyCivs(presets: MapPriorityPreset[], mapName: string): boolean {
+  const preset = findPresetForMap(presets, mapName)
+  if (!preset) return false
+  return normalizeTierEntries(preset.entries).some((entry) => entry.keyCiv)
 }
 
 export function isMapAdvancedPreset(presets: MapPriorityPreset[], mapName: string): boolean {

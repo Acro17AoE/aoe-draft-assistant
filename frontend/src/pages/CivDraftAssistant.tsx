@@ -217,10 +217,14 @@ export function CivDraftAssistant({
     [presets, presetMapNames, settings],
   )
 
-  const { preparedBanIds, addPreparedBan, removePreparedBan } = usePreparedBans(
-    civSession.civDraftUrl,
-    preparedBanCapacity,
-  )
+  const {
+    preparedBanIds,
+    preparedBansLocked,
+    addPreparedBan,
+    removePreparedBan,
+    lockPreparedBans,
+    unlockPreparedBans,
+  } = usePreparedBans(civSession.civDraftUrl, preparedBanCapacity)
 
   const updateCivSession = (next: CivSessionConfig) => {
     setCivSession(next)
@@ -263,9 +267,12 @@ export function CivDraftAssistant({
           preparedBanIds={preparedBanIds}
           maxSlots={preparedBanCapacity}
           ownBanSlots={ownBanSlots}
+          locked={preparedBansLocked}
           priorityEntries={prepPriorityMerge.entries}
           onAdd={addPreparedBan}
           onRemove={removePreparedBan}
+          onLock={lockPreparedBans}
+          onUnlock={unlockPreparedBans}
         />
       ) : null}
 

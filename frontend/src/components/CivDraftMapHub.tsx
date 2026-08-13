@@ -5,7 +5,7 @@ import {
   getMapPoolPressure,
   getMapTierPressure,
   isMapAdvancedPreset,
-  presetsHaveKeyCivs,
+  mapPresetHasKeyCivs,
   type MapPoolPressureEntry,
   type MapTierPressure,
   type MapTopPickGroup,
@@ -132,11 +132,6 @@ export function CivDraftMapHub({
     [topPicksPerMap],
   )
 
-  const showKeyCivColumn = useMemo(
-    () => presetsHaveKeyCivs(presets, mapNames),
-    [presets, mapNames],
-  )
-
   const uniqueMapCount = useMemo(() => {
     const unique = new Set(maps.map((map) => normalizeMapName(map.name)))
     return unique.size
@@ -220,7 +215,8 @@ export function CivDraftMapHub({
         fullMapMode,
         column.saturated,
         draftFinished,
-        column.picks.length > 0 || (showKeyCivColumn && column.keyCivs.length > 0),
+        column.picks.length > 0 ||
+          (mapPresetHasKeyCivs(presets, column.map.name) && column.keyCivs.length > 0),
       )
       return mode !== 'hidden'
     })
@@ -235,149 +231,73 @@ export function CivDraftMapHub({
       className={`section-block civ-draft-hub civ-draft-hub-${variant}${hasVisibleTopPicks ? '' : ' civ-draft-hub-compact'}${showSingleMapLayout ? ' civ-draft-hub-single-map' : ''}`}
     >
       <div className="civ-draft-hub-maps">
-        <div className="civ-draft-hub-suggestions">
-          {showSingleMapLayout && singleMapColumn ? (
-            <div className="civ-draft-single-map-header">
-              <div className="civ-draft-map-hero">
-                {singleMapColumn.map.imageUrl ? (
-                  <img src={singleMapColumn.map.imageUrl} alt="" loading="lazy" />
-                ) : (
-                  <span className="civ-draft-map-fallback">{singleMapColumn.map.name.charAt(0)}</span>
-                )}
-                <span className="civ-draft-map-name">{singleMapColumn.map.name}</span>
-              </div>
-              <MapPressureHint
-                advancedMode={singleMapColumn.advancedMode}
-                tierPressure={singleMapColumn.tierPressure}
-                poolPressure={singleMapColumn.poolPressure}
-                multiMapMode={false}
-                civsPerMap={civsPerMap}
-              />
+        {showSingleMapLayout && singleMapColumn ? (
+          <div className="civ-draft-single-map-header">
+            <div className="civ-draft-map-hero">
+              {singleMapColumn.map.imageUrl ? (
+                <img src={singleMapColumn.map.imageUrl} alt="" loading="lazy" />
+              ) : (
+                <span className="civ-draft-map-fallback">{singleMapColumn.map.name.charAt(0)}</span>
+              )}
+              <span className="civ-draft-map-name">{singleMapColumn.map.name}</span>
             </div>
-          ) : null}
-          <div className="civ-draft-hub-map-strip">
-            {columns.map((column, columnIndex) => {
-              const assigned = picksForMap(picks, column.map.id, assignments, mapNames)
-              const slotPicks = picksBySlot(picks, assignments, column.map.id, mapNames, civsPerMap)
-              const count = assigned.length
-              const remaining = Math.max(0, civsPerMap - count)
-              const zoneKey = `${variant}:map:${column.map.id}`
-              const topPickMode = shouldShowTopPicksForColumn(
-                fullMapMode,
-                column.saturated,
-                draftFinished,
-                column.picks.length > 0 || (showKeyCivColumn && column.keyCivs.length > 0),
-              )
+            <MapPressureHint
+              advancedMode={singleMapColumn.advancedMode}
+              tierPressure={singleMapColumn.tierPressure}
+              poolPressure={singleMapColumn.poolPressure}
+            />
+          </div>
+        ) : null}
+        <div className="civ-draft-hub-map-strip">
+          {columns.map((column, columnIndex) => {
+            const assigned = picksForMap(picks, column.map.id, assignments, mapNames)
+            const slotPicks = picksBySlot(picks, assignments, column.map.id, mapNames, civsPerMap)
+            const count = assigned.length
+            const remaining = Math.max(0, civsPerMap - count)
+            const zoneKey = `${variant}:map:${column.map.id}`
+            const columnHasKeyCivPreset = mapPresetHasKeyCivs(presets, column.map.name)
+            const topPickMode = shouldShowTopPicksForColumn(
+              fullMapMode,
+              column.saturated,
+              draftFinished,
+              column.picks.length > 0 || (columnHasKeyCivPreset && column.keyCivs.length > 0),
+            )
 
-              return (
-                <div
-                  key={column.map.id}
-                  className={`civ-draft-map-column${column.saturated ? ' civ-draft-map-column-saturated' : ''}`}
-                >
-                  {showSingleMapLayout ? (
-                    <span className="civ-draft-map-game-label">G{columnIndex + 1}</span>
-                  ) : null}
+            return (
+              <div
+                key={column.map.id}
+                className={`civ-draft-map-column${column.saturated ? ' civ-draft-map-column-saturated' : ''}`}
+              >
+                {showSingleMapLayout ? (
+                  <span className="civ-draft-map-game-label">G{columnIndex + 1}</span>
+                ) : null}
 
-                  {!showSingleMapLayout ? (
-                    <div className="civ-draft-map-hero">
-                      {column.map.imageUrl ? (
-                        <img src={column.map.imageUrl} alt="" loading="lazy" />
-                      ) : (
-                        <span className="civ-draft-map-fallback">{column.map.name.charAt(0)}</span>
-                      )}
-                      <span className="civ-draft-map-name">{column.map.name}</span>
-                    </div>
-                  ) : null}
+                <div className="civ-draft-map-section civ-draft-map-assign">
+                  <span className="civ-draft-map-section-label">Assignment</span>
+                  <MapDropZone
+                    zoneKey={zoneKey}
+                    vertical
+                    dragOverKey={dragOverKey}
+                    onDragOver={() => {
+                      if (!column.saturated) setDragOverKey(zoneKey)
+                    }}
+                    onDragLeave={() =>
+                      setDragOverKey((current) => (current === zoneKey ? null : current))
+                    }
+                    onDrop={(event) => handleDrop(column.map.id, event)}
+                    className="civ-draft-assign-slots"
+                    style={{ '--assign-slot-count': civsPerMap } as CSSProperties}
+                  >
+                    {Array.from({ length: civsPerMap }, (_, slotIndex) => {
+                      const pick = slotPicks[slotIndex]
+                      const slotZoneKey = `${zoneKey}:slot:${slotIndex}`
+                      const slotTarget = mapAssignmentWithSlot(column.map.id, slotIndex)
 
-                  {!showSingleMapLayout ? (
-                    <MapPressureHint
-                      advancedMode={column.advancedMode}
-                      tierPressure={column.tierPressure}
-                      poolPressure={column.poolPressure}
-                      multiMapMode
-                      civsPerMap={civsPerMap}
-                    />
-                  ) : null}
-
-                  {showTopPicks && topPickMode !== 'hidden' ? (
-                    <div
-                      className={`civ-draft-map-section civ-draft-map-recommendations${topPickMode === 'dimmed' ? ' civ-draft-map-top-picks-dimmed' : ''}${showKeyCivColumn ? ' civ-draft-map-recommendations-split' : ''}`}
-                    >
-                      <div className="civ-draft-map-top-picks">
-                        <span className="civ-draft-map-section-label">Top 3 picks</span>
-                        <div className="civ-draft-top-picks-stack">
-                          {column.picks.map((item, index) => (
-                            <HubPickCard key={item.id} item={item} rank={index + 1} />
-                          ))}
-                        </div>
-                      </div>
-                      {showKeyCivColumn ? (
-                        <div className="civ-draft-map-key-civs">
-                          <span className="civ-draft-map-section-label">Key civs</span>
-                          <div className="civ-draft-top-picks-stack">
-                            {column.keyCivs.map((item) => (
-                              <HubPickCard key={item.id} item={item} showKeyBadge />
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  <div className="civ-draft-map-section civ-draft-map-assign">
-                    <span className="civ-draft-map-section-label">Assignment</span>
-                    <MapDropZone
-                      zoneKey={zoneKey}
-                      vertical
-                      dragOverKey={dragOverKey}
-                      onDragOver={() => {
-                        if (!column.saturated) setDragOverKey(zoneKey)
-                      }}
-                      onDragLeave={() =>
-                        setDragOverKey((current) => (current === zoneKey ? null : current))
-                      }
-                      onDrop={(event) => handleDrop(column.map.id, event)}
-                      className="civ-draft-assign-slots"
-                      style={{ '--assign-slot-count': civsPerMap } as CSSProperties}
-                    >
-                      {Array.from({ length: civsPerMap }, (_, slotIndex) => {
-                        const pick = slotPicks[slotIndex]
-                        const slotZoneKey = `${zoneKey}:slot:${slotIndex}`
-                        const slotTarget = mapAssignmentWithSlot(column.map.id, slotIndex)
-
-                        if (pick) {
-                          return (
-                            <div
-                              key={`${column.map.id}-slot-${slotIndex}`}
-                              className={`civ-draft-assign-slot${dragOverKey === slotZoneKey ? ' map-drop-zone-dragover' : ''}`}
-                              onDragOver={(event) => {
-                                event.preventDefault()
-                                event.stopPropagation()
-                                event.dataTransfer.dropEffect = 'move'
-                                setDragOverKey(slotZoneKey)
-                              }}
-                              onDragLeave={() =>
-                                setDragOverKey((current) => (current === slotZoneKey ? null : current))
-                              }
-                              onDrop={(event) => {
-                                event.preventDefault()
-                                event.stopPropagation()
-                                const payload = readDragPayload(event)
-                                if (!payload || payload.team !== team) return
-                                if (payload.civId !== pick.id) {
-                                  onAssign(pick.id, 'flex')
-                                }
-                                handleDrop(slotTarget, event)
-                              }}
-                            >
-                              <DraggableCivTile pick={pick} team={team} size="sm" />
-                            </div>
-                          )
-                        }
+                      if (pick) {
                         return (
                           <div
                             key={`${column.map.id}-slot-${slotIndex}`}
-                            className={`civ-draft-assign-slot-placeholder${dragOverKey === slotZoneKey ? ' map-drop-zone-dragover' : ''}`}
+                            className={`civ-draft-assign-slot${dragOverKey === slotZoneKey ? ' map-drop-zone-dragover' : ''}`}
                             onDragOver={(event) => {
                               event.preventDefault()
                               event.stopPropagation()
@@ -388,24 +308,100 @@ export function CivDraftMapHub({
                               setDragOverKey((current) => (current === slotZoneKey ? null : current))
                             }
                             onDrop={(event) => {
+                              event.preventDefault()
                               event.stopPropagation()
+                              const payload = readDragPayload(event)
+                              if (!payload || payload.team !== team) return
+                              if (payload.civId !== pick.id) {
+                                onAssign(pick.id, 'flex')
+                              }
                               handleDrop(slotTarget, event)
                             }}
-                            aria-hidden
-                          />
+                          >
+                            <DraggableCivTile pick={pick} team={team} size="sm" />
+                          </div>
                         )
-                      })}
-                    </MapDropZone>
-                    <span className="civ-draft-map-count" title={`${count} of ${civsPerMap} assigned`}>
-                      {count}/{civsPerMap}
-                      {remaining > 0 ? <em>{remaining} left</em> : null}
-                      {column.saturated ? <em className="full-tag">full</em> : null}
-                    </span>
-                  </div>
+                      }
+                      return (
+                        <div
+                          key={`${column.map.id}-slot-${slotIndex}`}
+                          className={`civ-draft-assign-slot-placeholder${dragOverKey === slotZoneKey ? ' map-drop-zone-dragover' : ''}`}
+                          onDragOver={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            event.dataTransfer.dropEffect = 'move'
+                            setDragOverKey(slotZoneKey)
+                          }}
+                          onDragLeave={() =>
+                            setDragOverKey((current) => (current === slotZoneKey ? null : current))
+                          }
+                          onDrop={(event) => {
+                            event.stopPropagation()
+                            handleDrop(slotTarget, event)
+                          }}
+                          aria-hidden
+                        />
+                      )
+                    })}
+                  </MapDropZone>
+                  <span className="civ-draft-map-count" title={`${count} of ${civsPerMap} assigned`}>
+                    {count}/{civsPerMap}
+                    {remaining > 0 ? <em>{remaining} left</em> : null}
+                    {column.saturated ? <em className="full-tag">full</em> : null}
+                  </span>
                 </div>
-              )
-            })}
-          </div>
+
+                {!showSingleMapLayout ? (
+                  <div className="civ-draft-map-hero">
+                    {column.map.imageUrl ? (
+                      <img src={column.map.imageUrl} alt="" loading="lazy" />
+                    ) : (
+                      <span className="civ-draft-map-fallback">{column.map.name.charAt(0)}</span>
+                    )}
+                    <span className="civ-draft-map-name">{column.map.name}</span>
+                  </div>
+                ) : null}
+
+                {!showSingleMapLayout ? (
+                  <MapTierPressureHint pressure={column.tierPressure} />
+                ) : null}
+
+                {showTopPicks && topPickMode !== 'hidden' ? (
+                  <div
+                    className={`civ-draft-map-section civ-draft-map-recommendations${topPickMode === 'dimmed' ? ' civ-draft-map-top-picks-dimmed' : ''}${columnHasKeyCivPreset ? ' civ-draft-map-recommendations-split' : ''}`}
+                  >
+                    <div className="civ-draft-map-top-picks">
+                      <span className="civ-draft-map-section-label">Top 3 picks</span>
+                      <div className="civ-draft-top-picks-stack">
+                        {column.picks.map((item, index) => (
+                          <HubPickCard key={item.id} item={item} rank={index + 1} />
+                        ))}
+                      </div>
+                    </div>
+                    {columnHasKeyCivPreset ? (
+                      <div className="civ-draft-map-key-civs">
+                        <span className="civ-draft-map-section-label">Key civs</span>
+                        <div className="civ-draft-top-picks-stack">
+                          {column.keyCivs.map((item) => (
+                            <HubPickCard key={item.id} item={item} />
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {!showSingleMapLayout &&
+                column.advancedMode &&
+                column.poolPressure.length > 0 ? (
+                  <PoolAlreadyPickedSection
+                    pools={column.poolPressure}
+                    civsPerMap={civsPerMap}
+                  />
+                ) : null}
+              </div>
+            )
+          })}
         </div>
 
         <MapDropZone
@@ -435,45 +431,47 @@ export function CivDraftMapHub({
   )
 }
 
+function PoolAlreadyPickedSection({
+  pools,
+  civsPerMap,
+}: {
+  pools: MapPoolPressureEntry[]
+  civsPerMap: number
+}) {
+  return (
+    <div className="civ-draft-pool-assigned">
+      <span
+        className="civ-draft-map-section-label civ-draft-pool-pressure-heading"
+        title="Your picks from each pool assigned to this map"
+      >
+        Already picked
+      </span>
+      <div
+        className="civ-draft-pool-assigned-grid"
+        style={{ '--pool-columns': pools.length } as CSSProperties}
+      >
+        {pools.map((pool) => (
+          <PoolAssignedMeter
+            key={pool.id}
+            pool={pool}
+            slotCapacity={Math.max(pool.maxPicks ?? civsPerMap, 1)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function MapPressureHint({
   advancedMode,
   tierPressure,
   poolPressure,
-  multiMapMode = false,
-  civsPerMap = 1,
 }: {
   advancedMode: boolean
   tierPressure: MapTierPressure
   poolPressure: MapPoolPressureEntry[]
-  multiMapMode?: boolean
-  civsPerMap?: number
 }) {
   if (advancedMode && poolPressure.length > 0) {
-    if (multiMapMode) {
-      return (
-        <div className="civ-draft-pool-assigned">
-          <span
-            className="civ-draft-map-section-label civ-draft-pool-pressure-heading"
-            title="Your picks from each pool assigned to this map"
-          >
-            Already picked
-          </span>
-          <div
-            className="civ-draft-pool-assigned-grid"
-            style={{ '--pool-columns': poolPressure.length } as CSSProperties}
-          >
-            {poolPressure.map((pool) => (
-              <PoolAssignedMeter
-                key={pool.id}
-                pool={pool}
-                slotCapacity={Math.max(pool.maxPicks ?? civsPerMap, 1)}
-              />
-            ))}
-          </div>
-        </div>
-      )
-    }
-
     return (
       <div className="civ-draft-pool-pressure">
         <PoolPressureSection
@@ -609,15 +607,7 @@ function MapTierPressureHint({ pressure }: { pressure: MapTierPressure }) {
   )
 }
 
-function HubPickCard({
-  item,
-  rank,
-  showKeyBadge = false,
-}: {
-  item: CivBoardItem
-  rank?: number
-  showKeyBadge?: boolean
-}) {
+function HubPickCard({ item, rank }: { item: CivBoardItem; rank?: number }) {
   const displayTier = item.priorityTier
   const priorityClass =
     item.status === 'available' && displayTier ? ` priority-${displayTier.toLowerCase()}` : ''
@@ -629,11 +619,6 @@ function HubPickCard({
       aria-label={showMapTooltip ? item.priorityReason : undefined}
     >
       {rank ? <em className="rank-tag">#{rank}</em> : null}
-      {showKeyBadge ? (
-        <em className="key-civ-tag" aria-label="Key civ">
-          ★
-        </em>
-      ) : null}
       <img src={item.imageUrl} alt={item.name} loading="lazy" />
       <span>{item.name}</span>
       {displayTier ? <em className="tier-tag">{displayTier}</em> : null}
