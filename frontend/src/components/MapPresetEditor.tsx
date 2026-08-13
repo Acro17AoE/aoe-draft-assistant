@@ -37,9 +37,22 @@ function normalizeEntriesSnapshot(entries: CivPriorityEntry[]): string {
         tier: entry.tier ?? null,
         tierRank: entry.tierRank ?? null,
         poolIds: entryPoolIds(entry),
+        keyCiv: entry.keyCiv ?? false,
         reason: entry.reason ?? '',
       })),
   )
+}
+
+function serializePresetEntry(entry: CivPriorityEntry): CivPriorityEntry {
+  const poolIds = entryPoolIds(entry)
+  return {
+    civId: entry.civId,
+    tier: entry.tier,
+    tierRank: entry.tierRank,
+    ...(poolIds.length ? { poolIds } : {}),
+    ...(entry.keyCiv ? { keyCiv: true } : {}),
+    reason: entry.reason,
+  }
 }
 
 function normalizePresetSnapshot(preset?: MapPriorityPreset | null): string {
@@ -153,16 +166,7 @@ export function MapPresetEditor({
   }
 
   const save = () => {
-    const tierEntries = stripPoolRanks(normalizeTierEntries(entries)).map((entry) => {
-      const poolIds = entryPoolIds(entry)
-      return {
-        civId: entry.civId,
-        tier: entry.tier,
-        tierRank: entry.tierRank,
-        ...(poolIds.length ? { poolIds } : {}),
-        reason: entry.reason,
-      }
-    })
+    const tierEntries = stripPoolRanks(normalizeTierEntries(entries)).map(serializePresetEntry)
     const next = upsertPresetForMap(presets, selectedMap, {
       entries: tierEntries,
       advancedMode,

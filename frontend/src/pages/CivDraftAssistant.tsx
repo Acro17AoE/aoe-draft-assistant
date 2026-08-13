@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CivDraftBoard } from '../components/CivDraftBoard'
 import { CivDraftSetup } from '../components/CivDraftSetup'
 import { DraftPreview } from '../components/DraftPreview'
+import { PreparedBanList } from '../components/PreparedBanList'
 import {
   deriveCivBoard,
   extractAllMapPicks,
   resolveMapPickDisplays,
 } from '../lib/draftState'
 import { deriveDraftStatus } from '../lib/draftStatus'
+import { countOwnBanSlots, isBanPhaseComplete } from '../lib/draftBans'
 import { mapNamesMatch, resolveMapDisplaysFromPicks, uniqueMapNames } from '../lib/maps'
 import { getSaturatedMaps } from '../lib/civMapAssignments'
 import { readReadyMapSession, useMapSessionSync, getSessionMapPicks } from '../lib/mapSession'
@@ -17,6 +19,7 @@ import { loadCivSession, saveCivSession } from '../lib/presets'
 import { playersPerSide } from '../lib/results'
 import { useCivDraftSettings } from '../lib/useCivDraftSettings'
 import { useCivMapAssignments } from '../lib/useCivMapAssignments'
+import { usePreparedBans } from '../lib/usePreparedBans'
 import { useDraftStream } from '../lib/useDraftStream'
 /*
 import {
@@ -93,10 +96,12 @@ export function CivDraftAssistant({
   const mapDraftUrl =
     mapSession?.mode === 'standard' ? (mapSession?.mapDraftUrl ?? '') : ''
 
+  const civDraftLinkReady = extractDraftId(civSession.civDraftUrl).length >= 4
+
   const {
     draft: civDraft,
     error: civStreamError,
-  } = useDraftStream(civSession.civDraftUrl, active)
+  } = useDraftStream(civSession.civDraftUrl, active || civDraftLinkReady)
 
   const {
     draft: mapDraft,
@@ -195,6 +200,28 @@ export function CivDraftAssistant({
     [civDraft, civStreamError],
   )
 
+  const ownBanSlots = useMemo(() => {
+    if (!civDraft || !ownTeamName) return 0
+    return countOwnBanSlots(civDraft, ownTeamName)
+  }, [civDraft, ownTeamName])
+
+  const preparedBanCapacity = ownBanSlots > 0 ? ownBanSlots * 2 : 0
+  const showPreparedBans =
+    civDraftLinkReady &&
+    Boolean(mapSession) &&
+    ownBanSlots > 0 &&
+    !isBanPhaseComplete(civDraft)
+
+  const prepPriorityMerge = useMemo(
+    () => mergePriorityEntriesForMaps(presets, presetMapNames, settings),
+    [presets, presetMapNames, settings],
+  )
+
+  const { preparedBanIds, addPreparedBan, removePreparedBan } = usePreparedBans(
+    civSession.civDraftUrl,
+    preparedBanCapacity,
+  )
+
   const updateCivSession = (next: CivSessionConfig) => {
     setCivSession(next)
     if (!isWorkspaceHydrating()) {
@@ -230,6 +257,17 @@ export function CivDraftAssistant({
         onGo={startSession}
         error={error}
       />
+
+      {showPreparedBans ? (
+        <PreparedBanList
+          preparedBanIds={preparedBanIds}
+          maxSlots={preparedBanCapacity}
+          ownBanSlots={ownBanSlots}
+          priorityEntries={prepPriorityMerge.entries}
+          onAdd={addPreparedBan}
+          onRemove={removePreparedBan}
+        />
+      ) : null}
 
       {!active ? (
         <DraftPreview

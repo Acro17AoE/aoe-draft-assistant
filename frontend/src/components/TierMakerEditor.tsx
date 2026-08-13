@@ -88,6 +88,7 @@ export function TierMakerEditor({
             <span className="tier-maker-key-civ-star" aria-hidden>
               ★
             </span>
+            <span className="tier-maker-key-civ-label">= Key civ</span>
           </span>
         </p>
         {onAdvancedToggle ? (
