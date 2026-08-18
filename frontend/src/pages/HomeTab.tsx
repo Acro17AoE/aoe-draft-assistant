@@ -19,7 +19,7 @@ export function HomeTab() {
               aoe2cm.net
             </a>
             . Build map-specific tier lists, mark Key and Nemesis civs, plan bans, and follow the
-            live draft — all in one place.
+            live draft. Everything you need in one place.
           </p>
           <ul className="home-feature-list">
             <li>
@@ -76,7 +76,7 @@ export function HomeTab() {
             <span className="home-benefit-icon">🤝</span>
             <div>
               <strong>Shared sessions</strong>
-              <p>Invite teammates to a shared workspace — one draft board, synced live.</p>
+              <p>Invite teammates to a shared workspace with a single draft board, synced live.</p>
             </div>
           </div>
         </div>

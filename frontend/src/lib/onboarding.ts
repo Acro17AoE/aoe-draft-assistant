@@ -17,10 +17,18 @@ export const ONBOARDING_START_EVENT = 'aoe-onboarding-start'
 export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
-    tab: 'presets',
+    tab: 'home',
     title: 'Welcome to DRAFT',
     body: 'Decision-support for Ranking, Assignment, and Forecasting under Time constraints. Prep and live Captain’s Mode drafts in one place — no Excel needed. This short tour walks through each tab.',
   },
+  {
+    id: 'nav-home',
+    tab: 'home',
+    target: 'nav-home',
+    title: 'Home',
+    body: 'DRAFT works without an account — all data is saved in your browser. Log in here to sync across devices and create shared sessions with teammates.',
+  },
+
   {
     id: 'nav-presets',
     tab: 'presets',
@@ -97,13 +105,6 @@ export const TOUR_STEPS: TourStep[] = [
     target: 'nav-analysis',
     title: 'Analysis',
     body: 'Review win rates, maps, and draft patterns from tournaments that already have saved games.',
-  },
-  {
-    id: 'nav-home',
-    tab: 'home',
-    target: 'nav-home',
-    title: 'Home',
-    body: 'DRAFT works without an account — all data is saved in your browser. Log in here to sync across devices and create shared sessions with teammates.',
   },
   {
     id: 'done',
