@@ -3430,6 +3430,148 @@ td {
   width: 100%;
 }
 
+/* ── Home tab ─────────────────────────────────────────────────────── */
+.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 54rem;
+  margin: 0 auto;
+  padding: 1.25rem 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.home-welcome {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.home-welcome-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+}
+
+.home-title {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--laca-yellow, #ffd54a);
+}
+
+.home-expansion {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--laca-text-muted, #8d98ad);
+  font-style: italic;
+}
+
+.home-tagline {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--laca-text, #e8ecf3);
+  line-height: 1.5;
+}
+
+.home-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.home-intro p {
+  margin: 0;
+}
+
+.home-feature-list {
+  margin: 0;
+  padding-left: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.home-feature-list li {
+  color: var(--laca-text-muted, #9aa3b2);
+  font-size: 0.88rem;
+}
+
+.home-feature-list strong {
+  color: var(--laca-text, #e8ecf3);
+}
+
+.home-tour-btn {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+
+.home-account-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.home-account-section h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.home-account-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.home-account-intro p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.home-account-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.home-account-benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  flex: 1 1 16rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--laca-border);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+}
+
+.home-benefit-icon {
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 0.1rem;
+}
+
+.home-account-benefit strong {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.home-account-benefit p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--laca-text-muted, #8d98ad);
+  line-height: 1.5;
+}
+
 .settings-block {
   margin-top: 1rem;
   padding-top: 0.85rem;

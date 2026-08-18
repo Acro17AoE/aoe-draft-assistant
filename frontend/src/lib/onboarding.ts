@@ -1,6 +1,6 @@
 import { readLocalKey, writeLocalKey } from './cloudStorage'
 
-export type TourTab = 'presets' | 'map' | 'civ' | 'results' | 'analysis' | 'settings'
+export type TourTab = 'home' | 'presets' | 'map' | 'civ' | 'results' | 'analysis'
 
 export interface TourStep {
   id: string
@@ -99,11 +99,11 @@ export const TOUR_STEPS: TourStep[] = [
     body: 'Review win rates, maps, and draft patterns from tournaments that already have saved games.',
   },
   {
-    id: 'nav-settings',
-    tab: 'settings',
-    target: 'nav-settings',
-    title: 'Settings',
-    body: 'Register or log in to sync across devices, and create a shared session so teammates draft on the same board.',
+    id: 'nav-home',
+    tab: 'home',
+    target: 'nav-home',
+    title: 'Home',
+    body: 'DRAFT works without an account — all data is saved in your browser. Log in here to sync across devices and create shared sessions with teammates.',
   },
   {
     id: 'done',

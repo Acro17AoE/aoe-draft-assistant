@@ -16,12 +16,13 @@
 
 | Active | Notes |
 |--------|--------|
+| Home tab | Welcome, guided tour, account + cloud sync + shared sessions |
 | Map Draft tracking (live + manual modes) | Standard / 1-Map-Only / Select |
 | Civ Draft board + recommendations | Tiers, pressure, Top 3, Key civs, Prepared bans, assignment, Draft Preview |
 | Preset tier management | TierMaker + Key / Nemesis markers + Advanced pools + optional max picks per pool |
 | Results + Analysis | From saved games / draft links; Tournament Meta from Liquipedia |
 | AoE in Data | Patch-based civ/tech visualizations + tournament meta charts |
-| Cloud sync + shared sessions | Optional login |
+| Cloud sync + shared sessions | Optional login via Home tab |
 
 ### Out of scope (current UI)
 
@@ -37,7 +38,7 @@
 
 ```
 Browser (React SPA)
-  Tabs: Presets | Map | Civ | Results | Analysis | AoE in Data | Settings
+  Tabs: Home | Presets | Map | Civ | Results | Analysis | AoE in Data
   localStorage + optional cloud docs + shared workspace
         │ REST / WebSocket
         ▼
@@ -152,7 +153,16 @@ Key logic:
 - Visual panels: Tech Explorer, Civ DNA, Civ Atlas, Draft Orbit, Similarity Constellation, Synergies, Meta Explorer
 - Reuses tournament meta where relevant (`tournamentMeta.ts`)
 
-### 4.6 Auth, sync, workspaces
+### 4.6 Home tab
+
+- Welcome screen with product description, feature list, and guided-tour button
+- **Account & Cloud Sync** section replaces the old Settings tab
+- "DRAFT works without an account" — browser-only mode explained to user
+- Benefits cards: cloud sync and shared sessions
+- `AccountPanel` (login / register / logout) + `SharePanel` (workspace invite)
+- `requestOnboardingStart()` triggers the guided tour from the page
+
+### 4.7 Auth, sync, workspaces
 
 - Register/login → JWT
 - User documents sync presets/results/settings
@@ -246,7 +256,8 @@ docker compose up --build
 ## 10. Implementation index
 
 ### Frontend
-- `App.tsx` — main tabs (Pro Analysis import commented out)  
+- `App.tsx` — main tabs; Settings tab removed, Home tab first (Pro Analysis import commented out)  
+- `pages/HomeTab.tsx` — welcome, tour button, AccountPanel, SharePanel  
 - `lib/tiers.ts` — `cycleCivMarker`, tier normalization  
 - `lib/priorities.ts` — Top picks, Key civs, nemesis collection, pool max filtering  
 - `lib/preparedBans.ts`, `lib/usePreparedBans.ts`, `lib/draftBans.ts`  

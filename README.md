@@ -8,6 +8,9 @@ It helps you prepare, follow, and decide during live drafts — with map/civ tra
 
 ## What it does
 
+### Home
+The first tab. Welcomes new users, links to the **guided tour**, and contains login / registration. **DRAFT works without an account** — all data stays in your browser. Logging in enables cloud sync across devices and shared sessions with teammates.
+
 ### Presets
 Build map-specific civ tier lists (S–F). Mark **Key civs** (★) and **Nemesis civs** (☠) per map via double-click. Optionally use **Advanced pools** (e.g. Halb SO / Paladin / Flank) with a **Max** picks limit per pool. Copy between maps, import/export JSON, or seed from aoestats.
 
@@ -22,9 +25,6 @@ Log tournaments, sets, and games. Review civ/map patterns from your own saved re
 
 ### AoE in Data
 Interactive civ / tech / meta visualizations (patch data and tournament ban-pick patterns).
-
-### Settings
-Optional account login for cloud sync across devices, plus shared draft sessions with teammates.
 
 ---
 

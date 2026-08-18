@@ -8,7 +8,7 @@ import { AnalysisTab } from './pages/AnalysisTab'
 import { AoeDataTab } from './pages/AoeDataTab'
 import { ResultsTab, useResultsState } from './pages/ResultsTab'
 import { tournamentsWithResults } from './lib/results'
-import { SettingsTab } from './pages/SettingsTab'
+import { HomeTab } from './pages/HomeTab'
 import { AdminTab } from './pages/AdminTab'
 import { AppFooter } from './components/AppFooter'
 import { FaqModal } from './components/FaqModal'
@@ -30,9 +30,9 @@ import {
 } from './lib/onboarding'
 import './App.css'
 
-type AppTab = 'presets' | 'map' | 'civ' | 'results' | 'analysis' | 'aoedata' | 'pro' | 'settings' | 'admin'
+type AppTab = 'home' | 'presets' | 'map' | 'civ' | 'results' | 'analysis' | 'aoedata' | 'pro' | 'settings' | 'admin'
 function App() {
-  const [tab, setTab] = useState<AppTab>('presets')
+  const [tab, setTab] = useState<AppTab>('home')
   const [tourOpen, setTourOpen] = useState(false)
   const [faqOpen, setFaqOpen] = useState(false)
   const { store, setStore } = usePresetTournamentState()
@@ -79,11 +79,11 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!showAdminTab && tab === 'admin') setTab('settings')
+    if (!showAdminTab && tab === 'admin') setTab('home')
   }, [showAdminTab, tab])
 
   useEffect(() => {
-    if (tab === 'pro') setTab('analysis')
+    if (tab === 'pro' || tab === 'settings') setTab('home')
   }, [tab])
 
   return (
@@ -96,7 +96,7 @@ function App() {
             <p>{joinError ? `Could not join session: ${joinError}` : 'Joining shared session…'}</p>
           ) : (
             <p>
-              You were invited to a shared draft session. Log in under <strong>Settings</strong> to join.
+              You were invited to a shared draft session. Log in under <strong>Home</strong> to join.
             </p>
           )}
         </div>
@@ -135,6 +135,14 @@ function App() {
           <h1>{PRODUCT_NAME}</h1>
         </div>
         <nav className="tabs">
+          <button
+            type="button"
+            data-tour="nav-home"
+            className={tab === 'home' ? 'active' : ''}
+            onClick={() => setTab('home')}
+          >
+            Home
+          </button>
           <button
             type="button"
             data-tour="nav-presets"
@@ -183,14 +191,6 @@ function App() {
           >
             AoE in Data
           </button>
-          <button
-            type="button"
-            data-tour="nav-settings"
-            className={tab === 'settings' ? 'active' : ''}
-            onClick={() => setTab('settings')}
-          >
-            Settings
-          </button>
           {showAdminTab ? (
             <button type="button" className={tab === 'admin' ? 'active' : ''} onClick={() => setTab('admin')}>
               Admin
@@ -208,6 +208,9 @@ function App() {
       </header>
 
       <div className="tab-panels">
+        <div className="tab-panel" hidden={tab !== 'home'}>
+          <HomeTab />
+        </div>
         <div className="tab-panel" hidden={tab !== 'presets'}>
           <PresetsTab store={store} onChange={setStore} onResultsChange={setTournaments} />
         </div>
@@ -239,9 +242,6 @@ function App() {
         </div>
         <div className="tab-panel" hidden={tab !== 'aoedata'}>
           <AoeDataTab />
-        </div>
-        <div className="tab-panel" hidden={tab !== 'settings'}>
-          <SettingsTab />
         </div>
         {showAdminTab ? (
           <div className="tab-panel" hidden={tab !== 'admin'}>

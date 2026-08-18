@@ -11,13 +11,15 @@ In the app, open **FAQ** in the footer for the product definition; use **White m
 
 | Area | Purpose |
 |------|---------|
+| **Home** | Welcome, guided tour, account login / cloud sync / shared sessions |
 | **Presets** | TierMaker-style civ rankings per map; optional Key / Nemesis markers; Advanced pools |
 | **Map Draft** | Live aoe2cm map draft, or manual maps (1-Map / Select) |
 | **Civ Draft** | Live civ board, Prepared bans, Top 3, Key civs, pressure, assignment |
 | **Results** | Log tournaments, sets, and games |
 | **Analysis** | Own Results from saved games, or Tournament Meta from Liquipedia |
 | **AoE in Data** | Interactive civ / tech / meta visualizations (patch data + tournament stats) |
-| **Settings** | Account, cloud sync, shared draft sessions |
+
+**DRAFT works without an account.** All data is stored in the browser. Logging in (under Home) unlocks cloud sync across devices and shared sessions with teammates.
 
 Ranking is **tier-only**: **S / A / B / C / D / F**.
 
@@ -26,10 +28,10 @@ Ranking is **tier-only**: **S / A / B / C / D / F**.
 ## 2. Data storage and accounts
 
 ### Without login
-Data lives in the **browser** (`localStorage`). Clearing site data or switching devices loses it.
+Data lives in the **browser** (`localStorage`). You can use every feature immediately — no sign-up needed. Clearing site data or switching devices will lose your data.
 
-### With login (Settings)
-Presets, results, sessions, and settings can **sync across devices**. You can create a **shared session** so teammates share one draft board.
+### With login (Home tab)
+Presets, results, sessions, and settings can **sync across devices**. You can create a **shared session** so teammates share one draft board. Register or log in from the **Home** tab.
 
 ### Team name (critical)
 In Map Draft, enter **Your team** exactly as on aoe2cm. A wrong name breaks side detection.
@@ -229,11 +231,18 @@ Useful for understanding civ relationships and ban/pick patterns outside a live 
 
 ---
 
-## 10. Settings tab
+## 10. Home tab
 
-- Register / log in (password min. 8 characters).  
-- Cloud sync when logged in.  
-- Shared sessions: create, invite, collaborate on Shared Presets + draft board.
+The first tab in the navigation. It contains:
+
+- A **welcome overview** of the tool and its features.
+- A **"New Here? Start the guided tour"** button — also available as **New Here?** in the top bar.
+- **Account & Cloud Sync** — register or log in (password min. 8 characters).
+
+Without an account, all features work using browser storage only. Logging in enables:
+
+- **Cloud sync** — presets, results, and settings synced across devices.
+- **Shared sessions** — invite teammates to collaborate on Shared Presets and one live draft board.
 
 ---
 
@@ -265,7 +274,7 @@ Useful for understanding civ relationships and ban/pick patterns outside a live 
 | Nemesis not red in Prepared bans | Mark ☠ Nemesis in Presets for a locked map in the set |
 | Can’t drop on map | Assignment slots full |
 | “Configure map draft first” | Map Draft incomplete |
-| Teammate can’t join | They must log in first |
+| Teammate can’t join | They must log in first — use the **Home** tab |
 | Liquipedia / Draft Preview off | `LIQUIPEDIA_API_KEY` in `.env`; check `/api/liquipedia/status` |
 | Rate limit | Free Liquipedia plan; wait / rely on cache |
 | Draft Preview shows 0 matches | Often an **invalid/expired API key** — registry can still resolve the page name. Sync now fails with a clear error; update the key and restart the API |
