@@ -242,7 +242,7 @@ The first tab in the navigation. It contains:
 Without an account, all features work using browser storage only. Logging in enables:
 
 - **Cloud sync** — presets, results, and settings synced across devices.
-- **Shared sessions** — invite teammates to collaborate on Shared Presets and one live draft board.
+- **Shared sessions** — invite teammates to collaborate on Shared Presets, one live draft board, Prepared bans, and Results.
 
 ---
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AnalysisCard } from '../components/AnalysisCard'
 import { TournamentMetaPanel } from '../components/TournamentMetaPanel'
-import { CLOUD_HYDRATED } from '../lib/cloudStorage'
+import { CLOUD_HYDRATED, cloudHydratedIncludesKey, DOC_KEYS, LOCAL_STORAGE_KEYS, resolvedStorageKey } from '../lib/cloudStorage'
 import { fetchDraft } from '../lib/api'
 import { extractDraftId } from '../lib/civs'
 import { buildTournamentAnalysisSections } from '../lib/tournamentAnalysis'
@@ -18,14 +18,18 @@ export function useAnalysisTournaments() {
 
   useEffect(() => {
     const refresh = () => setTournaments(loadTournaments())
+    const onHydrated = (event: Event) => {
+      if (!cloudHydratedIncludesKey(event, DOC_KEYS.RESULTS)) return
+      refresh()
+    }
     window.addEventListener('aoe-results-changed', refresh)
-    window.addEventListener(CLOUD_HYDRATED, refresh)
+    window.addEventListener(CLOUD_HYDRATED, onHydrated)
     window.addEventListener('storage', (event) => {
-      if (event.key === 'aoe-draft-assistant.results') refresh()
+      if (event.key === resolvedStorageKey(LOCAL_STORAGE_KEYS.RESULTS)) refresh()
     })
     return () => {
       window.removeEventListener('aoe-results-changed', refresh)
-      window.removeEventListener(CLOUD_HYDRATED, refresh)
+      window.removeEventListener(CLOUD_HYDRATED, onHydrated)
     }
   }, [])
 

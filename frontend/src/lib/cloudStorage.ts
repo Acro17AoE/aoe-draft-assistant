@@ -1,4 +1,7 @@
 import { mergeCivMapAssignmentDocuments, type CivMapAssignmentState } from './civMapAssignments'
+import { mergePreparedBanDocuments, type PreparedBanStore } from './preparedBans'
+import { mergeTournamentDocuments } from './results'
+import type { Tournament } from '../types/results'
 
 export const DOC_KEYS = {
   PRESET_TOURNAMENTS: 'preset-tournaments',
@@ -9,6 +12,7 @@ export const DOC_KEYS = {
   MAP_SESSION: 'map-session',
   CIV_SESSION: 'civ-session',
   CIV_MAP_ASSIGNMENTS: 'civ-map-assignments',
+  PREPARED_BANS: 'prepared-bans',
 } as const
 
 export type DocKey = (typeof DOC_KEYS)[keyof typeof DOC_KEYS]
@@ -22,6 +26,7 @@ export const LOCAL_STORAGE_KEYS = {
   MAP_SESSION: 'aoe-draft-assistant.map-session',
   CIV_SESSION: 'aoe-draft-assistant.civ-session',
   CIV_MAP_ASSIGNMENTS: 'aoe-draft-assistant.civ-map-assignments',
+  PREPARED_BANS: 'aoe-draft-assistant.prepared-bans',
   AUTH_TOKEN: 'aoe-draft-assistant.auth-token',
   ACTIVE_WORKSPACE_SLUG: 'aoe-draft-assistant.active-workspace-slug',
 } as const
@@ -35,6 +40,7 @@ const LOCAL_TO_DOC: Record<string, DocKey> = {
   [LOCAL_STORAGE_KEYS.MAP_SESSION]: DOC_KEYS.MAP_SESSION,
   [LOCAL_STORAGE_KEYS.CIV_SESSION]: DOC_KEYS.CIV_SESSION,
   [LOCAL_STORAGE_KEYS.CIV_MAP_ASSIGNMENTS]: DOC_KEYS.CIV_MAP_ASSIGNMENTS,
+  [LOCAL_STORAGE_KEYS.PREPARED_BANS]: DOC_KEYS.PREPARED_BANS,
 }
 
 /** Draft session data synced in shared workspaces — kept separate from personal settings. */
@@ -42,6 +48,8 @@ const SESSION_LOCAL_KEYS = new Set<string>([
   LOCAL_STORAGE_KEYS.MAP_SESSION,
   LOCAL_STORAGE_KEYS.CIV_SESSION,
   LOCAL_STORAGE_KEYS.CIV_MAP_ASSIGNMENTS,
+  LOCAL_STORAGE_KEYS.PREPARED_BANS,
+  LOCAL_STORAGE_KEYS.RESULTS,
 ])
 
 const WORKSPACE_DOC_KEYS = new Set<DocKey>([
@@ -49,6 +57,8 @@ const WORKSPACE_DOC_KEYS = new Set<DocKey>([
   DOC_KEYS.MAP_SESSION,
   DOC_KEYS.CIV_SESSION,
   DOC_KEYS.CIV_MAP_ASSIGNMENTS,
+  DOC_KEYS.PREPARED_BANS,
+  DOC_KEYS.RESULTS,
 ])
 
 const WORKSPACE_LOCAL_KEYS = new Set<string>([
@@ -58,6 +68,10 @@ const WORKSPACE_LOCAL_KEYS = new Set<string>([
 
 function workspacePhysicalKey(logicalKey: string): string {
   return logicalKey.replace('aoe-draft-assistant.', 'aoe-draft-assistant.workspace.')
+}
+
+export function resolvedStorageKey(logicalKey: string): string {
+  return resolvePhysicalKey(logicalKey)
 }
 
 function resolvePhysicalKey(logicalKey: string): string {
@@ -225,6 +239,90 @@ function applyMergedCivMapAssignments(
   return DOC_KEYS.CIV_MAP_ASSIGNMENTS
 }
 
+function applyMergedPreparedBans(
+  doc: WorkspaceDocumentPayload,
+  localKey: string,
+): DocKey | null {
+  const physicalKey = workspacePhysicalKey(localKey)
+  const currentRaw = memory.get(physicalKey) ?? localStorage.getItem(physicalKey)
+  let current: PreparedBanStore = {}
+  if (currentRaw) {
+    try {
+      current = JSON.parse(currentRaw) as PreparedBanStore
+    } catch {
+      current = {}
+    }
+  }
+
+  const incoming = doc.content as PreparedBanStore
+  const merged = mergePreparedBanDocuments(current, incoming)
+  const raw = JSON.stringify(merged)
+
+  if (currentRaw === raw) {
+    getSyncMeta(localKey).lastAppliedServerAt = doc.updated_at
+    return null
+  }
+
+  const fromOtherUser = Boolean(
+    doc.updated_by_user_id && currentUserId && doc.updated_by_user_id !== currentUserId,
+  )
+
+  memory.set(physicalKey, raw)
+  localStorage.setItem(physicalKey, raw)
+
+  const meta = getSyncMeta(localKey)
+  meta.lastAppliedServerAt = doc.updated_at
+  const serverTime = doc.updated_at ? Date.parse(doc.updated_at) : 0
+  if (fromOtherUser || serverTime >= meta.localEditedAt) {
+    meta.localEditedAt = Math.max(meta.localEditedAt, serverTime)
+    meta.lastUploadedAt = Math.max(meta.lastUploadedAt ?? 0, serverTime)
+  }
+
+  return DOC_KEYS.PREPARED_BANS
+}
+
+function applyMergedResults(
+  doc: WorkspaceDocumentPayload,
+  localKey: string,
+): DocKey | null {
+  const physicalKey = workspacePhysicalKey(localKey)
+  const currentRaw = memory.get(physicalKey) ?? localStorage.getItem(physicalKey)
+  let current: Tournament[] = []
+  if (currentRaw) {
+    try {
+      current = JSON.parse(currentRaw) as Tournament[]
+    } catch {
+      current = []
+    }
+  }
+
+  const incoming = doc.content as Tournament[]
+  const merged = mergeTournamentDocuments(current, incoming)
+  const raw = JSON.stringify(merged)
+
+  if (currentRaw === raw) {
+    getSyncMeta(localKey).lastAppliedServerAt = doc.updated_at
+    return null
+  }
+
+  const fromOtherUser = Boolean(
+    doc.updated_by_user_id && currentUserId && doc.updated_by_user_id !== currentUserId,
+  )
+
+  memory.set(physicalKey, raw)
+  localStorage.setItem(physicalKey, raw)
+
+  const meta = getSyncMeta(localKey)
+  meta.lastAppliedServerAt = doc.updated_at
+  const serverTime = doc.updated_at ? Date.parse(doc.updated_at) : 0
+  if (fromOtherUser || serverTime >= meta.localEditedAt) {
+    meta.localEditedAt = Math.max(meta.localEditedAt, serverTime)
+    meta.lastUploadedAt = Math.max(meta.lastUploadedAt ?? 0, serverTime)
+  }
+
+  return DOC_KEYS.RESULTS
+}
+
 function applySingleWorkspaceDocument(doc: WorkspaceDocumentPayload): DocKey | null {
   if (!WORKSPACE_DOC_KEYS.has(doc.key)) return null
   const localKey = localKeyForDocKey(doc.key)
@@ -232,6 +330,14 @@ function applySingleWorkspaceDocument(doc: WorkspaceDocumentPayload): DocKey | n
 
   if (doc.key === DOC_KEYS.CIV_MAP_ASSIGNMENTS) {
     return applyMergedCivMapAssignments(doc, localKey)
+  }
+
+  if (doc.key === DOC_KEYS.PREPARED_BANS) {
+    return applyMergedPreparedBans(doc, localKey)
+  }
+
+  if (doc.key === DOC_KEYS.RESULTS) {
+    return applyMergedResults(doc, localKey)
   }
 
   const raw = JSON.stringify(doc.content)

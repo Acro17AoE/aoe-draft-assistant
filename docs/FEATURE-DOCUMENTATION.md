@@ -40,6 +40,7 @@
 Browser (React SPA)
   Tabs: Home | Presets | Map | Civ | Results | Analysis | AoE in Data
   localStorage + optional cloud docs + shared workspace
+  Workspace docs: presets, map/civ session, assignments, prepared bans, results
         │ REST / WebSocket
         ▼
 FastAPI backend
@@ -207,10 +208,10 @@ When a deployment is public, operators should send Liquipedia a project link for
 | Domain | Personal | Shared session |
 |--------|----------|----------------|
 | Presets | yes | Shared Presets document |
-| Results | yes | — |
+| Results | yes (also workspace doc in session) | yes |
 | Map / civ session | yes | yes |
 | Assignments | yes | yes |
-| Prepared bans | yes (keyed by civ draft id) | — |
+| Prepared bans | yes (keyed by civ draft id) | yes |
 | Settings / UI prefs | yes | — |
 | Auth token | local | local |
 

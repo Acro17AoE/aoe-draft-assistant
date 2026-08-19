@@ -1,26 +1,16 @@
 import { extractDraftId } from './civs'
-import { readLocalKey, writeLocalKey } from './cloudStorage'
-
-const STORAGE_KEY = 'aoe-draft-assistant.prepared-bans'
+import { LOCAL_STORAGE_KEYS, readLocalKey, writeLocalKey } from './cloudStorage'
 
 export interface PreparedBanDraftEntry {
   civIds: string[]
   locked?: boolean
 }
 
+export type PreparedBanStore = Record<string, PreparedBanDraftEntry | string[]>
+
 function storageKeyForDraft(civDraftUrl: string): string {
   const id = extractDraftId(civDraftUrl)
   return id || civDraftUrl.trim()
-}
-
-function readStore(): Record<string, PreparedBanDraftEntry | string[]> {
-  const raw = readLocalKey(STORAGE_KEY)
-  if (!raw) return {}
-  try {
-    return JSON.parse(raw) as Record<string, PreparedBanDraftEntry | string[]>
-  } catch {
-    return {}
-  }
 }
 
 function normalizeEntry(raw: PreparedBanDraftEntry | string[] | undefined): PreparedBanDraftEntry {
@@ -39,6 +29,26 @@ function normalizeEntry(raw: PreparedBanDraftEntry | string[] | undefined): Prep
   }
 }
 
+function readStore(): PreparedBanStore {
+  const raw = readLocalKey(LOCAL_STORAGE_KEYS.PREPARED_BANS)
+  if (!raw) return {}
+  try {
+    return JSON.parse(raw) as PreparedBanStore
+  } catch {
+    return {}
+  }
+}
+
+export function mergePreparedBanDocuments(
+  current: PreparedBanStore,
+  incoming: PreparedBanStore,
+): Record<string, PreparedBanDraftEntry> {
+  const merged: PreparedBanStore = { ...current, ...incoming }
+  return Object.fromEntries(
+    Object.entries(merged).map(([draftKey, entry]) => [draftKey, normalizeEntry(entry)]),
+  )
+}
+
 export function loadPreparedBanEntry(civDraftUrl: string): PreparedBanDraftEntry {
   if (!civDraftUrl.trim()) return { civIds: [], locked: false }
   const parsed = readStore()
@@ -53,7 +63,7 @@ export function savePreparedBanEntry(civDraftUrl: string, entry: PreparedBanDraf
   if (!civDraftUrl.trim()) return
   const parsed = readStore()
   parsed[storageKeyForDraft(civDraftUrl)] = entry
-  writeLocalKey(STORAGE_KEY, JSON.stringify(parsed))
+  writeLocalKey(LOCAL_STORAGE_KEYS.PREPARED_BANS, JSON.stringify(parsed))
 }
 
 export function savePreparedBans(civDraftUrl: string, civIds: string[]): void {

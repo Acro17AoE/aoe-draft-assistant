@@ -19,6 +19,8 @@ ALLOWED_DOC_KEYS = {
     "map-session",
     "civ-session",
     "civ-map-assignments",
+    "prepared-bans",
+    "results",
 }
 
 
@@ -127,11 +129,37 @@ def _merge_civ_map_assignments(current: object, incoming: object) -> object:
     return merged
 
 
-def _merge_workspace_doc_content(key: str, current_raw: str, incoming: object) -> object:
-    if key != "civ-map-assignments":
+def _merge_prepared_bans(current: object, incoming: object) -> object:
+    if not isinstance(current, dict) or not isinstance(incoming, dict):
         return incoming
-    current = _parse_content(current_raw)
-    return _merge_civ_map_assignments(current, incoming)
+    return {**current, **incoming}
+
+
+def _merge_results(current: object, incoming: object) -> object:
+    if not isinstance(current, list) or not isinstance(incoming, list):
+        return incoming
+
+    by_id: dict[str, Any] = {}
+    for tournament in current:
+        if isinstance(tournament, dict) and tournament.get("id"):
+            by_id[str(tournament["id"])] = tournament
+    for tournament in incoming:
+        if isinstance(tournament, dict) and tournament.get("id"):
+            by_id[str(tournament["id"])] = tournament
+    return list(by_id.values())
+
+
+def _merge_workspace_doc_content(key: str, current_raw: str, incoming: object) -> object:
+    if key == "civ-map-assignments":
+        current = _parse_content(current_raw)
+        return _merge_civ_map_assignments(current, incoming)
+    if key == "prepared-bans":
+        current = _parse_content(current_raw)
+        return _merge_prepared_bans(current, incoming)
+    if key == "results":
+        current = _parse_content(current_raw)
+        return _merge_results(current, incoming)
+    return incoming
 
 
 def _member_role(workspace: Workspace, user: User, db: Session) -> str | None:

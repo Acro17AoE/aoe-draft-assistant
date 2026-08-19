@@ -8,10 +8,19 @@ import type {
   TournamentSet,
 } from '../types/results'
 
-import { readLocalKey, writeLocalKey } from './cloudStorage'
+import { LOCAL_STORAGE_KEYS, readLocalKey, writeLocalKey } from './cloudStorage'
 import { OPPONENT_TEAM_LABEL, YOUR_TEAM_LABEL } from './replayImport'
 
-const STORAGE_KEY = 'aoe-draft-assistant.results'
+export function mergeTournamentDocuments(current: Tournament[], incoming: Tournament[]): Tournament[] {
+  const byId = new Map<string, Tournament>()
+  for (const tournament of current) {
+    if (tournament?.id) byId.set(tournament.id, tournament)
+  }
+  for (const tournament of incoming) {
+    if (tournament?.id) byId.set(tournament.id, tournament)
+  }
+  return [...byId.values()]
+}
 
 export function normalizeSetDraftContext(raw?: SetDraftContext): SetDraftContext {
   if (!raw) return {}
@@ -102,7 +111,7 @@ export function createTournament(name: string, format: TournamentFormat): Tourna
 }
 
 export function loadTournaments(): Tournament[] {
-  const raw = readLocalKey(STORAGE_KEY)
+  const raw = readLocalKey(LOCAL_STORAGE_KEYS.RESULTS)
   if (!raw) return []
   try {
     const parsed = JSON.parse(raw) as Array<Tournament & { draftContext?: SetDraftContext }>
@@ -126,7 +135,7 @@ export function loadTournaments(): Tournament[] {
 }
 
 export function saveTournaments(tournaments: Tournament[]): void {
-  writeLocalKey(STORAGE_KEY, JSON.stringify(tournaments))
+  writeLocalKey(LOCAL_STORAGE_KEYS.RESULTS, JSON.stringify(tournaments))
   window.dispatchEvent(new CustomEvent('aoe-results-changed'))
 }
 

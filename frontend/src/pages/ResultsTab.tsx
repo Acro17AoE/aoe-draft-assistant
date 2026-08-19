@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { CLOUD_HYDRATED } from '../lib/cloudStorage'
+import { CLOUD_HYDRATED, cloudHydratedIncludesKey, DOC_KEYS, LOCAL_STORAGE_KEYS, resolvedStorageKey } from '../lib/cloudStorage'
 import { SavedGameSummary, SetReplayImport } from '../components/SetReplayImport'
 import { SetDraftContextEditor, SetDraftContextSummary } from '../components/SetDraftContextEditor'
 import { SetPlayerIdentityPanel } from '../components/SetPlayerIdentityPanel'
@@ -45,14 +45,18 @@ export function useResultsState() {
 
   useEffect(() => {
     const refresh = () => setTournaments(loadTournaments())
+    const onHydrated = (event: Event) => {
+      if (!cloudHydratedIncludesKey(event, DOC_KEYS.RESULTS)) return
+      refresh()
+    }
     window.addEventListener('aoe-results-changed', refresh)
-    window.addEventListener(CLOUD_HYDRATED, refresh)
+    window.addEventListener(CLOUD_HYDRATED, onHydrated)
     window.addEventListener('storage', (event) => {
-      if (event.key === 'aoe-draft-assistant.results') refresh()
+      if (event.key === resolvedStorageKey(LOCAL_STORAGE_KEYS.RESULTS)) refresh()
     })
     return () => {
       window.removeEventListener('aoe-results-changed', refresh)
-      window.removeEventListener(CLOUD_HYDRATED, refresh)
+      window.removeEventListener(CLOUD_HYDRATED, onHydrated)
     }
   }, [])
 
