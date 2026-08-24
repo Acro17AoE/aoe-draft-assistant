@@ -1,3 +1,4 @@
+import { resolveCivDisplayName } from './civs'
 import { playersPerSide } from './results'
 import { namesMatch } from './nameUtils'
 import type { GameResult, TournamentFormat } from '../types/results'
@@ -87,7 +88,7 @@ function teamToSide(members: ParsedReplayMember[], format: TournamentFormat, lab
     const member = members[index]
     return {
       playerName: member?.name ?? '',
-      civ: member?.civ ?? '',
+      civ: member?.civ ? resolveCivDisplayName(member.civ) : '',
     }
   })
   return { label, members: slots }

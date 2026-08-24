@@ -21,6 +21,50 @@ from mgz.util import Version
 
 from .name_utils import names_match
 
+# Dataset / parser spellings → canonical civ names used in the app.
+CIV_NAME_ALIASES: dict[str, str] = {
+    "maya": "Mayans",
+    "aztec": "Aztecs",
+    "hindustani": "Hindustanis",
+    "hindustan": "Hindustanis",
+    "italian": "Italians",
+    "viking": "Vikings",
+    "mongol": "Mongols",
+    "frank": "Franks",
+    "briton": "Britons",
+    "korean": "Koreans",
+    "spanish": "Spanish",
+    "turk": "Turks",
+    "saracen": "Saracens",
+    "persian": "Persians",
+    "hun": "Huns",
+    "goth": "Goths",
+    "celt": "Celts",
+    "slav": "Slavs",
+    "magyar": "Magyars",
+    "malian": "Malians",
+    "malay": "Malay",
+    "khmer": "Khmer",
+    "burmese": "Burmese",
+    "vietnamese": "Vietnamese",
+    "bengali": "Bengalis",
+    "dravidian": "Dravidians",
+    "gurjara": "Gurjaras",
+    "roman": "Romans",
+    "armenian": "Armenians",
+    "georgian": "Georgians",
+    "bohemian": "Bohemians",
+    "burgundian": "Burgundians",
+    "sicilian": "Sicilians",
+    "bulgarian": "Bulgarians",
+    "lithuanian": "Lithuanians",
+    "polish": "Poles",
+    "portuguese": "Portuguese",
+    "teuton": "Teutons",
+    "tatar": "Tatars",
+    "cuman": "Cumans",
+}
+
 MAX_REPLAY_BYTES = 20 * 1024 * 1024
 MIN_REPLAY_BYTES = 256
 VALID_EXTENSIONS = (".aoe2record", ".mgz", ".mgx", ".mgl")
@@ -108,13 +152,21 @@ def _diagnose_content(content: bytes, *, expected_size: int | None = None) -> st
 
 
 def _player_payload(name: str, civ: str, won: bool) -> dict[str, Any]:
-    return {"name": name.strip(), "civ": civ, "won": won}
+    return {"name": name.strip(), "civ": _normalize_civ_name(civ), "won": won}
+
+
+def _normalize_civ_name(raw: str) -> str:
+    text = raw.strip()
+    if not text:
+        return ""
+    slug = re.sub(r"[^a-z0-9]+", "", text.lower())
+    return CIV_NAME_ALIASES.get(slug, text)
 
 
 def _civ_name(dataset: dict[str, Any], civilization_id: int | str) -> str:
     civ = dataset.get("civilizations", {}).get(str(civilization_id))
     if isinstance(civ, dict):
-        return str(civ.get("name") or "")
+        return _normalize_civ_name(str(civ.get("name") or ""))
     return ""
 
 
@@ -154,7 +206,8 @@ def _validation_quality(result: dict[str, Any]) -> tuple[int, int, int, int]:
         return (1, -sizes[0], -named_civs, 0)
     if "different player counts" in error:
         imbalance = abs(sizes[0] - sizes[1]) if len(sizes) == 2 else 9
-        return (2, -total_players, -named_civs, imbalance)
+        # Strongly prefer balanced team splits over uneven binary scans.
+        return (5, -total_players, -named_civs, imbalance)
     if "Expected 2 teams" in error:
         return (3, -total_players, -named_civs, abs(len(sizes) - 2))
     return (4, -total_players, -named_civs, 0)
@@ -210,12 +263,8 @@ def _merge_de_player_lists(*sources: list[dict[str, Any]]) -> list[dict[str, Any
                 existing["team_id"] = team_id
             elif team_id > 1:
                 existing["team_id"] = team_id
-            existing_civ = existing.get("civilization_id", 0)
-            try:
-                existing_civ_int = int(existing_civ) if existing_civ not in ("", None) else 0
-            except (TypeError, ValueError):
-                existing_civ_int = 0
-            if civ_id_int > 0 and existing_civ_int <= 0:
+            # Later parser passes (lightweight/header) override binary civ guesses.
+            if civ_id_int > 0:
                 existing["civilization_id"] = civ_id_int
 
     return [merged[number] for number in sorted(merged)]

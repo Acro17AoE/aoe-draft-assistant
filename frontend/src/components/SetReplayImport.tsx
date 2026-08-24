@@ -157,6 +157,43 @@ export function SetReplayImport({
     ? draftEntries.length === maxGames
     : draftEntries.length > 0 && draftEntries.length <= maxGames
 
+  const saveBlockedReason = useMemo(() => {
+    if (!countValid) {
+      if (requiresExactGameCount(setFormat)) {
+        return `This set format requires exactly ${maxGames} games (currently ${draftEntries.length}).`
+      }
+      if (draftEntries.length === 0) {
+        return 'Import at least one replay first.'
+      }
+      return `At most ${maxGames} games allowed for ${setFormat}.`
+    }
+    const incomplete = draftEntries
+      .map((entry, index) => ({ entry, index }))
+      .filter(({ entry }) => !isGameComplete(entry.game, format))
+    if (!incomplete.length) return null
+    const labels = incomplete.map(({ entry, index }) => {
+      const game = entry.game
+      const missing: string[] = []
+      if (!game.map.trim()) missing.push('map')
+      if (!game.winner) missing.push('winner')
+      if (entry.warning) missing.push('parse warning')
+      for (const sideKey of ['side1', 'side2'] as const) {
+        const side = game[sideKey]
+        if (format !== '1v1') {
+          for (const member of side.members) {
+            if (!member.civ) missing.push(`${side.label} civ`)
+            if (!member.playerName.trim()) missing.push(`${side.label} player`)
+          }
+        } else if (!side.members[0]?.civ) {
+          missing.push(`${side.label} civ`)
+        }
+      }
+      const detail = missing.length ? ` — missing ${[...new Set(missing)].join(', ')}` : ''
+      return `Game ${index + 1}${detail}`
+    })
+    return `Complete all games before saving: ${labels.join('; ')}.`
+  }, [countValid, draftEntries, format, maxGames, setFormat])
+
   if (phase === 'upload') {
     return (
       <div className="set-replay-import">
@@ -276,6 +313,9 @@ export function SetReplayImport({
       </div>
 
       {error ? <p className="set-replay-error">{error}</p> : null}
+      {saveBlockedReason ? (
+        <p className="hint set-replay-save-hint">{saveBlockedReason}</p>
+      ) : null}
 
       <div className="set-replay-actions">
         {!startsEmpty && onCancel ? (
@@ -288,6 +328,7 @@ export function SetReplayImport({
           className="accent-btn"
           disabled={!allComplete || !countValid}
           onClick={handleConfirm}
+          title={saveBlockedReason ?? undefined}
         >
           Save set results
         </button>
