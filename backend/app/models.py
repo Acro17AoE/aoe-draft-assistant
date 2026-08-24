@@ -127,6 +127,21 @@ class AnalyticsEvent(Base):
     meta: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
 
+class TrackedDraft(Base):
+    """aoe2cm drafts opened in DRAFT, for the admin draft list."""
+
+    __tablename__ = "tracked_drafts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    civ_draft_id: Mapped[str | None] = mapped_column(String(64), nullable=True, unique=True, index=True)
+    map_draft_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    host_name: Mapped[str] = mapped_column(String(160), default="")
+    host_email: Mapped[str] = mapped_column(String(320), default="")
+    workspace_name: Mapped[str] = mapped_column(String(160), default="")
+    workspace_id: Mapped[str | None] = mapped_column(ForeignKey("workspaces.id", ondelete="SET NULL"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
 class TournamentDataset(Base):
     """Cached Liquipedia + aoe2cm tournament analytics for Draft Preview."""
 

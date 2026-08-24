@@ -700,6 +700,18 @@ export interface AdminUserListResponse {
   total: number
 }
 
+export interface AdminTrackedDraft {
+  id: string
+  created_at: string | null
+  civ_draft_id: string | null
+  map_draft_id: string | null
+  civ_draft_url: string | null
+  map_draft_url: string | null
+  host_name: string
+  host_email: string
+  workspace_name: string
+}
+
 export interface AdminPeriodStats {
   page_views: number
   logins: number
@@ -711,6 +723,7 @@ export interface AdminStatsResponse {
   periods: Record<string, AdminPeriodStats>
   users: AdminUserEntry[]
   total_users: number
+  tracked_drafts: AdminTrackedDraft[]
 }
 
 export async function fetchAdminUsers(): Promise<AdminUserListResponse> {

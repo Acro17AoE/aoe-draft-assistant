@@ -169,6 +169,9 @@ Key logic:
 - User documents sync presets/results/settings
 - Shared workspaces: invite link, Shared Presets, live draft docs
 - Admin: `ADMIN_EMAIL` env → `user.is_admin` on `/api/auth/me` (no hardcoded emails in source)
+- Admin usage stats (`GET /api/admin/stats`): page views, logins, registrations, civ drafts
+- Civ drafts count **unique aoe2cm draft IDs** (`meta`), including drafts started in shared sessions when the board is already live (not only the first **Go** click). Duplicate posts from collaborators are ignored.
+- Tracked drafts table (`tracked_drafts`): civ + map aoe2cm IDs, session host (workspace owner or solo user), listed in Admin under a collapsible panel
 
 ---
 

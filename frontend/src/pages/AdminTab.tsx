@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   fetchAdminStats,
   type AdminPeriodStats,
+  type AdminTrackedDraft,
   type AdminUserEntry,
 } from '../lib/cloudStorage'
 
@@ -48,9 +49,21 @@ function formatSignupDate(value: string | null): string {
   })
 }
 
+function hostLabel(draft: AdminTrackedDraft): string {
+  const name = draft.host_name.trim() || draft.host_email.trim() || 'Unknown'
+  if (draft.workspace_name.trim()) {
+    return `${name} · ${draft.workspace_name.trim()}`
+  }
+  if (draft.host_name.trim() || draft.host_email.trim()) {
+    return `${name} · solo`
+  }
+  return name
+}
+
 export function AdminTab() {
   const [periods, setPeriods] = useState<Record<string, AdminPeriodStats>>({})
   const [users, setUsers] = useState<AdminUserEntry[]>([])
+  const [trackedDrafts, setTrackedDrafts] = useState<AdminTrackedDraft[]>([])
   const [totalUsers, setTotalUsers] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -63,6 +76,7 @@ export function AdminTab() {
       setPeriods(result.periods)
       setUsers(result.users)
       setTotalUsers(result.total_users)
+      setTrackedDrafts(result.tracked_drafts ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load admin stats')
     } finally {
@@ -82,7 +96,8 @@ export function AdminTab() {
             <h2>Usage stats</h2>
             <p className="hint">
               Calendar periods (UTC): today, this week (Mon–), this month, this year, and all time.
-              Page views, logins, and civ drafts start counting after this deploy.
+              Page views, logins, and civ drafts start counting after this deploy. Civ drafts count
+              unique aoe2cm draft IDs, including drafts opened in shared sessions.
             </p>
           </div>
           <button type="button" className="compact-btn" onClick={() => void load()} disabled={loading}>
@@ -119,6 +134,60 @@ export function AdminTab() {
             </tbody>
           </table>
         </div>
+
+        <details className="admin-drafts-details">
+          <summary>
+            Tracked drafts ({trackedDrafts.length})
+            <span className="hint"> — aoe2cm map &amp; civ links with session host</span>
+          </summary>
+          {trackedDrafts.length === 0 ? (
+            <p className="hint">No tracked drafts yet.</p>
+          ) : (
+            <div className="admin-users-table-wrap">
+              <table className="admin-stats-table admin-drafts-table">
+                <thead>
+                  <tr>
+                    <th>When</th>
+                    <th>Civ draft</th>
+                    <th>Map draft</th>
+                    <th>Session host</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trackedDrafts.map((draft) => (
+                    <tr key={draft.id}>
+                      <td>{formatSignupDate(draft.created_at)}</td>
+                      <td>
+                        {draft.civ_draft_url ? (
+                          <a href={draft.civ_draft_url} target="_blank" rel="noopener noreferrer">
+                            {draft.civ_draft_id}
+                          </a>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td>
+                        {draft.map_draft_url ? (
+                          <a href={draft.map_draft_url} target="_blank" rel="noopener noreferrer">
+                            {draft.map_draft_id}
+                          </a>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td>
+                        <span className="admin-draft-host">{hostLabel(draft)}</span>
+                        {draft.host_email && draft.host_name ? (
+                          <span className="hint admin-draft-host-email"> {draft.host_email}</span>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </details>
       </section>
 
       <section className="panel admin-users-panel">

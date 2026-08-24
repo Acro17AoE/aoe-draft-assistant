@@ -3630,7 +3630,43 @@ td {
 
 .admin-stats-num {
   font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.admin-drafts-details {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--laca-border);
+}
+
+.admin-drafts-details > summary {
+  cursor: pointer;
   font-weight: 700;
+  font-size: 0.92rem;
+  list-style: disclosure-closed;
+}
+
+.admin-drafts-details[open] > summary {
+  list-style: disclosure-open;
+  margin-bottom: 0.65rem;
+}
+
+.admin-drafts-details > summary .hint {
+  font-weight: 400;
+}
+
+.admin-drafts-table a {
+  color: var(--laca-purple-bright, #c77dff);
+  word-break: break-all;
+}
+
+.admin-draft-host {
+  font-weight: 600;
+}
+
+.admin-draft-host-email {
+  display: inline;
+  font-size: 0.78rem;
 }
 
 .admin-users-table td:nth-child(2) {

@@ -33,6 +33,8 @@ import {
   useOpponentTournamentTeams,
 } from '../lib/useOpponentAnalysis'
 */
+import { trackMapDraftStarted } from '../lib/analytics'
+import { extractDraftId } from '../lib/civs'
 import type { MapPriorityPreset, MapSessionConfig } from '../types/draft'
 import type { TournamentFormat } from '../types/results'
 
@@ -77,6 +79,13 @@ export function MapDraftAssistant({
   const streamActive = ready && mode === 'standard'
 
   const { draft: mapDraft, error: streamError } = useDraftStream(session.mapDraftUrl, streamActive)
+
+  useEffect(() => {
+    if (!ready || mode !== 'standard') return
+    const mapDraftId = extractDraftId(session.mapDraftUrl)
+    if (mapDraftId.length < 4) return
+    trackMapDraftStarted(mapDraftId)
+  }, [ready, mode, session.mapDraftUrl])
 
   /*
   const {

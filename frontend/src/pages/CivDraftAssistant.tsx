@@ -27,7 +27,7 @@ import {
   useOpponentTournamentTeams,
 } from '../lib/useOpponentAnalysis'
 */
-import { trackAnalyticsEvent } from '../lib/analytics'
+import { trackCivDraftStarted } from '../lib/analytics'
 import { extractDraftId } from '../lib/civs'
 import type { CivSessionConfig, MapPriorityPreset } from '../types/draft'
 import type { TournamentFormat } from '../types/results'
@@ -114,6 +114,16 @@ export function CivDraftAssistant({
   useEffect(() => {
     setError(civStreamError ?? mapStreamError ?? null)
   }, [civStreamError, mapStreamError])
+
+  useEffect(() => {
+    const started = Boolean(active || civSession.started)
+    if (!started) return
+    const draftId = extractDraftId(civSession.civDraftUrl)
+    if (draftId.length < 4) return
+    const mapDraftId =
+      mapSession?.mode === 'standard' ? extractDraftId(mapSession.mapDraftUrl ?? '') : ''
+    trackCivDraftStarted(draftId, mapDraftId.length >= 4 ? mapDraftId : undefined)
+  }, [active, civSession.started, civSession.civDraftUrl, mapSession?.mode, mapSession?.mapDraftUrl])
 
   const ownTeamName = mapSession?.ownTeamName ?? ''
   const civsPerMap = playersPerSide(tournamentFormat)
@@ -252,8 +262,12 @@ export function CivDraftAssistant({
       saveCivSession(nextSession)
     }
     setActive(true)
-    const draftId = extractDraftId(civSession.civDraftUrl)
-    trackAnalyticsEvent('civ_draft', draftId || undefined)
+    const mapDraftId =
+      mapSession?.mode === 'standard' ? extractDraftId(mapSession.mapDraftUrl ?? '') : ''
+    trackCivDraftStarted(
+      extractDraftId(civSession.civDraftUrl),
+      mapDraftId.length >= 4 ? mapDraftId : undefined,
+    )
   }
 
   return (
