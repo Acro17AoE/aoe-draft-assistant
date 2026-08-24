@@ -70,6 +70,16 @@ MIN_REPLAY_BYTES = 256
 VALID_EXTENSIONS = (".aoe2record", ".mgz", ".mgx", ".mgl")
 ZLIB_WBITS = -15
 DE_STRING_MAGIC = b"\x60\x0a"
+PARSER_REVISION = "2026-08-24-team-rebalance"
+
+# Lower rank = preferred when validation quality ties.
+_PARSER_SOURCE_RANK: dict[str, int] = {
+    "merged": 0,
+    "lightweight-de": 1,
+    "header-de": 2,
+    "model": 3,
+    "binary-de": 9,
+}
 
 _MAP_PATTERNS = (
     re.compile(r"Location:\s*([^\n\r]+)", re.IGNORECASE),
@@ -80,7 +90,7 @@ _MAP_PATTERNS = (
 
 
 def get_replay_parser_info() -> dict[str, str]:
-    info: dict[str, str] = {}
+    info: dict[str, str] = {"revision": PARSER_REVISION}
     for package in ("mgz", "construct", "aocref"):
         try:
             info[package] = metadata.version(package)
@@ -211,6 +221,12 @@ def _validation_quality(result: dict[str, Any]) -> tuple[int, int, int, int]:
     if "Expected 2 teams" in error:
         return (3, -total_players, -named_civs, abs(len(sizes) - 2))
     return (4, -total_players, -named_civs, 0)
+
+
+def _candidate_sort_key(result: dict[str, Any]) -> tuple[Any, ...]:
+    quality = _validation_quality(result)
+    parser = str(result.get("parser") or "")
+    return (*quality, _PARSER_SOURCE_RANK.get(parser, 5))
 
 
 def _is_human_lobby_name(name: str) -> bool:
@@ -486,6 +502,67 @@ def _map_from_decompressed_bytes(decompressed: bytes) -> str:
     return _map_from_instructions(decompressed)
 
 
+def _name_affinity_key(name: str) -> str:
+    """Clan / team tag from lobby names (e.g. ``NOC | player``, ``SalzZ_name``)."""
+    trimmed = _decode_name(name).strip()
+    if "|" in trimmed:
+        return trimmed.split("|", 1)[0].strip().lower()
+    if "_" in trimmed:
+        prefix = trimmed.split("_", 1)[0].strip()
+        if len(prefix) >= 2:
+            return prefix.lower()
+    return trimmed.lower()
+
+
+def _rebalance_explicit_teams(
+    explicit: dict[int, list[tuple[int, dict[str, Any]]]],
+) -> dict[int, list[tuple[int, dict[str, Any]]]] | None:
+    """Fix mis-assigned lobby team ids (binary scan) by moving name outliers."""
+    if len(explicit) != 2:
+        return None
+
+    team_ids = sorted(explicit)
+    buckets: dict[int, list[tuple[int, dict[str, Any]]]] = {
+        team_id: list(members) for team_id, members in explicit.items()
+    }
+    sizes = [len(buckets[team_id]) for team_id in team_ids]
+    if sizes[0] == sizes[1]:
+        return buckets
+
+    other = {team_ids[0]: team_ids[1], team_ids[1]: team_ids[0]}
+
+    changed = True
+    while changed:
+        changed = False
+        current_sizes = [len(buckets[team_id]) for team_id in team_ids]
+        if current_sizes[0] == current_sizes[1]:
+            break
+
+        larger_id = team_ids[0] if current_sizes[0] > current_sizes[1] else team_ids[1]
+        smaller_id = other[larger_id]
+        members = buckets[larger_id]
+        if len(members) <= 1:
+            break
+
+        keys = [_name_affinity_key(member["name"]) for _number, member in members]
+        majority_key = max(set(keys), key=keys.count)
+        for index, (number, member) in enumerate(list(members)):
+            key = _name_affinity_key(member["name"])
+            if key == majority_key:
+                continue
+            if len(buckets[larger_id]) <= len(buckets[smaller_id]):
+                break
+            members.pop(index)
+            buckets[smaller_id].append((number, member))
+            changed = True
+            break
+
+    final_sizes = [len(buckets[team_id]) for team_id in team_ids]
+    if final_sizes[0] == final_sizes[1] and final_sizes[0] > 0:
+        return buckets
+    return None
+
+
 def _teams_from_de_players(
     de_players: list[dict[str, Any]],
     dataset: dict[str, Any],
@@ -528,12 +605,10 @@ def _teams_from_de_players(
             solo[number + 9].append(payload)
 
     if len(explicit) >= 2:
-        teams = build(explicit)
+        grouping = _rebalance_explicit_teams(explicit) or explicit
+        teams = build(grouping)
         sizes = [len(team["members"]) for team in teams]
         if len(teams) == 2 and sizes[0] == sizes[1]:
-            return teams
-        # If explicit teams are uneven, still prefer them over solo-splitting everyone.
-        if len(teams) == 2:
             return teams
 
     combined = defaultdict(list)
@@ -728,8 +803,14 @@ def parse_replay_bytes(
     map_candidates: list[str] = []
     resigned_sets: list[set[int]] = []
 
-    def _consider(result: dict[str, Any]) -> None:
-        candidates.append(result)
+    def _consider(result: dict[str, Any], *, parser: str) -> None:
+        tagged = {**result, "parser": parser}
+        teams = tagged.get("teams") or []
+        if len(teams) == 2:
+            sizes = [len(team.get("members") or []) for team in teams]
+            if sizes[0] != sizes[1]:
+                return
+        candidates.append(tagged)
 
     def _note_players(players: list[dict[str, Any]] | None, map_name: str = "", resigned: set[int] | None = None) -> None:
         if players:
@@ -758,7 +839,8 @@ def parse_replay_bytes(
                         expected_per_side=expected_per_side,
                         bytes_received=bytes_received,
                         expected_bytes=expected_bytes,
-                    )
+                    ),
+                    parser="binary-de",
                 )
     except Exception as exc:
         binary_error = _format_parse_error(exc)
@@ -780,7 +862,8 @@ def parse_replay_bytes(
                         expected_per_side=expected_per_side,
                         bytes_received=bytes_received,
                         expected_bytes=expected_bytes,
-                    )
+                    ),
+                    parser="lightweight-de",
                 )
     except Exception as exc:
         lightweight_error = _format_parse_error(exc)
@@ -802,7 +885,8 @@ def parse_replay_bytes(
                     expected_per_side=expected_per_side,
                     bytes_received=bytes_received,
                     expected_bytes=expected_bytes,
-                )
+                ),
+                parser="header-de",
             )
         else:
             header_error = "No player teams found in replay header"
@@ -824,7 +908,8 @@ def parse_replay_bytes(
                     expected_per_side=expected_per_side,
                     bytes_received=bytes_received,
                     expected_bytes=expected_bytes,
-                )
+                ),
+                parser="model",
             )
         else:
             model_error = "No player teams found in replay"
@@ -855,7 +940,8 @@ def parse_replay_bytes(
                         expected_per_side=expected_per_side,
                         bytes_received=bytes_received,
                         expected_bytes=expected_bytes,
-                    )
+                    ),
+                    parser="merged",
                 )
         except Exception:
             pass
@@ -863,7 +949,7 @@ def parse_replay_bytes(
     if candidates:
         successes = [item for item in candidates if item.get("error") is None]
         pool = successes or candidates
-        return min(pool, key=_validation_quality)
+        return min(pool, key=_candidate_sort_key)
 
     detail_parts = [
         part
