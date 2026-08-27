@@ -55,6 +55,7 @@ Docs: [User manual](docs/USER-MANUAL.md) · [Feature & architecture](docs/FEATUR
 
 ## Credits & license
 
+- **AI assistance:** Substantial parts of this tool were developed with the help of large language models (LLMs). Human review and testing remain the authors’ responsibility; treat the software as community-built and use it at your own risk.
 - Tournament and team data provided by [Liquipedia](https://liquipedia.net/ageofempires/Main_Page) (CC-BY-SA).
 - Age of Empires © Microsoft Corporation. DRAFT is an unofficial community tool, not affiliated with Microsoft, aoe2cm, or tournament organizers.
 - Code license: [LICENSE](LICENSE) · contributing notes: [CONTRIBUTING.md](CONTRIBUTING.md)
