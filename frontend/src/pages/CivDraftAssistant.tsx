@@ -247,6 +247,13 @@ export function CivDraftAssistant({
     ownBanSlots > 0 &&
     !isBanPhaseComplete(civDraft)
 
+  /**
+   * Pre-Go: Prepared bans → Preview → Opponent analysis (OA no longer sits under the link).
+   * After Go: Preview + OA collapse to the bottom (below Opponent Prediction).
+   */
+  const showPreGoOpponentAnalysis = showOpponentAnalysis && !active
+  const showCollapsedPostGoExtras = active
+
   const prepPriorityMerge = useMemo(
     () => mergePriorityEntriesForMaps(presets, presetMapNames, settings),
     [presets, presetMapNames, settings],
@@ -295,6 +302,30 @@ export function CivDraftAssistant({
     )
   }
 
+  const opponentPanel = (collapsed: boolean) =>
+    showOpponentAnalysis ? (
+      <OpponentAnalysisPanel
+        variant="civ"
+        analysis={mapSession?.opponentTeamName?.trim() ? opponentAnalysis : null}
+        busy={mapSession?.opponentTeamName?.trim() ? opponentBusy : false}
+        error={mapSession?.opponentTeamName?.trim() ? opponentError : null}
+        syncBusy={opponentSyncBusy}
+        onRefreshSync={
+          mapSession?.opponentTeamName?.trim()
+            ? () => void refreshOpponentTournamentData()
+            : undefined
+        }
+        emptyHint={
+          mapSession?.opponentTeamName?.trim()
+            ? null
+            : 'Select an opponent under Pregame to see civ ban/pick tendencies and tournament sets here.'
+        }
+        currentMapNames={presetMapNames}
+        collapsed={collapsed}
+        defaultOpen={false}
+      />
+    ) : null
+
   return (
     <main className={`layout assistant-layout${active ? ' assistant-layout-civ-active' : ''}`}>
       <CivDraftSetup
@@ -305,28 +336,6 @@ export function CivDraftAssistant({
         onGo={startSession}
         error={error}
       />
-
-      {showOpponentAnalysis ? (
-        <OpponentAnalysisPanel
-          variant="civ"
-          analysis={
-            mapSession?.opponentTeamName?.trim() ? opponentAnalysis : null
-          }
-          busy={mapSession?.opponentTeamName?.trim() ? opponentBusy : false}
-          error={mapSession?.opponentTeamName?.trim() ? opponentError : null}
-          syncBusy={opponentSyncBusy}
-          onRefreshSync={
-            mapSession?.opponentTeamName?.trim()
-              ? () => void refreshOpponentTournamentData()
-              : undefined
-          }
-          emptyHint={
-            mapSession?.opponentTeamName?.trim()
-              ? null
-              : 'Select an opponent under Pregame to see civ ban/pick tendencies and tournament sets here.'
-          }
-        />
-      ) : null}
 
       {showPreparedBans ? (
         <PreparedBanList
@@ -353,6 +362,8 @@ export function CivDraftAssistant({
         />
       ) : null}
 
+      {showPreGoOpponentAnalysis ? opponentPanel(false) : null}
+
       {active ? (
         <CivDraftBoard
           items={civItems}
@@ -368,6 +379,24 @@ export function CivDraftAssistant({
           onAssignOwn={setOwnAssignment}
           onAssignOpponent={setOpponentAssignment}
         />
+      ) : null}
+
+      {showCollapsedPostGoExtras ? (
+        <div className="civ-draft-postgo-extras">
+          <details className="panel draft-preview-collapsed">
+            <summary>Civ Draft Preview</summary>
+            <div className="draft-preview-collapsed-body">
+              <DraftPreview
+                presets={presets}
+                mapNames={allMapPicks}
+                presetTournamentName={presetTournamentName}
+                tournamentFormat={tournamentFormat}
+                compact
+              />
+            </div>
+          </details>
+          {opponentPanel(true)}
+        </div>
       ) : null}
     </main>
   )

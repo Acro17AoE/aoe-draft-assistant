@@ -22,12 +22,12 @@ _FALLBACK_REGISTRY: dict[str, Any] = {
         "displayName": "The League",
         "aliases": ["The League", "TheLeague", "TL", "RF", "the league"],
         "liquipediaParent": "The_League",
-        "trackedForMeta": False,
+        "trackedForMeta": True,
         "stages": [
-            "The_League/Qualifier/1",
-            "The_League/Qualifier/2",
             "The_League",
             "The_League/Division_2",
+            "The_League/Qualifier/1",
+            "The_League/Qualifier/2",
         ],
     },
     "the-league-qualifiers": {
@@ -39,7 +39,7 @@ _FALLBACK_REGISTRY: dict[str, Any] = {
             "the-league-qualifiers",
         ],
         "liquipediaParent": "The_League",
-        "trackedForMeta": True,
+        "trackedForMeta": False,
         "stages": ["The_League/Qualifier/1", "The_League/Qualifier/2"],
     },
     "warlords-5": {
@@ -108,7 +108,7 @@ def resolve_registry_entry(name: str) -> tuple[str, dict[str, Any]] | None:
     if trimmed.lower() in registry:
         return trimmed.lower(), registry[trimmed.lower()]
 
-    exact: list[tuple[str, dict[str, Any]]] = []
+    exact: list[tuple[int, str, dict[str, Any]]] = []
     fuzzy: list[tuple[int, str, dict[str, Any]]] = []
 
     for slug, entry in registry.items():
@@ -118,14 +118,18 @@ def resolve_registry_entry(name: str) -> tuple[str, dict[str, Any]] | None:
             if not norm:
                 continue
             if norm == needle:
-                exact.append((slug, entry))
+                # Longer alias wins so "The League Qualifiers" beats a bare "The League" collision.
+                exact.append((len(norm), slug, entry))
                 break
-            if needle in norm or norm in needle:
-                score = min(len(needle), len(norm))
-                fuzzy.append((score, slug, entry))
+            # Avoid "The League" fuzzy-matching "The League Qualifiers" via substring.
+            shorter, longer = (needle, norm) if len(needle) <= len(norm) else (norm, needle)
+            if shorter in longer and len(shorter) >= max(6, int(len(longer) * 0.7)):
+                fuzzy.append((len(shorter), slug, entry))
 
     if exact:
-        return exact[0]
+        exact.sort(key=lambda item: item[0], reverse=True)
+        _, slug, entry = exact[0]
+        return slug, entry
     if fuzzy:
         fuzzy.sort(key=lambda item: item[0], reverse=True)
         _, slug, entry = fuzzy[0]

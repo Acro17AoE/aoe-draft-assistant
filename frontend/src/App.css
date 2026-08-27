@@ -3149,15 +3149,22 @@ td {
   height: 2rem;
   padding: 0;
   border-radius: 6px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: inherit;
+  border: 1px solid var(--laca-border);
+  background: color-mix(in srgb, var(--laca-bg-panel) 70%, #000);
+  color: var(--laca-text, #c9b8d4);
   cursor: pointer;
+}
+
+.preset-io-btn svg {
+  display: block;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
 }
 
 .preset-io-btn:hover,
 .preset-io-btn:focus-visible {
-  border-color: var(--laca-border);
+  border-color: var(--laca-yellow);
   color: var(--laca-yellow);
   outline: none;
 }
@@ -7080,6 +7087,75 @@ td {
   align-items: center;
   gap: 0.3rem;
   font-size: 0.74rem;
+}
+
+.opponent-analysis-list li.opponent-analysis-map-relevant {
+  background: color-mix(in srgb, var(--laca-yellow) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--laca-yellow) 55%, transparent);
+  border-radius: 6px;
+  padding: 0.15rem 0.35rem;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--laca-yellow) 25%, transparent);
+}
+
+.opponent-analysis-list li.opponent-analysis-map-relevant .opponent-analysis-meta {
+  color: var(--laca-yellow);
+  opacity: 1;
+}
+
+.civ-draft-postgo-extras {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+  flex-shrink: 0;
+}
+
+.draft-preview-collapsed,
+.opponent-analysis-collapsed {
+  padding: 0.55rem 0.85rem;
+}
+
+.draft-preview-collapsed > summary,
+.opponent-analysis-collapsed > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  list-style: none;
+}
+
+.draft-preview-collapsed > summary::-webkit-details-marker,
+.opponent-analysis-collapsed > summary::-webkit-details-marker {
+  display: none;
+}
+
+.draft-preview-collapsed > summary::before,
+.opponent-analysis-collapsed > summary::before {
+  content: '▸ ';
+  opacity: 0.7;
+}
+
+.draft-preview-collapsed[open] > summary::before,
+.opponent-analysis-collapsed[open] > summary::before {
+  content: '▾ ';
+}
+
+.draft-preview-collapsed-body .draft-preview,
+.opponent-analysis-collapsed-body {
+  margin-top: 0.65rem;
+}
+
+.draft-preview-collapsed-body .draft-preview {
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  background: transparent;
+}
+
+.draft-preview-collapsed-body .draft-preview h2 {
+  display: none;
+}
+
+.assistant-layout-civ-active .civ-draft-postgo-extras {
+  margin-top: 0.5rem;
 }
 
 .draft-preview-opponent {

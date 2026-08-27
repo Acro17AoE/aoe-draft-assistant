@@ -3,12 +3,12 @@
     "displayName": "The League",
     "aliases": ["The League", "TheLeague", "TL", "RF", "the league"],
     "liquipediaParent": "The_League",
-    "trackedForMeta": false,
+    "trackedForMeta": true,
     "stages": [
-      "The_League/Qualifier/1",
-      "The_League/Qualifier/2",
       "The_League",
-      "The_League/Division_2"
+      "The_League/Division_2",
+      "The_League/Qualifier/1",
+      "The_League/Qualifier/2"
     ]
   },
   "the-league-qualifiers": {
@@ -20,7 +20,7 @@
       "the-league-qualifiers"
     ],
     "liquipediaParent": "The_League",
-    "trackedForMeta": true,
+    "trackedForMeta": false,
     "stages": [
       "The_League/Qualifier/1",
       "The_League/Qualifier/2"

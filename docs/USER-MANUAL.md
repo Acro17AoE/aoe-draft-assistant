@@ -226,7 +226,7 @@ Colorblind mode, hide banned, hide opponent prediction, Top 3 hide/show/dim when
 Two modes:
 
 - **Own Results** — cards for your tournaments with saved games: civ WR, maps played, civ×map, and draft-derived views when draft links exist.
-- **Tournament Meta** — Liquipedia + aoe2cm aggregates for tracked events (**The League Qualifiers** = Qualifier 1+2 only; **Warlords 5**). Shows map rankings (played / banned / picked / neutral leftover / least played), civ rankings + ban/pick/WR rates, and per-map Top 3 / Bottom 3 civs. **Refresh** force-syncs (respect Liquipedia free quota). Ban/pick quality depends on `|civdraft=` / `|mapdraft=` on wiki matches; data is credited to Liquipedia (CC-BY-SA).
+- **Tournament Meta** — Liquipedia + aoe2cm aggregates for tracked events (**The League** = Division 1 + Division 2 + Qualifiers; **Warlords 5**). Shows map rankings (played / banned / picked / neutral leftover / least played), civ rankings + ban/pick/WR rates, and per-map Top 3 / Bottom 3 civs. **Refresh** force-syncs (respect Liquipedia free quota). Ban/pick quality depends on `|civdraft=` / `|mapdraft=` on wiki matches; data is credited to Liquipedia (CC-BY-SA).
 
 ---
 

@@ -22,30 +22,18 @@ interface PresetExportImportPanelProps {
 
 function UploadIcon() {
   return (
-    <svg viewBox="0 0 16 16" width={16} height={16} aria-hidden>
-      <path
-        d="M8 11.5V3.75M8 3.75 5.25 6.5M8 3.75 10.75 6.5M3 12.5h10"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg viewBox="0 0 20 20" width={18} height={18} fill="currentColor" aria-hidden>
+      <path d="M9.25 14.75V6.56l-2.72 2.72a.75.75 0 1 1-1.06-1.06l4-4a.75.75 0 0 1 1.06 0l4 4a.75.75 0 1 1-1.06 1.06L10.75 6.56v8.19a.75.75 0 0 1-1.5 0Z" />
+      <path d="M3.5 16.25a.75.75 0 0 1 .75-.75h11.5a.75.75 0 0 1 0 1.5H4.25a.75.75 0 0 1-.75-.75Z" />
     </svg>
   )
 }
 
 function DownloadIcon() {
   return (
-    <svg viewBox="0 0 16 16" width={16} height={16} aria-hidden>
-      <path
-        d="M8 3.5v7.75M8 11.25 5.25 8.5M8 11.25 10.75 8.5M3 13h10"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg viewBox="0 0 20 20" width={18} height={18} fill="currentColor" aria-hidden>
+      <path d="M10.75 5.25v8.19l2.72-2.72a.75.75 0 1 1 1.06 1.06l-4 4a.75.75 0 0 1-1.06 0l-4-4a.75.75 0 1 1 1.06-1.06l2.72 2.72V5.25a.75.75 0 0 1 1.5 0Z" />
+      <path d="M3.5 16.25a.75.75 0 0 1 .75-.75h11.5a.75.75 0 0 1 0 1.5H4.25a.75.75 0 0 1-.75-.75Z" />
     </svg>
   )
 }

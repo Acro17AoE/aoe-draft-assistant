@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { civIconUrl } from '../lib/civs'
-import { resolveMapDisplay } from '../lib/maps'
+import { mapNamesMatch, resolveMapDisplay } from '../lib/maps'
 import type {
   OpponentNamedCount,
   OpponentTeamAnalysis,
@@ -21,10 +21,12 @@ function NamedList({
   title,
   rows,
   kind,
+  highlightNames,
 }: {
   title: string
   rows: OpponentNamedCount[] | undefined
   kind: 'map' | 'civ'
+  highlightNames?: Set<string>
 }) {
   const items = rows ?? []
   return (
@@ -34,20 +36,32 @@ function NamedList({
         <p className="hint">No data yet</p>
       ) : (
         <ol>
-          {items.map((row) => (
-            <li key={`${title}-${row.name}`}>
-              {kind === 'map' ? (
-                <MapIcon name={row.name} />
-              ) : (
-                <img src={civIconUrl(row.name)} alt="" className="opponent-analysis-icon" />
-              )}
-              <span>{row.name}</span>
-              <span className="opponent-analysis-meta">
-                {row.count}
-                {row.avgOrder != null ? ` · #${row.avgOrder}` : ''}
-              </span>
-            </li>
-          ))}
+          {items.map((row) => {
+            const highlighted =
+              kind === 'civ' && Boolean(highlightNames?.has(row.name.trim().toLowerCase()))
+            return (
+              <li
+                key={`${title}-${row.name}`}
+                className={highlighted ? 'opponent-analysis-map-relevant' : undefined}
+                title={
+                  highlighted
+                    ? 'Often played on your current map draft maps in past sets'
+                    : undefined
+                }
+              >
+                {kind === 'map' ? (
+                  <MapIcon name={row.name} />
+                ) : (
+                  <img src={civIconUrl(row.name)} alt="" className="opponent-analysis-icon" />
+                )}
+                <span>{row.name}</span>
+                <span className="opponent-analysis-meta">
+                  {row.count}
+                  {row.avgOrder != null ? ` · #${row.avgOrder}` : ''}
+                </span>
+              </li>
+            )
+          })}
         </ol>
       )}
     </section>
@@ -137,16 +151,73 @@ function MapDraftAnalysisBody({ analysis }: { analysis: OpponentTeamAnalysis }) 
   )
 }
 
-function CivDraftAnalysisBody({ analysis }: { analysis: OpponentTeamAnalysis }) {
+function filterMapCivGroups(
+  analysis: OpponentTeamAnalysis,
+  currentMapNames: string[] | undefined,
+) {
+  const groups = analysis.mapCivs ?? []
+  if (!currentMapNames?.length) return groups
+  return groups.filter((group) =>
+    currentMapNames.some((mapName) => mapNamesMatch(mapName, group.mapName)),
+  )
+}
+
+function mapRelevantCivNames(
+  analysis: OpponentTeamAnalysis,
+  currentMapNames: string[] | undefined,
+): Set<string> {
+  const relevant = new Set<string>()
+  for (const group of filterMapCivGroups(analysis, currentMapNames)) {
+    for (const row of group.civs.slice(0, 3)) {
+      const key = row.civ.trim().toLowerCase()
+      if (key) relevant.add(key)
+    }
+  }
+  return relevant
+}
+
+function CivDraftAnalysisBody({
+  analysis,
+  currentMapNames,
+}: {
+  analysis: OpponentTeamAnalysis
+  currentMapNames?: string[]
+}) {
   const uncertain = analysis.uncertain
   const hasUncertainCivs = (uncertain?.civsBannedAgainst?.length ?? 0) > 0
+  const mapCivGroups = useMemo(
+    () => filterMapCivGroups(analysis, currentMapNames),
+    [analysis, currentMapNames],
+  )
+  const highlightNames = useMemo(
+    () => mapRelevantCivNames(analysis, currentMapNames),
+    [analysis, currentMapNames],
+  )
+  const civPicks = useMemo(() => {
+    const rows = [...(analysis.civs?.mostPicked ?? [])]
+    rows.sort((a, b) => {
+      const aOrder = a.avgOrder
+      const bOrder = b.avgOrder
+      if (aOrder == null && bOrder == null) return b.count - a.count
+      if (aOrder == null) return 1
+      if (bOrder == null) return -1
+      if (aOrder !== bOrder) return aOrder - bOrder
+      return b.count - a.count
+    })
+    return rows.slice(0, 15)
+  }, [analysis.civs?.mostPicked])
 
   return (
     <>
       <h3 className="opponent-analysis-section-title">Their civ actions (confirmed)</h3>
       <div className="opponent-analysis-grid">
         <NamedList title="Civ bans" rows={analysis.civs?.mostBanned} kind="civ" />
-        <NamedList title="Civ picks" rows={analysis.civs?.mostPicked} kind="civ" />
+        <NamedList
+          title="Civ picks (by draft order)"
+          rows={civPicks}
+          kind="civ"
+          highlightNames={highlightNames}
+        />
       </div>
       {hasUncertainCivs ? (
         <div className="opponent-analysis-uncertain">
@@ -160,11 +231,17 @@ function CivDraftAnalysisBody({ analysis }: { analysis: OpponentTeamAnalysis }) 
           </div>
         </div>
       ) : null}
-      {(analysis.mapCivs ?? []).length ? (
+      {mapCivGroups.length ? (
         <div className="opponent-analysis-mapcivs">
           <h3>Civs by map (their games)</h3>
+          <p className="hint opponent-analysis-uncertain-note">
+            Only maps from your current Map Draft
+            {highlightNames.size
+              ? ' — yellow civ picks below match frequent picks on these maps.'
+              : '.'}
+          </p>
           <div className="opponent-analysis-mapciv-grid">
-            {(analysis.mapCivs ?? []).map((group) => (
+            {mapCivGroups.map((group) => (
               <article key={group.mapName} className="opponent-analysis-mapciv panel">
                 <header>
                   <MapIcon name={group.mapName} />
@@ -185,6 +262,8 @@ function CivDraftAnalysisBody({ analysis }: { analysis: OpponentTeamAnalysis }) 
             ))}
           </div>
         </div>
+      ) : currentMapNames?.length ? (
+        <p className="hint">No civ-by-map history for the maps in your current Map Draft.</p>
       ) : null}
     </>
   )
@@ -237,6 +316,11 @@ interface OpponentAnalysisPanelProps {
   syncBusy?: boolean
   onRefreshSync?: () => void
   emptyHint?: string | null
+  /** When set (civ variant), only show civs-by-map for these Map Draft maps. */
+  currentMapNames?: string[]
+  /** Render as a collapsed <details> block (e.g. after Go on Civ Draft). */
+  collapsed?: boolean
+  defaultOpen?: boolean
 }
 
 export function OpponentAnalysisPanel({
@@ -247,6 +331,9 @@ export function OpponentAnalysisPanel({
   syncBusy,
   onRefreshSync,
   emptyHint,
+  currentMapNames,
+  collapsed = false,
+  defaultOpen = true,
 }: OpponentAnalysisPanelProps) {
   if (!analysis && !busy && !error && !emptyHint) return null
 
@@ -254,11 +341,11 @@ export function OpponentAnalysisPanel({
   const showMap = variant === 'map' || variant === 'full'
   const showCiv = variant === 'civ' || variant === 'full'
 
-  return (
-    <section className={`panel opponent-analysis-panel variant-${variant}`}>
+  const body = (
+    <>
       <header className="opponent-analysis-header">
         <div>
-          <h2>{titleForVariant(variant)}</h2>
+          {!collapsed ? <h2>{titleForVariant(variant)}</h2> : null}
           {analysis?.team ? (
             <p className="hint">
               {analysis.team} · {analysis.matchCount ?? 0} played set(s)
@@ -303,20 +390,35 @@ export function OpponentAnalysisPanel({
               </div>
               <div className="opponent-analysis-full-block">
                 <h3 className="opponent-analysis-block-title">Civ Draft</h3>
-                <CivDraftAnalysisBody analysis={analysis} />
+                <CivDraftAnalysisBody analysis={analysis} currentMapNames={currentMapNames} />
               </div>
             </>
           ) : (
             <>
               {showMap ? <MapDraftAnalysisBody analysis={analysis} /> : null}
-              {showCiv ? <CivDraftAnalysisBody analysis={analysis} /> : null}
+              {showCiv ? (
+                <CivDraftAnalysisBody analysis={analysis} currentMapNames={currentMapNames} />
+              ) : null}
             </>
           )}
 
           <TournamentSetsList analysis={analysis} />
         </>
       ) : null}
-    </section>
+    </>
+  )
+
+  if (collapsed) {
+    return (
+      <details className="panel opponent-analysis-panel opponent-analysis-collapsed" open={defaultOpen}>
+        <summary>{titleForVariant(variant)}</summary>
+        <div className="opponent-analysis-collapsed-body">{body}</div>
+      </details>
+    )
+  }
+
+  return (
+    <section className={`panel opponent-analysis-panel variant-${variant}`}>{body}</section>
   )
 }
 

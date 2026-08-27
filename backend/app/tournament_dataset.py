@@ -500,6 +500,11 @@ async def sync_tournament_dataset(
     if not access.get("ok"):
         raise RuntimeError(str(access.get("detail") or "Liquipedia API access failed."))
 
+    # Pick up registry file edits without requiring a full process restart.
+    from .tournament_registry import load_tournament_registry
+
+    load_tournament_registry.cache_clear()
+
     # Capture previous stages before ensure_dataset overwrites from registry.
     resolved_preview = resolve_registry_entry(name)
     preview_slug = None
@@ -921,6 +926,13 @@ def dataset_status(db: Session, slug: str) -> dict[str, Any]:
         row.draft_count = draft_pairs
         row.match_count = played_matches
         db.commit()
+
+    stage_counts: dict[str, int] = {}
+    for match in match_rows:
+        stage_key = to_pagename(str(match.stage or "")) or "(unknown)"
+        stage_counts[stage_key] = stage_counts.get(stage_key, 0) + 1
+    missing_stages = [stage for stage in stages if stage not in stage_counts]
+
     return {
         "found": True,
         "slug": row.slug,
@@ -928,6 +940,8 @@ def dataset_status(db: Session, slug: str) -> dict[str, Any]:
         "liquipediaParent": row.liquipedia_parent,
         "liquipediaUrl": f"https://liquipedia.net/ageofempires/{row.liquipedia_parent}",
         "stages": stages,
+        "stageMatchCounts": stage_counts,
+        "missingStages": missing_stages,
         "status": row.status,
         "statusDetail": row.status_detail,
         "lastSyncedAt": row.last_synced_at.isoformat() if row.last_synced_at else None,
@@ -1487,6 +1501,31 @@ def _ranked_named(
     return rows
 
 
+def _ranked_named_by_draft_order(
+    counts: Counter[str],
+    order_sum: dict[str, float],
+    order_weight: Counter[str],
+    *,
+    limit: int = 15,
+) -> list[dict[str, Any]]:
+    """Rank by earlier average draft position, then frequency (for civ picks)."""
+    rows: list[dict[str, Any]] = []
+    for name, count in counts.items():
+        avg = None
+        if order_weight.get(name):
+            avg = round(order_sum[name] / order_weight[name], 2)
+        rows.append({"name": name, "count": int(count), "avgOrder": avg})
+    rows.sort(
+        key=lambda row: (
+            row["avgOrder"] is None,
+            float(row["avgOrder"]) if row["avgOrder"] is not None else 999.0,
+            -int(row["count"]),
+            str(row["name"]),
+        )
+    )
+    return rows[:limit]
+
+
 async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> dict[str, Any]:
     status = dataset_status(db, slug)
     if not status.get("found"):
@@ -1755,7 +1794,9 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
     top_map_bans = _ranked_named(map_ban_counts, map_ban_order_sum, map_ban_order_weight)
     top_map_picks = _ranked_named(map_pick_counts, map_pick_order_sum, map_pick_order_weight)
     top_civ_bans = _ranked_named(civ_ban_counts, civ_ban_order_sum, civ_ban_order_weight)
-    top_civ_picks = _ranked_named(civ_pick_counts, civ_pick_order_sum, civ_pick_order_weight)
+    top_civ_picks = _ranked_named_by_draft_order(
+        civ_pick_counts, civ_pick_order_sum, civ_pick_order_weight, limit=15
+    )
 
     uncertain_map_bans = _ranked_named(
         foe_map_ban_counts, foe_map_ban_order_sum, foe_map_ban_order_weight

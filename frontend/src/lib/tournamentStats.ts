@@ -12,6 +12,8 @@ export interface TournamentStatsStatus {
   liquipediaParent?: string
   liquipediaUrl?: string
   stages?: string[]
+  stageMatchCounts?: Record<string, number>
+  missingStages?: string[]
   status?: string
   statusDetail?: string | null
   lastSyncedAt?: string | null
@@ -105,7 +107,13 @@ export async function fetchDraftTournamentStats(
 export function formatTournamentDatasetStatus(
   status: Pick<
     TournamentStatsStatus,
-    'status' | 'statusDetail' | 'matchCount' | 'draftCount' | 'draftPairCount' | 'pendingDraftCount'
+    | 'status'
+    | 'statusDetail'
+    | 'matchCount'
+    | 'draftCount'
+    | 'draftPairCount'
+    | 'pendingDraftCount'
+    | 'missingStages'
   > | null,
   busy = false,
 ): string {
@@ -123,7 +131,9 @@ export function formatTournamentDatasetStatus(
   const pairs = status.draftPairCount ?? status.draftCount ?? 0
   const pairLabel = pairs === 1 ? 'draft pair' : 'draft pairs'
   let line = `Ready. ${matches} played matches, ${pairs} ${pairLabel}`
-  if (status.statusDetail) {
+  if (status.missingStages?.length) {
+    line += `. Missing stages — Refresh data: ${status.missingStages.join(', ')}`
+  } else if (status.statusDetail) {
     line += `. ${status.statusDetail}`
   }
   return line
