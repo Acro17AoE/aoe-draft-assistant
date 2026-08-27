@@ -49,6 +49,42 @@ export function readReadyMapSession(): MapSessionConfig | null {
   return saved
 }
 
+export function readOpponentTeamName(): string {
+  const saved = loadMapSession<Partial<MapSessionConfig>>() ?? {}
+  return saved.opponentTeamName?.trim() ?? ''
+}
+
+/** Live opponent name from map session storage (independent of draft readiness). */
+export function useOpponentTeamNameSync(enabled = true): string {
+  const [opponentTeamName, setOpponentTeamName] = useState(() =>
+    enabled ? readOpponentTeamName() : '',
+  )
+
+  const refresh = useCallback(() => {
+    setOpponentTeamName(enabled ? readOpponentTeamName() : '')
+  }, [enabled])
+
+  useEffect(() => {
+    refresh()
+    if (!enabled) return
+    const onChange = () => refresh()
+    const onHydrated = (event: Event) => {
+      if (!cloudHydratedIncludesKey(event, DOC_KEYS.MAP_SESSION)) return
+      refresh()
+    }
+    window.addEventListener(MAP_SESSION_CHANGED, onChange)
+    window.addEventListener(CLOUD_HYDRATED, onHydrated)
+    window.addEventListener('storage', onChange)
+    return () => {
+      window.removeEventListener(MAP_SESSION_CHANGED, onChange)
+      window.removeEventListener(CLOUD_HYDRATED, onHydrated)
+      window.removeEventListener('storage', onChange)
+    }
+  }, [enabled, refresh])
+
+  return opponentTeamName
+}
+
 export function useMapSessionSync(visible = true): MapSessionConfig | null {
   const [mapSession, setMapSession] = useState<MapSessionConfig | null>(() => readReadyMapSession())
 

@@ -5,7 +5,7 @@ import {
   mapHintsFromAnalysis,
   OpponentAnalysisPanel,
 } from '../components/OpponentAnalysisPanel'
-import { isMapSessionReady, getSessionMapPicks } from '../lib/mapSession'
+import { isMapSessionReady, getSessionMapPicks, MAP_SESSION_CHANGED } from '../lib/mapSession'
 import { MapDraftSetup } from '../components/MapDraftSetup'
 import { SelectMapsPanel } from '../components/SelectMapsPanel'
 import { SingleMapPanel } from '../components/SingleMapPanel'
@@ -99,7 +99,7 @@ export function MapDraftAssistant({
     error: opponentError,
     reload: reloadOpponentAnalysis,
   } = useOpponentTeamAnalysis(
-    showOpponentAnalysis ? opponentSlug : undefined,
+    showOpponentAnalysis && session.opponentTeamName?.trim() ? opponentSlug : undefined,
     showOpponentAnalysis ? session.opponentTeamName : undefined,
   )
 
@@ -154,6 +154,24 @@ export function MapDraftAssistant({
     return () => window.removeEventListener(CLOUD_HYDRATED, onHydrated)
   }, [presetMaps.join('|')])
 
+  // Pregame writes opponentTeamName into map session storage; keep Map Draft in sync live.
+  useEffect(() => {
+    const syncOpponent = () => {
+      const saved = loadMapSession<Partial<MapSessionConfig>>() ?? {}
+      const opponentTeamName = saved.opponentTeamName ?? ''
+      setSession((current) => {
+        if ((current.opponentTeamName ?? '') === opponentTeamName) return current
+        return { ...current, opponentTeamName }
+      })
+    }
+    window.addEventListener(MAP_SESSION_CHANGED, syncOpponent)
+    window.addEventListener('storage', syncOpponent)
+    return () => {
+      window.removeEventListener(MAP_SESSION_CHANGED, syncOpponent)
+      window.removeEventListener('storage', syncOpponent)
+    }
+  }, [])
+
   useEffect(() => {
     if (!activePresetId) return
     if (presetIdRef.current === activePresetId) return
@@ -169,9 +187,15 @@ export function MapDraftAssistant({
   }, [activePresetId, presetMaps.join('|')])
 
   const updateSession = (next: MapSessionConfig) => {
-    setSession(next)
+    // Map Draft UI never edits opponent — keep the latest Pregame value from storage.
+    const saved = loadMapSession<Partial<MapSessionConfig>>() ?? {}
+    const merged: MapSessionConfig = {
+      ...next,
+      opponentTeamName: saved.opponentTeamName ?? next.opponentTeamName ?? '',
+    }
+    setSession(merged)
     if (!isWorkspaceHydrating()) {
-      saveMapSession(next)
+      saveMapSession(merged)
     }
   }
 
@@ -204,19 +228,14 @@ export function MapDraftAssistant({
         error={error}
       />
 
-      {showOpponentAnalysis ? (
+      {showOpponentReport ? (
         <OpponentAnalysisPanel
           variant="map"
-          analysis={showOpponentReport ? opponentAnalysis : null}
-          busy={showOpponentReport ? opponentBusy : false}
-          error={showOpponentReport ? opponentError : null}
+          analysis={opponentAnalysis}
+          busy={opponentBusy}
+          error={opponentError}
           syncBusy={opponentSyncBusy}
-          onRefreshSync={showOpponentReport ? () => void refreshOpponentTournamentData() : undefined}
-          emptyHint={
-            showOpponentReport
-              ? null
-              : 'Select an opponent under Pregame to see map ban/pick tendencies and tournament sets here.'
-          }
+          onRefreshSync={() => void refreshOpponentTournamentData()}
         />
       ) : null}
 

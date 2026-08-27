@@ -166,6 +166,8 @@ function mapRelevantCivNames(
   analysis: OpponentTeamAnalysis,
   currentMapNames: string[] | undefined,
 ): Set<string> {
+  // Yellow highlighting only makes sense once Map Draft maps are known.
+  if (!currentMapNames?.length) return new Set()
   const relevant = new Set<string>()
   for (const group of filterMapCivGroups(analysis, currentMapNames)) {
     for (const row of group.civs.slice(0, 3)) {
@@ -235,10 +237,13 @@ function CivDraftAnalysisBody({
         <div className="opponent-analysis-mapcivs">
           <h3>Civs by map (their games)</h3>
           <p className="hint opponent-analysis-uncertain-note">
-            Only maps from your current Map Draft
-            {highlightNames.size
-              ? ' — yellow civ picks below match frequent picks on these maps.'
-              : '.'}
+            {currentMapNames?.length
+              ? `Only maps from your current Map Draft${
+                  highlightNames.size
+                    ? ' — yellow civ picks above match frequent picks on these maps.'
+                    : '.'
+                }`
+              : 'All maps from their recorded games (no Map Draft filter yet).'}
           </p>
           <div className="opponent-analysis-mapciv-grid">
             {mapCivGroups.map((group) => (

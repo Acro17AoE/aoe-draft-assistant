@@ -12,7 +12,7 @@ import { deriveDraftStatus } from '../lib/draftStatus'
 import { countOwnBanSlots, isBanPhaseComplete } from '../lib/draftBans'
 import { mapNamesMatch, resolveMapDisplaysFromPicks, uniqueMapNames } from '../lib/maps'
 import { getSaturatedMaps } from '../lib/civMapAssignments'
-import { readReadyMapSession, useMapSessionSync, getSessionMapPicks } from '../lib/mapSession'
+import { readReadyMapSession, useMapSessionSync, useOpponentTeamNameSync, getSessionMapPicks } from '../lib/mapSession'
 import { getTopPicksPerMap, mergePriorityEntriesForMaps, collectNemesisCivIds } from '../lib/priorities'
 import { CLOUD_HYDRATED, cloudHydratedIncludesKey, DOC_KEYS, hasPendingCloudSave, isWorkspaceHydrating, LOCAL_STORAGE_KEYS } from '../lib/cloudStorage'
 import { loadCivSession, saveCivSession } from '../lib/presets'
@@ -52,6 +52,8 @@ export function CivDraftAssistant({
   const { user } = useAuth()
   const showOpponentAnalysis = canUseOpponentAnalysis(user)
   const mapSession = useMapSessionSync(visible)
+  const opponentTeamName = useOpponentTeamNameSync(showOpponentAnalysis)
+  const hasOpponent = Boolean(opponentTeamName.trim())
   const { settings } = useCivDraftSettings()
 
   const { status: opponentStatus, reload: reloadOpponentTeams } = useOpponentTournamentTeams(
@@ -64,8 +66,8 @@ export function CivDraftAssistant({
     error: opponentError,
     reload: reloadOpponentAnalysis,
   } = useOpponentTeamAnalysis(
-    showOpponentAnalysis ? opponentSlug : undefined,
-    showOpponentAnalysis ? mapSession?.opponentTeamName : undefined,
+    showOpponentAnalysis && hasOpponent ? opponentSlug : undefined,
+    showOpponentAnalysis && hasOpponent ? opponentTeamName : undefined,
   )
   const [opponentSyncBusy, setOpponentSyncBusy] = useState(false)
 
@@ -303,23 +305,14 @@ export function CivDraftAssistant({
   }
 
   const opponentPanel = (collapsed: boolean) =>
-    showOpponentAnalysis ? (
+    showOpponentAnalysis && hasOpponent ? (
       <OpponentAnalysisPanel
         variant="civ"
-        analysis={mapSession?.opponentTeamName?.trim() ? opponentAnalysis : null}
-        busy={mapSession?.opponentTeamName?.trim() ? opponentBusy : false}
-        error={mapSession?.opponentTeamName?.trim() ? opponentError : null}
+        analysis={opponentAnalysis}
+        busy={opponentBusy}
+        error={opponentError}
         syncBusy={opponentSyncBusy}
-        onRefreshSync={
-          mapSession?.opponentTeamName?.trim()
-            ? () => void refreshOpponentTournamentData()
-            : undefined
-        }
-        emptyHint={
-          mapSession?.opponentTeamName?.trim()
-            ? null
-            : 'Select an opponent under Pregame to see civ ban/pick tendencies and tournament sets here.'
-        }
+        onRefreshSync={() => void refreshOpponentTournamentData()}
         currentMapNames={presetMapNames}
         collapsed={collapsed}
         defaultOpen={false}
