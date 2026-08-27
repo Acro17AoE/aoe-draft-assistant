@@ -22,6 +22,14 @@ import { useCivMapAssignments } from '../lib/useCivMapAssignments'
 import { usePreparedBans } from '../lib/usePreparedBans'
 import { useDraftStream } from '../lib/useDraftStream'
 import { trackCivDraftStarted } from '../lib/analytics'
+import { canUseOpponentAnalysis } from '../lib/admin'
+import { useAuth } from '../contexts/AuthProvider'
+import { OpponentAnalysisPanel } from '../components/OpponentAnalysisPanel'
+import {
+  useOpponentTeamAnalysis,
+  useOpponentTournamentTeams,
+} from '../lib/useOpponentAnalysis'
+import { syncTournamentStats } from '../lib/tournamentStats'
 import { extractDraftId } from '../lib/civs'
 import type { CivSessionConfig, MapPriorityPreset } from '../types/draft'
 import type { TournamentFormat } from '../types/results'
@@ -41,8 +49,40 @@ export function CivDraftAssistant({
   visible = true,
   presetTournamentName,
 }: CivDraftAssistantProps) {
+  const { user } = useAuth()
+  const showOpponentAnalysis = canUseOpponentAnalysis(user)
   const mapSession = useMapSessionSync(visible)
   const { settings } = useCivDraftSettings()
+
+  const { status: opponentStatus, reload: reloadOpponentTeams } = useOpponentTournamentTeams(
+    showOpponentAnalysis ? presetTournamentName : undefined,
+  )
+  const opponentSlug = opponentStatus?.found ? opponentStatus.slug : undefined
+  const {
+    analysis: opponentAnalysis,
+    busy: opponentBusy,
+    error: opponentError,
+    reload: reloadOpponentAnalysis,
+  } = useOpponentTeamAnalysis(
+    showOpponentAnalysis ? opponentSlug : undefined,
+    showOpponentAnalysis ? mapSession?.opponentTeamName : undefined,
+  )
+  const [opponentSyncBusy, setOpponentSyncBusy] = useState(false)
+
+  const refreshOpponentTournamentData = async () => {
+    const name = presetTournamentName?.trim()
+    if (!name) return
+    setOpponentSyncBusy(true)
+    try {
+      await syncTournamentStats(name, { force: true })
+      await reloadOpponentTeams()
+      await reloadOpponentAnalysis()
+    } catch {
+      // surfaced via analysis error / status line
+    } finally {
+      setOpponentSyncBusy(false)
+    }
+  }
   const [civSession, setCivSession] = useState<CivSessionConfig>(() => {
     const saved = loadCivSession<Partial<CivSessionConfig>>() ?? {}
     return {
@@ -265,6 +305,28 @@ export function CivDraftAssistant({
         onGo={startSession}
         error={error}
       />
+
+      {showOpponentAnalysis ? (
+        <OpponentAnalysisPanel
+          variant="civ"
+          analysis={
+            mapSession?.opponentTeamName?.trim() ? opponentAnalysis : null
+          }
+          busy={mapSession?.opponentTeamName?.trim() ? opponentBusy : false}
+          error={mapSession?.opponentTeamName?.trim() ? opponentError : null}
+          syncBusy={opponentSyncBusy}
+          onRefreshSync={
+            mapSession?.opponentTeamName?.trim()
+              ? () => void refreshOpponentTournamentData()
+              : undefined
+          }
+          emptyHint={
+            mapSession?.opponentTeamName?.trim()
+              ? null
+              : 'Select an opponent under Pregame to see civ ban/pick tendencies and tournament sets here.'
+          }
+        />
+      ) : null}
 
       {showPreparedBans ? (
         <PreparedBanList

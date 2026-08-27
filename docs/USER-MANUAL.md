@@ -13,6 +13,7 @@ In the app, open **FAQ** in the footer for the product definition; use **White m
 |------|---------|
 | **Home** | Welcome, guided tour, account login / cloud sync / shared sessions |
 | **Presets** | TierMaker-style civ rankings per map; optional Key / Nemesis markers; Advanced pools |
+| **Pregame** | Opponent picker + full scouting report (allowlisted accounts) |
 | **Map Draft** | Live aoe2cm map draft, or manual maps (1-Map / Select) |
 | **Civ Draft** | Live civ board, Prepared bans, Top 3, Key civs, pressure, assignment |
 | **Results** | Log tournaments, sets, and games |
@@ -145,13 +146,13 @@ When the **active preset** name maps to a Liquipedia tournament (e.g. “The Lea
 
 Preset names that aren’t an exact wiki title still resolve when possible (CamelCase → underscores, registry aliases, Ongoing tournaments preferred). Large events may need several syncs because of the Liquipedia free quota. Name aliases live in `config/tournament-registry.json`.
 
-### 5.6 Opponent Analysis (allowlisted accounts)
+### 5.6 Opponent Analysis / Pregame (allowlisted accounts)
 
-If your account is on the server allowlist (`OPPONENT_ANALYSIS_EMAILS`), Map Draft shows an **Opponent** dropdown for the active Liquipedia tournament. Selecting a team loads one report above the board: bans/picks, civs-by-map, and **Tournament sets** (open a set for draft timelines / recs).
+Accounts on `OPPONENT_ANALYSIS_EMAILS` get a **Pregame** tab: short explanation, opponent dropdown, and the full report (Map + Civ sections + tournament sets).
 
-Data comes from the local tournament cache (same as Analysis → Tournament Meta). It is **not live** until you sync — use **Refresh data** on the report, or sync under Tournament Meta. Partial Liquipedia quota syncs may leave older match counts until you refresh again.
-
-Sub-teams stay separate (e.g. Onimaru Vanguard ≠ Onimaru Capybaras, Wonders ≠ Wonders B, Darkside ≠ Darkside L). Spelling variants of the same org (Nocturna / Nocturna eSports) are grouped.
+- **Map Draft** shows **Opponent analysis — Map Draft** (map bans/picks + sets) when an opponent is selected.
+- **Civ Draft** shows **Opponent analysis — Civ Draft** (civ bans/picks, civs-by-map + sets).
+- Change the opponent only under Pregame. Refresh data syncs the Liquipedia/aoe2cm cache.
 
 #### Liquipedia API setup (operators)
 

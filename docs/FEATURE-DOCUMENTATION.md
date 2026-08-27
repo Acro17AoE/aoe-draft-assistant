@@ -169,8 +169,8 @@ Key logic:
 - User documents sync presets/results/settings
 - Shared workspaces: invite link, Shared Presets, live draft docs
 - Admin: `ADMIN_EMAIL` env → `user.is_admin` on `/api/auth/me` (no hardcoded emails in source)
-- Opponent Analysis: `OPPONENT_ANALYSIS_EMAILS` env → `user.can_opponent_analysis` on `/api/auth/me`; UI (opponent dropdown + report) and team analysis API only for allowlisted accounts (admins always included)
-- Opponent report lives only on Map Draft (sets + draft timelines included). Sub-teams are kept distinct via branch-aware name matching; spelling variants of the same org are clustered. Data is cache-based — **Refresh data** re-syncs Liquipedia/aoe2cm.
+- Opponent Analysis: `OPPONENT_ANALYSIS_EMAILS` env → `user.can_opponent_analysis` on `/api/auth/me`; **Pregame** tab (dropdown + full report) only for allowlisted accounts (admins always included). Map Draft / Civ Draft show the matching analysis slice + tournament sets.
+- Sub-teams stay distinct via branch-aware name matching; spelling variants of the same org are clustered. Data is cache-based — **Refresh data** re-syncs Liquipedia/aoe2cm.
 - Admin usage stats (`GET /api/admin/stats`): page views, logins, registrations, civ drafts
 - Civ drafts count **unique aoe2cm draft IDs** (`meta`), including drafts started in shared sessions when the board is already live (not only the first **Go** click). Duplicate posts from collaborators are ignored.
 - Tracked drafts table (`tracked_drafts`): civ + map aoe2cm IDs, session host (workspace owner or solo user), listed in Admin under a collapsible panel

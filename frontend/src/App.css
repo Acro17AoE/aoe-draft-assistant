@@ -6906,8 +6906,33 @@ td {
   margin: 0.15rem 0 0;
 }
 
-.opponent-analysis-sets {
+.opponent-analysis-full-block {
+  margin-top: 0.75rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.opponent-analysis-block-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.opponent-team-select {
+  display: grid;
+  gap: 0.35rem;
   margin-top: 0.85rem;
+  max-width: 28rem;
+}
+
+.pregame-intro p {
+  margin: 0.4rem 0 0;
+  max-width: 52rem;
+  line-height: 1.45;
+}
+
+.pregame-layout {
+  display: grid;
+  gap: 0.85rem;
 }
 
 .opponent-analysis-set-list {

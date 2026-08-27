@@ -9,6 +9,7 @@ import { AoeDataTab } from './pages/AoeDataTab'
 import { ResultsTab, useResultsState } from './pages/ResultsTab'
 import { tournamentsWithResults } from './lib/results'
 import { HomeTab } from './pages/HomeTab'
+import { PregameTab } from './pages/PregameTab'
 import { AdminTab } from './pages/AdminTab'
 import { AppFooter } from './components/AppFooter'
 import { FaqModal } from './components/FaqModal'
@@ -22,7 +23,7 @@ import { PRODUCT_NAME } from './lib/brand'
 import { getActivePresetTournament } from './lib/presetTournaments'
 import { usePresetTournamentState } from './lib/usePresetTournamentState'
 import { useUiPreferences } from './lib/useUiPreferences'
-import { isAdminUser } from './lib/admin'
+import { isAdminUser, canUseOpponentAnalysis } from './lib/admin'
 import { trackPageViewOnce } from './lib/analytics'
 import {
   ONBOARDING_START_EVENT,
@@ -30,7 +31,7 @@ import {
 } from './lib/onboarding'
 import './App.css'
 
-type AppTab = 'home' | 'presets' | 'map' | 'civ' | 'results' | 'analysis' | 'aoedata' | 'pro' | 'settings' | 'admin'
+type AppTab = 'home' | 'presets' | 'pregame' | 'map' | 'civ' | 'results' | 'analysis' | 'aoedata' | 'pro' | 'settings' | 'admin'
 function App() {
   const [tab, setTab] = useState<AppTab>('home')
   const [tourOpen, setTourOpen] = useState(false)
@@ -59,6 +60,7 @@ function App() {
   const { workspace, sessionUrl, joinError, leaveWorkspace, leaveSession } = useWorkspace()
   const pendingCollaborationSlug = parseCollaborationSlugFromPath()
   const showAdminTab = isAdminUser(user)
+  const showPregameTab = canUseOpponentAnalysis(user)
 
   const requestTourTab = useCallback((next: TourTab) => {
     setTab(next)
@@ -81,6 +83,10 @@ function App() {
   useEffect(() => {
     if (!showAdminTab && tab === 'admin') setTab('home')
   }, [showAdminTab, tab])
+
+  useEffect(() => {
+    if (!showPregameTab && tab === 'pregame') setTab('home')
+  }, [showPregameTab, tab])
 
   useEffect(() => {
     if (tab === 'pro' || tab === 'settings') setTab('home')
@@ -151,6 +157,16 @@ function App() {
           >
             {workspace ? 'Shared Presets' : 'Presets'}
           </button>
+          {showPregameTab ? (
+            <button
+              type="button"
+              data-tour="nav-pregame"
+              className={tab === 'pregame' ? 'active' : ''}
+              onClick={() => setTab('pregame')}
+            >
+              Pregame
+            </button>
+          ) : null}
           <button
             type="button"
             data-tour="nav-map"
@@ -214,6 +230,11 @@ function App() {
         <div className="tab-panel" hidden={tab !== 'presets'}>
           <PresetsTab store={store} onChange={setStore} onResultsChange={setTournaments} />
         </div>
+        {showPregameTab ? (
+          <div className="tab-panel" hidden={tab !== 'pregame'}>
+            <PregameTab presetTournamentName={activePresetTournament?.name} />
+          </div>
+        ) : null}
         <div className="tab-panel" hidden={tab !== 'map'}>
           <MapDraftAssistant
             key={workspace?.id ?? 'solo-map'}

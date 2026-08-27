@@ -88,13 +88,9 @@ export function MapDraftAssistant({
     trackMapDraftStarted(mapDraftId)
   }, [ready, mode, session.mapDraftUrl])
 
-  const {
-    status: opponentStatus,
-    teams: opponentTeams,
-    busy: opponentTeamsBusy,
-    error: opponentTeamsError,
-    reload: reloadOpponentTeams,
-  } = useOpponentTournamentTeams(showOpponentAnalysis ? presetTournamentName : undefined)
+  const { status: opponentStatus, reload: reloadOpponentTeams } = useOpponentTournamentTeams(
+    showOpponentAnalysis ? presetTournamentName : undefined,
+  )
 
   const opponentSlug = opponentStatus?.found ? opponentStatus.slug : undefined
   const {
@@ -123,30 +119,6 @@ export function MapDraftAssistant({
       setOpponentSyncBusy(false)
     }
   }
-
-  const opponentTeamsHint = useMemo(() => {
-    if (!showOpponentAnalysis) return null
-    if (!presetTournamentName?.trim()) {
-      return 'Set an active preset tournament that matches a tracked Liquipedia event.'
-    }
-    if (opponentTeamsBusy) return 'Loading teams…'
-    if (opponentTeamsError) return opponentTeamsError
-    if (!opponentStatus?.found) {
-      return 'Active preset tournament is not a tracked Liquipedia event.'
-    }
-    if ((opponentStatus.matchCount ?? 0) <= 0) {
-      return 'Sync Tournament Meta / Analysis first to load teams.'
-    }
-    if (!opponentTeams.length) return 'No teams found in synced matches yet.'
-    return null
-  }, [
-    showOpponentAnalysis,
-    presetTournamentName,
-    opponentTeamsBusy,
-    opponentTeamsError,
-    opponentStatus,
-    opponentTeams.length,
-  ])
 
   const mapHints = useMemo(
     () => (showOpponentAnalysis ? mapHintsFromAnalysis(opponentAnalysis) : undefined),
@@ -230,19 +202,21 @@ export function MapDraftAssistant({
         presetMaps={presetMaps}
         onChange={updateSession}
         error={error}
-        showOpponentSelect={showOpponentAnalysis}
-        opponentTeams={opponentTeams}
-        opponentTeamsBusy={opponentTeamsBusy}
-        opponentTeamsHint={opponentTeamsHint}
       />
 
-      {showOpponentReport ? (
+      {showOpponentAnalysis ? (
         <OpponentAnalysisPanel
-          analysis={opponentAnalysis}
-          busy={opponentBusy}
-          error={opponentError}
+          variant="map"
+          analysis={showOpponentReport ? opponentAnalysis : null}
+          busy={showOpponentReport ? opponentBusy : false}
+          error={showOpponentReport ? opponentError : null}
           syncBusy={opponentSyncBusy}
-          onRefreshSync={() => void refreshOpponentTournamentData()}
+          onRefreshSync={showOpponentReport ? () => void refreshOpponentTournamentData() : undefined}
+          emptyHint={
+            showOpponentReport
+              ? null
+              : 'Select an opponent under Pregame to see map ban/pick tendencies and tournament sets here.'
+          }
         />
       ) : null}
 
