@@ -21,13 +21,7 @@ import { useCivDraftSettings } from '../lib/useCivDraftSettings'
 import { useCivMapAssignments } from '../lib/useCivMapAssignments'
 import { usePreparedBans } from '../lib/usePreparedBans'
 import { useDraftStream } from '../lib/useDraftStream'
-import {
-  useOpponentTeamAnalysis,
-  useOpponentTournamentTeams,
-} from '../lib/useOpponentAnalysis'
 import { trackCivDraftStarted } from '../lib/analytics'
-import { canUseOpponentAnalysis } from '../lib/admin'
-import { useAuth } from '../contexts/AuthProvider'
 import { extractDraftId } from '../lib/civs'
 import type { CivSessionConfig, MapPriorityPreset } from '../types/draft'
 import type { TournamentFormat } from '../types/results'
@@ -47,22 +41,8 @@ export function CivDraftAssistant({
   visible = true,
   presetTournamentName,
 }: CivDraftAssistantProps) {
-  const { user } = useAuth()
-  const showOpponentAnalysis = canUseOpponentAnalysis(user)
   const mapSession = useMapSessionSync(visible)
   const { settings } = useCivDraftSettings()
-  const { status: opponentStatus } = useOpponentTournamentTeams(
-    showOpponentAnalysis ? presetTournamentName : undefined,
-  )
-  const opponentSlug = opponentStatus?.found ? opponentStatus.slug : undefined
-  const {
-    analysis: opponentAnalysis,
-    busy: opponentAnalysisBusy,
-    error: opponentAnalysisError,
-  } = useOpponentTeamAnalysis(
-    showOpponentAnalysis ? opponentSlug : undefined,
-    showOpponentAnalysis ? mapSession?.opponentTeamName : undefined,
-  )
   const [civSession, setCivSession] = useState<CivSessionConfig>(() => {
     const saved = loadCivSession<Partial<CivSessionConfig>>() ?? {}
     return {
@@ -308,10 +288,6 @@ export function CivDraftAssistant({
           presetTournamentName={presetTournamentName}
           tournamentFormat={tournamentFormat}
           compact
-          opponentTeamName={showOpponentAnalysis ? mapSession?.opponentTeamName : undefined}
-          opponentAnalysis={showOpponentAnalysis ? opponentAnalysis : undefined}
-          opponentAnalysisBusy={showOpponentAnalysis ? opponentAnalysisBusy : undefined}
-          opponentAnalysisError={showOpponentAnalysis ? opponentAnalysisError : undefined}
         />
       ) : null}
 

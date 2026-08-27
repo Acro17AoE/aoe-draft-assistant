@@ -147,7 +147,11 @@ Preset names that aren’t an exact wiki title still resolve when possible (Came
 
 ### 5.6 Opponent Analysis (allowlisted accounts)
 
-If your account is on the server allowlist (`OPPONENT_ANALYSIS_EMAILS`), Map Draft shows an **Opponent** dropdown for the active Liquipedia tournament. Selecting a team loads a report (priorities, bans/picks, sets) in Draft Preview / Map Draft. Requires login. Other accounts do not see this UI.
+If your account is on the server allowlist (`OPPONENT_ANALYSIS_EMAILS`), Map Draft shows an **Opponent** dropdown for the active Liquipedia tournament. Selecting a team loads one report above the board: bans/picks, civs-by-map, and **Tournament sets** (open a set for draft timelines / recs).
+
+Data comes from the local tournament cache (same as Analysis → Tournament Meta). It is **not live** until you sync — use **Refresh data** on the report, or sync under Tournament Meta. Partial Liquipedia quota syncs may leave older match counts until you refresh again.
+
+Sub-teams stay separate (e.g. Onimaru Vanguard ≠ Onimaru Capybaras, Wonders ≠ Wonders B, Darkside ≠ Darkside L). Spelling variants of the same org (Nocturna / Nocturna eSports) are grouped.
 
 #### Liquipedia API setup (operators)
 

@@ -9,14 +9,10 @@ import { useCivDraftSettings } from '../lib/useCivDraftSettings'
 import { useTournamentInsights } from '../lib/useTournamentInsights'
 import type { MapPriorityPreset, PriorityReasonPart } from '../types/draft'
 import type { MapTopPickGroup } from '../lib/priorities'
-import type { OpponentTeamAnalysis } from '../lib/opponentAnalysis'
 import {
   MapTournamentInsightStrip,
   TournamentInsightsPanel,
 } from './TournamentInsightsPanel'
-import { OpponentSetDraftModal } from './OpponentSetDraftModal'
-import { civIconUrl } from '../lib/civs'
-import { resolveMapDisplay } from '../lib/maps'
 
 interface DraftPreviewProps {
   presets: MapPriorityPreset[]
@@ -27,10 +23,6 @@ interface DraftPreviewProps {
   showCivDraftHint?: boolean
   onOpenCivDraft?: () => void
   compact?: boolean
-  opponentTeamName?: string
-  opponentAnalysis?: OpponentTeamAnalysis | null
-  opponentAnalysisBusy?: boolean
-  opponentAnalysisError?: string | null
 }
 
 function CivChip({
@@ -117,129 +109,6 @@ function ExplainPanel({
   )
 }
 
-function OpponentPrioritiesBlock({
-  teamName,
-  analysis,
-  busy,
-  error,
-}: {
-  teamName: string
-  analysis?: OpponentTeamAnalysis | null
-  busy?: boolean
-  error?: string | null
-}) {
-  const [openSetKey, setOpenSetKey] = useState<string | null>(null)
-  const openSet = (analysis?.sets ?? []).find((row) => row.matchKey === openSetKey) ?? null
-
-  return (
-    <div className="draft-preview-opponent panel">
-      <h3>Opponent priorities · {teamName}</h3>
-      {busy ? <p className="hint">Loading opponent analysis…</p> : null}
-      {error ? <p className="set-replay-error">{error}</p> : null}
-      {analysis?.found ? (
-        <>
-          {(analysis.priorities ?? []).length ? (
-            <ul className="opponent-analysis-priorities">
-              {(analysis.priorities ?? []).map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="hint">No draft tendencies yet for this opponent.</p>
-          )}
-          <div className="draft-preview-opponent-cols">
-            <div>
-              <h4>Their map bans / picks</h4>
-              <p className="hint">
-                Ban: {(analysis.maps?.mostBanned ?? []).slice(0, 3).map((r) => r.name).join(', ') || '—'}
-              </p>
-              <p className="hint">
-                Pick: {(analysis.maps?.mostPicked ?? []).slice(0, 3).map((r) => r.name).join(', ') || '—'}
-              </p>
-            </div>
-            <div>
-              <h4>Their civ bans / picks</h4>
-              <p className="hint">
-                Ban: {(analysis.civs?.mostBanned ?? []).slice(0, 3).map((r) => r.name).join(', ') || '—'}
-              </p>
-              <p className="hint">
-                Pick: {(analysis.civs?.mostPicked ?? []).slice(0, 3).map((r) => r.name).join(', ') || '—'}
-              </p>
-            </div>
-          </div>
-          {(analysis.uncertain?.mapsBannedAgainst?.length ||
-            analysis.uncertain?.civsBannedAgainst?.length) ? (
-            <p className="hint draft-preview-uncertain">
-              Uncertain (denied vs them) — maps:{' '}
-              {(analysis.uncertain?.mapsBannedAgainst ?? [])
-                .slice(0, 3)
-                .map((r) => r.name)
-                .join(', ') || '—'}
-              ; civs:{' '}
-              {(analysis.uncertain?.civsBannedAgainst ?? [])
-                .slice(0, 3)
-                .map((r) => r.name)
-                .join(', ') || '—'}
-            </p>
-          ) : null}
-          {(analysis.mapCivs ?? []).length ? (
-            <div className="draft-preview-opponent-mapcivs">
-              <h4>Preferred civs by map</h4>
-              <ul>
-                {(analysis.mapCivs ?? []).slice(0, 6).map((group) => (
-                  <li key={group.mapName}>
-                    <strong>{group.mapName}:</strong>{' '}
-                    {group.civs
-                      .slice(0, 3)
-                      .map((row) => `${row.civ} (${row.plays})`)
-                      .join(', ')}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-          {(analysis.sets ?? []).length ? (
-            <div className="draft-preview-opponent-sets">
-              <h4>Tournament sets</h4>
-              <ul className="draft-preview-set-list">
-                {(analysis.sets ?? []).map((set) => {
-                  const firstMap = set.games?.[0]?.map
-                  const mapImg = firstMap ? resolveMapDisplay(firstMap).imageUrl : null
-                  return (
-                    <li key={set.matchKey}>
-                      <button type="button" onClick={() => setOpenSetKey(set.matchKey)}>
-                        {mapImg ? <img src={mapImg} alt="" /> : null}
-                        <span>
-                          vs {set.opponent ?? '—'}
-                          {set.date ? ` · ${set.date}` : ''}
-                          {set.stage ? ` · ${set.stage}` : ''}
-                        </span>
-                        <span className="hint">View drafts</span>
-                      </button>
-                      <div className="draft-preview-set-civ-icons">
-                        {(set.games?.[0]?.teamCivs ?? []).slice(0, 3).map((civ) => (
-                          <img key={civ} src={civIconUrl(civ)} alt="" title={civ} />
-                        ))}
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          ) : null}
-        </>
-      ) : null}
-      {openSet ? (
-        <OpponentSetDraftModal
-          set={openSet}
-          teamName={teamName}
-          onClose={() => setOpenSetKey(null)}
-        />
-      ) : null}
-    </div>
-  )
-}
-
 export function DraftPreview({
   presets,
   mapNames,
@@ -248,10 +117,6 @@ export function DraftPreview({
   showCivDraftHint = false,
   onOpenCivDraft,
   compact = false,
-  opponentTeamName,
-  opponentAnalysis,
-  opponentAnalysisBusy,
-  opponentAnalysisError,
 }: DraftPreviewProps) {
   const { settings } = useCivDraftSettings()
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -262,8 +127,6 @@ export function DraftPreview({
     [presets, mapNames, settings],
   )
 
-  const opponentLabel = opponentTeamName?.trim() || ''
-
   if (!mapNames.length) {
     return (
       <section className={`panel draft-preview draft-preview-empty${compact ? ' is-compact' : ''}`}>
@@ -271,14 +134,6 @@ export function DraftPreview({
         <p className="draft-preview-sub">
           Set your team and maps above to see how civ priorities will look before bans start.
         </p>
-        {opponentLabel ? (
-          <OpponentPrioritiesBlock
-            teamName={opponentLabel}
-            analysis={opponentAnalysis}
-            busy={opponentAnalysisBusy}
-            error={opponentAnalysisError}
-          />
-        ) : null}
       </section>
     )
   }
@@ -329,15 +184,6 @@ export function DraftPreview({
         <p className="draft-preview-warn">
           No tier list in active preset for: {model.unmatchedMaps.join(', ')}
         </p>
-      ) : null}
-
-      {opponentLabel ? (
-        <OpponentPrioritiesBlock
-          teamName={opponentLabel}
-          analysis={opponentAnalysis}
-          busy={opponentAnalysisBusy}
-          error={opponentAnalysisError}
-        />
       ) : null}
 
       {presetTournamentName ? (

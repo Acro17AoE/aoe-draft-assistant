@@ -1312,22 +1312,45 @@ def _team_matches_row(row: TournamentMatchRow, team_name: str) -> int | None:
     return None
 
 
+def _cluster_team_labels(labels: list[str]) -> list[list[str]]:
+    """Group Liquipedia spellings that refer to the same org branch."""
+    clusters: list[list[str]] = []
+    for label in labels:
+        placed = False
+        for cluster in clusters:
+            if team_names_match(label, cluster[0]):
+                cluster.append(label)
+                placed = True
+                break
+        if not placed:
+            clusters.append([label])
+    return clusters
+
+
 def list_tournament_teams(db: Session, slug: str) -> dict[str, Any]:
     status = dataset_status(db, slug)
     if not status.get("found"):
         return {"found": False, "slug": slug, "teams": [], "attribution": liquipedia_attribution()}
 
-    counts: Counter[str] = Counter()
+    # Count played sets per raw Liquipedia spelling, then cluster equivalent spellings
+    # so "Nocturna eSports" / "Nocturna_eSports" appear once — while keeping
+    # "Wonders" vs "Wonders B" (and similar branches) separate.
+    raw_counts: Counter[str] = Counter()
     for row in db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all():
+        if not _match_has_result(row):
+            continue
         for name in (row.opponent1, row.opponent2):
             label = str(name or "").strip()
             if label:
-                counts[label] += 1
+                raw_counts[label] += 1
 
-    teams = [
-        {"name": name, "matchCount": count}
-        for name, count in sorted(counts.items(), key=lambda item: (-item[1], item[0].lower()))
-    ]
+    teams: list[dict[str, Any]] = []
+    for cluster in _cluster_team_labels(sorted(raw_counts.keys(), key=str.lower)):
+        total = sum(raw_counts[name] for name in cluster)
+        canonical = max(cluster, key=lambda name: (raw_counts[name], len(name)))
+        teams.append({"name": canonical, "matchCount": total})
+
+    teams.sort(key=lambda item: (-int(item["matchCount"]), str(item["name"]).lower()))
     return {
         "found": True,
         "slug": slug,

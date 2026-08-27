@@ -32,6 +32,7 @@ import {
 import { trackMapDraftStarted } from '../lib/analytics'
 import { canUseOpponentAnalysis } from '../lib/admin'
 import { useAuth } from '../contexts/AuthProvider'
+import { syncTournamentStats } from '../lib/tournamentStats'
 import { extractDraftId } from '../lib/civs'
 import type { MapPriorityPreset, MapSessionConfig } from '../types/draft'
 import type { TournamentFormat } from '../types/results'
@@ -92,14 +93,36 @@ export function MapDraftAssistant({
     teams: opponentTeams,
     busy: opponentTeamsBusy,
     error: opponentTeamsError,
+    reload: reloadOpponentTeams,
   } = useOpponentTournamentTeams(showOpponentAnalysis ? presetTournamentName : undefined)
 
   const opponentSlug = opponentStatus?.found ? opponentStatus.slug : undefined
-  const { analysis: opponentAnalysis, busy: opponentBusy, error: opponentError } =
-    useOpponentTeamAnalysis(
-      showOpponentAnalysis ? opponentSlug : undefined,
-      showOpponentAnalysis ? session.opponentTeamName : undefined,
-    )
+  const {
+    analysis: opponentAnalysis,
+    busy: opponentBusy,
+    error: opponentError,
+    reload: reloadOpponentAnalysis,
+  } = useOpponentTeamAnalysis(
+    showOpponentAnalysis ? opponentSlug : undefined,
+    showOpponentAnalysis ? session.opponentTeamName : undefined,
+  )
+
+  const [opponentSyncBusy, setOpponentSyncBusy] = useState(false)
+
+  const refreshOpponentTournamentData = async () => {
+    const name = presetTournamentName?.trim()
+    if (!name) return
+    setOpponentSyncBusy(true)
+    try {
+      await syncTournamentStats(name, { force: true })
+      await reloadOpponentTeams()
+      await reloadOpponentAnalysis()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Tournament sync failed')
+    } finally {
+      setOpponentSyncBusy(false)
+    }
+  }
 
   const opponentTeamsHint = useMemo(() => {
     if (!showOpponentAnalysis) return null
@@ -218,6 +241,8 @@ export function MapDraftAssistant({
           analysis={opponentAnalysis}
           busy={opponentBusy}
           error={opponentError}
+          syncBusy={opponentSyncBusy}
+          onRefreshSync={() => void refreshOpponentTournamentData()}
         />
       ) : null}
 
@@ -255,20 +280,12 @@ export function MapDraftAssistant({
           tournamentFormat={tournamentFormat}
           showCivDraftHint
           onOpenCivDraft={onOpenCivDraft}
-          opponentTeamName={showOpponentAnalysis ? session.opponentTeamName : undefined}
-          opponentAnalysis={showOpponentAnalysis ? opponentAnalysis : undefined}
-          opponentAnalysisBusy={showOpponentAnalysis ? opponentBusy : undefined}
-          opponentAnalysisError={showOpponentAnalysis ? opponentError : undefined}
         />
       ) : (
         <DraftPreview
           presets={presets}
           mapNames={[]}
           presetTournamentName={presetTournamentName}
-          opponentTeamName={showOpponentAnalysis ? session.opponentTeamName : undefined}
-          opponentAnalysis={showOpponentAnalysis ? opponentAnalysis : undefined}
-          opponentAnalysisBusy={showOpponentAnalysis ? opponentBusy : undefined}
-          opponentAnalysisError={showOpponentAnalysis ? opponentError : undefined}
         />
       )}
     </main>

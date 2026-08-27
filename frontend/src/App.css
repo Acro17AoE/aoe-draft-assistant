@@ -6890,9 +6890,28 @@ td {
   margin-top: 0.75rem;
 }
 
+.opponent-analysis-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .opponent-analysis-header h2 {
   margin: 0 0 0.2rem;
   font-size: 1.05rem;
+}
+
+.opponent-analysis-sync-status {
+  margin: 0.15rem 0 0;
+}
+
+.opponent-analysis-sets {
+  margin-top: 0.85rem;
+}
+
+.opponent-analysis-set-list {
+  margin-top: 0.35rem;
 }
 
 .opponent-analysis-priorities {
@@ -7144,6 +7163,11 @@ td {
 
 .opponent-set-event.is-team {
   background: color-mix(in srgb, #3d9e6a 32%, transparent);
+}
+
+.opponent-set-event.is-team.action-ban {
+  background: color-mix(in srgb, #c45c5c 40%, transparent);
+  border-color: rgba(196, 92, 92, 0.55);
 }
 
 .opponent-set-event.is-foe {

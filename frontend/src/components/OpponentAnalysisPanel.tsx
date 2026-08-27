@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { civIconUrl } from '../lib/civs'
 import { resolveMapDisplay } from '../lib/maps'
 import type {
   OpponentNamedCount,
   OpponentTeamAnalysis,
 } from '../lib/opponentAnalysis'
+import { formatTournamentDatasetStatus } from '../lib/tournamentStats'
+import { OpponentSetDraftModal } from './OpponentSetDraftModal'
 
 function MapIcon({ name }: { name: string }) {
   const display = resolveMapDisplay(name)
@@ -52,9 +55,19 @@ interface OpponentAnalysisPanelProps {
   analysis: OpponentTeamAnalysis | null
   busy?: boolean
   error?: string | null
+  syncBusy?: boolean
+  onRefreshSync?: () => void
 }
 
-export function OpponentAnalysisPanel({ analysis, busy, error }: OpponentAnalysisPanelProps) {
+export function OpponentAnalysisPanel({
+  analysis,
+  busy,
+  error,
+  syncBusy,
+  onRefreshSync,
+}: OpponentAnalysisPanelProps) {
+  const [openSetKey, setOpenSetKey] = useState<string | null>(null)
+
   if (!analysis && !busy && !error) return null
 
   const uncertain = analysis?.uncertain
@@ -63,16 +76,36 @@ export function OpponentAnalysisPanel({ analysis, busy, error }: OpponentAnalysi
     (uncertain?.mapsPickedByOpponent?.length ?? 0) > 0 ||
     (uncertain?.civsBannedAgainst?.length ?? 0) > 0
 
+  const sets = analysis?.sets ?? []
+  const openSet = sets.find((row) => row.matchKey === openSetKey) ?? null
+  const statusLine = analysis?.status
+    ? formatTournamentDatasetStatus(analysis.status)
+    : null
+
   return (
     <section className="panel opponent-analysis-panel">
       <header className="opponent-analysis-header">
-        <h2>Opponent analysis</h2>
-        {analysis?.team ? (
-          <p className="hint">
-            {analysis.team} · {analysis.matchCount ?? 0} played set(s)
-            {analysis.mapDraftCount != null ? ` · ${analysis.mapDraftCount} map drafts` : ''}
-            {analysis.civDraftCount != null ? ` · ${analysis.civDraftCount} civ drafts` : ''}
-          </p>
+        <div>
+          <h2>Opponent analysis</h2>
+          {analysis?.team ? (
+            <p className="hint">
+              {analysis.team} · {analysis.matchCount ?? 0} played set(s)
+              {analysis.mapDraftCount != null ? ` · ${analysis.mapDraftCount} map drafts` : ''}
+              {analysis.civDraftCount != null ? ` · ${analysis.civDraftCount} civ drafts` : ''}
+            </p>
+          ) : null}
+          {statusLine ? <p className="hint opponent-analysis-sync-status">{statusLine}</p> : null}
+        </div>
+        {onRefreshSync ? (
+          <button
+            type="button"
+            className="compact-btn"
+            disabled={syncBusy || busy}
+            onClick={onRefreshSync}
+            title="Re-sync Liquipedia matches and linked drafts for this tournament"
+          >
+            {syncBusy ? 'Syncing…' : 'Refresh data'}
+          </button>
         ) : null}
       </header>
       {busy ? <p className="hint">Loading opponent tendencies…</p> : null}
@@ -137,7 +170,50 @@ export function OpponentAnalysisPanel({ analysis, busy, error }: OpponentAnalysi
               </div>
             </div>
           ) : null}
+
+          <div className="opponent-analysis-sets">
+            <h3 className="opponent-analysis-section-title">Tournament sets</h3>
+            {sets.length === 0 ? (
+              <p className="hint">
+                No played sets in the local tournament cache yet. Use Refresh data (or Analysis →
+                Tournament Meta) to sync Liquipedia matches.
+              </p>
+            ) : (
+              <ul className="draft-preview-set-list opponent-analysis-set-list">
+                {sets.map((set) => {
+                  const firstMap = set.games?.[0]?.map
+                  const mapImg = firstMap ? resolveMapDisplay(firstMap).imageUrl : null
+                  return (
+                    <li key={set.matchKey}>
+                      <button type="button" onClick={() => setOpenSetKey(set.matchKey)}>
+                        {mapImg ? <img src={mapImg} alt="" /> : null}
+                        <span>
+                          vs {set.opponent ?? '—'}
+                          {set.date ? ` · ${set.date}` : ''}
+                          {set.stage ? ` · ${set.stage}` : ''}
+                        </span>
+                        <span className="hint">View drafts</span>
+                      </button>
+                      <div className="draft-preview-set-civ-icons">
+                        {(set.games?.[0]?.teamCivs ?? []).slice(0, 3).map((civ) => (
+                          <img key={civ} src={civIconUrl(civ)} alt="" title={civ} />
+                        ))}
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
         </>
+      ) : null}
+
+      {openSet && analysis?.team ? (
+        <OpponentSetDraftModal
+          set={openSet}
+          teamName={analysis.team}
+          onClose={() => setOpenSetKey(null)}
+        />
       ) : null}
     </section>
   )

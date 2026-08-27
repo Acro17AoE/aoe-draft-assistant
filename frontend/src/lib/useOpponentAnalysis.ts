@@ -77,5 +77,27 @@ export function useOpponentTeamAnalysis(slug: string | undefined, teamName: stri
     }
   }, [slug, teamName])
 
-  return { analysis, busy, error }
+  const reload = useCallback(async () => {
+    const cleanSlug = slug?.trim()
+    const cleanTeam = teamName?.trim()
+    if (!cleanSlug || !cleanTeam) {
+      setAnalysis(null)
+      setError(null)
+      setBusy(false)
+      return
+    }
+    setBusy(true)
+    setError(null)
+    try {
+      const data = await fetchOpponentTeamAnalysis(cleanSlug, cleanTeam)
+      setAnalysis(data)
+    } catch (err) {
+      setAnalysis(null)
+      setError(err instanceof Error ? err.message : 'Opponent analysis failed')
+    } finally {
+      setBusy(false)
+    }
+  }, [slug, teamName])
+
+  return { analysis, busy, error, reload }
 }
