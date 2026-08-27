@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties, type DragEvent } from 'react'
+import { useMemo, useState, type DragEvent } from 'react'
 import type { CivBoardItem, MapPickDisplay, MapPriorityPreset } from '../types/draft'
 import { poolAvailabilityTone, poolIconUrl } from '../lib/pools'
 import {
@@ -363,7 +363,12 @@ export function CivDraftMapHub({
                 ) : null}
 
                 {!showSingleMapLayout ? (
-                  <MapTierPressureHint pressure={column.tierPressure} />
+                  <MapColumnPressure
+                    advancedMode={column.advancedMode}
+                    tierPressure={column.tierPressure}
+                    poolPressure={column.poolPressure}
+                    civsPerMap={civsPerMap}
+                  />
                 ) : null}
 
                 {showTopPicks && topPickMode !== 'hidden' ? (
@@ -389,15 +394,6 @@ export function CivDraftMapHub({
                       </div>
                     ) : null}
                   </div>
-                ) : null}
-
-                {!showSingleMapLayout &&
-                column.advancedMode &&
-                column.poolPressure.length > 0 ? (
-                  <PoolAlreadyPickedSection
-                    pools={column.poolPressure}
-                    civsPerMap={civsPerMap}
-                  />
                 ) : null}
               </div>
             )
@@ -431,35 +427,34 @@ export function CivDraftMapHub({
   )
 }
 
-function PoolAlreadyPickedSection({
-  pools,
+function MapColumnPressure({
+  advancedMode,
+  tierPressure,
+  poolPressure,
   civsPerMap,
 }: {
-  pools: MapPoolPressureEntry[]
+  advancedMode: boolean
+  tierPressure: MapTierPressure
+  poolPressure: MapPoolPressureEntry[]
   civsPerMap: number
 }) {
-  return (
-    <div className="civ-draft-pool-assigned">
-      <span
-        className="civ-draft-map-section-label civ-draft-pool-pressure-heading"
-        title="Your picks from each pool assigned to this map"
-      >
-        Already picked
-      </span>
+  if (advancedMode && poolPressure.length > 0) {
+    return (
       <div
-        className="civ-draft-pool-assigned-grid"
-        style={{ '--pool-columns': pools.length } as CSSProperties}
+        className="civ-draft-map-pool-tiers"
+        title="Remaining S/A-tier civs per pool, and your picks on this map"
       >
-        {pools.map((pool) => (
-          <PoolAssignedMeter
-            key={pool.id}
-            pool={pool}
-            slotCapacity={Math.max(pool.maxPicks ?? civsPerMap, 1)}
-          />
-        ))}
+        <span className="civ-draft-map-section-label">Pools left</span>
+        <div className="civ-draft-map-pool-tiers-list">
+          {poolPressure.map((pool) => (
+            <PoolTierRow key={pool.id} pool={pool} civsPerMap={civsPerMap} compact />
+          ))}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  return <MapTierPressureHint pressure={tierPressure} />
 }
 
 function MapPressureHint({
@@ -473,20 +468,18 @@ function MapPressureHint({
 }) {
   if (advancedMode && poolPressure.length > 0) {
     return (
-      <div className="civ-draft-pool-pressure">
-        <PoolPressureSection
-          title="Available"
-          pools={poolPressure}
-          valueFor={(pool) => pool.total - pool.gone}
-          colorize
-          titleHint="Remaining civs per pool (picked or banned civs reduce the count)"
-        />
-        <PoolPressureSection
-          title="Already picked"
-          pools={poolPressure}
-          valueFor={(pool) => pool.ownPicked}
-          titleHint="Your picks from each pool in this draft"
-        />
+      <div
+        className="civ-draft-pool-pressure civ-draft-map-pool-tiers civ-draft-map-pool-tiers-wide"
+        title="Remaining S/A-tier civs per pool, and your picks in this draft"
+      >
+        <span className="civ-draft-map-section-label civ-draft-pool-pressure-heading">
+          Pools left
+        </span>
+        <div className="civ-draft-map-pool-tiers-list">
+          {poolPressure.map((pool) => (
+            <PoolTierRow key={pool.id} pool={pool} showTotalRemaining />
+          ))}
+        </div>
       </div>
     )
   }
@@ -494,88 +487,83 @@ function MapPressureHint({
   return <MapTierPressureHint pressure={tierPressure} />
 }
 
-function PoolAssignedMeter({
+function PoolTierRow({
   pool,
-  slotCapacity,
+  civsPerMap,
+  compact = false,
+  showTotalRemaining = false,
 }: {
   pool: MapPoolPressureEntry
-  slotCapacity: number
+  civsPerMap?: number
+  compact?: boolean
+  showTotalRemaining?: boolean
 }) {
-  const fillRatio = Math.min(1, pool.ownPicked / slotCapacity)
-  const atCap = pool.maxPicks != null && pool.maxPicks > 0 && pool.ownPicked >= pool.maxPicks
+  const remaining = Math.max(0, pool.total - pool.gone)
+  const sLeft = Math.max(0, pool.tiers.s.total - pool.tiers.s.gone)
+  const aLeft = Math.max(0, pool.tiers.a.total - pool.tiers.a.gone)
+  const tone = poolAvailabilityTone(remaining)
+  const pickCap = pool.maxPicks ?? civsPerMap
+  const atCap = pickCap != null && pickCap > 0 && pool.ownPicked >= pickCap
+  const title = [
+    `${pool.name}: ${remaining}/${pool.total} left`,
+    pool.tiers.s.total ? `S ${sLeft}/${pool.tiers.s.total}` : null,
+    pool.tiers.a.total ? `A ${aLeft}/${pool.tiers.a.total}` : null,
+    pickCap != null ? `picks ${pool.ownPicked}/${pickCap}` : `picks ${pool.ownPicked}`,
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <div
-      className={`civ-draft-pool-assigned-cell${atCap ? ' civ-draft-pool-assigned-full' : ''}`}
-      title={`${pool.name}: ${pool.ownPicked}${pool.maxPicks ? ` / ${pool.maxPicks}` : ''} on this map`}
+      className={`civ-draft-pool-tiers-row${compact ? ' civ-draft-pool-tiers-row-compact' : ''}${atCap ? ' civ-draft-pool-tiers-at-cap' : ''}`}
+      title={title}
     >
-      <span className="civ-draft-pool-assigned-name">{pool.name}</span>
-      <div className="civ-draft-pool-assigned-track" aria-hidden>
-        <span
-          className="civ-draft-pool-assigned-fill"
-          style={{ height: `${Math.round(fillRatio * 100)}%` }}
-        />
+      <span className={`civ-draft-pool-tiers-name civ-draft-pool-tone-${tone}`}>{pool.name}</span>
+      <div className="civ-draft-pool-tiers-chips">
+        {pool.tiers.s.total > 0 ? (
+          <TierLeftChip tier="S" left={sLeft} total={pool.tiers.s.total} />
+        ) : null}
+        {pool.tiers.a.total > 0 ? (
+          <TierLeftChip tier="A" left={aLeft} total={pool.tiers.a.total} />
+        ) : null}
+        {pool.tiers.s.total === 0 && pool.tiers.a.total === 0 && showTotalRemaining ? (
+          <span className="civ-draft-pool-tiers-fallback">{remaining}</span>
+        ) : null}
       </div>
       <img
         src={poolIconUrl(pool.name)}
         alt=""
-        className="civ-draft-pool-assigned-icon"
+        className="civ-draft-pool-tiers-icon"
         draggable={false}
       />
-      <span className="civ-draft-pool-assigned-count">
+      <span className="civ-draft-pool-tiers-picks">
         {pool.ownPicked}
-        {pool.maxPicks ? `/${pool.maxPicks}` : ''}
+        {pickCap != null ? `/${pickCap}` : ''}
       </span>
     </div>
   )
 }
 
-function PoolPressureSection({
-  title,
-  pools,
-  valueFor,
-  colorize = false,
-  titleHint,
+function TierLeftChip({
+  tier,
+  left,
+  total,
 }: {
-  title: string
-  pools: MapPoolPressureEntry[]
-  valueFor: (pool: MapPoolPressureEntry) => number
-  colorize?: boolean
-  titleHint?: string
+  tier: 'S' | 'A'
+  left: number
+  total: number
 }) {
+  const depleted = left === 0
+  const tight = !depleted && left <= (tier === 'S' ? 1 : 2)
+
   return (
-    <div className="civ-draft-pool-pressure-section" title={titleHint}>
-      <span className="civ-draft-map-section-label civ-draft-pool-pressure-heading">{title}</span>
-      <div
-        className="civ-draft-pool-pressure-grid"
-        style={{ '--pool-columns': pools.length } as CSSProperties}
-      >
-        {pools.map((pool) => {
-          const value = valueFor(pool)
-          const tone = colorize ? poolAvailabilityTone(value) : null
-          return (
-            <div
-              key={`${title}-${pool.id}`}
-              className="civ-draft-pool-pressure-cell"
-              title={pool.name}
-            >
-              <span
-                className={`civ-draft-pool-pressure-name${tone ? ` civ-draft-pool-tone-${tone}` : ''}`}
-              >
-                {pool.name}
-              </span>
-              <img
-                src={poolIconUrl(pool.name)}
-                alt=""
-                className="civ-draft-pool-pressure-icon"
-                draggable={false}
-              />
-              <span className="civ-draft-pool-pressure-count">{value}</span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
+    <span
+      className={`civ-draft-tier-chip legend-tier tier-${tier.toLowerCase()}${depleted ? ' civ-draft-tier-chip-gone' : ''}${tight ? ' civ-draft-tier-chip-tight' : ''}`}
+      title={`${tier}-tier: ${left} of ${total} left`}
+    >
+      <em>{tier}</em>
+      {left}
+    </span>
   )
 }
 
@@ -592,17 +580,19 @@ function MapTierPressureHint({ pressure }: { pressure: MapTierPressure }) {
   const sTight = hasS && sRemaining <= 1 && !sCritical
   const aTight = hasA && aRemaining <= 2 && !aCritical
 
-  const parts: string[] = []
-  if (hasS) parts.push(`S ${pressure.s.gone}/${pressure.s.total}`)
-  if (hasA) parts.push(`A ${pressure.a.gone}/${pressure.a.total}`)
-
   const severity =
     sCritical || aCritical ? 'critical' : sTight || aTight ? 'tight' : 'ok'
 
   return (
-    <div className={`civ-draft-tier-pressure civ-draft-tier-pressure-${severity}`}>
+    <div
+      className={`civ-draft-tier-pressure civ-draft-tier-pressure-chips civ-draft-tier-pressure-${severity}`}
+      title="Remaining S- and A-tier civs on this map (left of total)"
+    >
       <span className="civ-draft-map-section-label">S / A left</span>
-      <span title="S- and A-tier civs picked or banned (gone / total)">{parts.join(' · ')}</span>
+      <div className="civ-draft-tier-pressure-row">
+        {hasS ? <TierLeftChip tier="S" left={sRemaining} total={pressure.s.total} /> : null}
+        {hasA ? <TierLeftChip tier="A" left={aRemaining} total={pressure.a.total} /> : null}
+      </div>
     </div>
   )
 }

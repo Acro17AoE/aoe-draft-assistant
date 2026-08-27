@@ -203,6 +203,11 @@ export interface MapTierPressure {
   a: { gone: number; total: number }
 }
 
+export interface MapPoolTierSlice {
+  gone: number
+  total: number
+}
+
 export interface MapPoolPressureEntry {
   id: string
   name: string
@@ -210,6 +215,11 @@ export interface MapPoolPressureEntry {
   total: number
   ownPicked: number
   maxPicks?: number
+  /** S/A membership inside this pool (for multi-map pressure readout). */
+  tiers: {
+    s: MapPoolTierSlice
+    a: MapPoolTierSlice
+  }
 }
 
 export interface MapTopPickGroup {
@@ -423,6 +433,10 @@ function computeMapPoolPressure(
       total: 0,
       ownPicked: 0,
       maxPicks: pool.maxPicks,
+      tiers: {
+        s: { gone: 0, total: 0 },
+        a: { gone: 0, total: 0 },
+      },
     })
   }
 
@@ -432,6 +446,8 @@ function computeMapPoolPressure(
     const boardItem = findBoardItem(allItems, entry.civId)
     const gone = Boolean(boardItem && isCivGone(boardItem))
     const ownPicked = boardItem?.status === 'own_pick'
+    const isS = entry.tier === 'S'
+    const isA = entry.tier === 'A'
 
     for (const poolId of membership) {
       const bucket = buckets.get(poolId)
@@ -442,6 +458,13 @@ function computeMapPoolPressure(
         bucket.ownPicked = mapAssignedCounts.get(poolId) ?? 0
       } else if (ownPicked) {
         bucket.ownPicked += 1
+      }
+      if (isS) {
+        bucket.tiers.s.total += 1
+        if (gone) bucket.tiers.s.gone += 1
+      } else if (isA) {
+        bucket.tiers.a.total += 1
+        if (gone) bucket.tiers.a.gone += 1
       }
     }
   }

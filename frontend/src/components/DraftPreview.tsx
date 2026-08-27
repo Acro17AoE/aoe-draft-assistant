@@ -51,17 +51,57 @@ function CivChip({
   )
 }
 
+function PreviewTierChip({
+  tier,
+  left,
+  total,
+}: {
+  tier: 'S' | 'A'
+  left: number
+  total: number
+}) {
+  const depleted = left === 0
+  return (
+    <span
+      className={`civ-draft-tier-chip legend-tier tier-${tier.toLowerCase()}${depleted ? ' civ-draft-tier-chip-gone' : ''}`}
+      title={`${tier}-tier: ${left} of ${total} left`}
+    >
+      <em>{tier}</em>
+      {left}
+    </span>
+  )
+}
+
 function PressureBlock({ group }: { group: MapTopPickGroup }) {
   if (group.advancedMode && group.poolPressure.length) {
     return (
-      <div className="draft-preview-pressure draft-preview-pressure-pools">
+      <div className="draft-preview-pressure draft-preview-pressure-pools draft-preview-pressure-pool-tiers">
         {group.poolPressure.map((pool) => {
           const remaining = Math.max(0, pool.total - pool.gone)
+          const sLeft = Math.max(0, pool.tiers.s.total - pool.tiers.s.gone)
+          const aLeft = Math.max(0, pool.tiers.a.total - pool.tiers.a.gone)
           const tone = poolAvailabilityTone(remaining)
+          const title = [
+            `${pool.name}: ${remaining}/${pool.total} left`,
+            pool.tiers.s.total ? `S ${sLeft}/${pool.tiers.s.total}` : null,
+            pool.tiers.a.total ? `A ${aLeft}/${pool.tiers.a.total}` : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')
           return (
-            <div key={pool.id} className={`draft-preview-pool tone-${tone}`} title={pool.name}>
+            <div key={pool.id} className={`draft-preview-pool-tiers tone-${tone}`} title={title}>
               <img src={poolIconUrl(pool.name)} alt="" />
-              <span>{remaining}</span>
+              <div className="draft-preview-pool-tiers-chips">
+                {pool.tiers.s.total > 0 ? (
+                  <PreviewTierChip tier="S" left={sLeft} total={pool.tiers.s.total} />
+                ) : null}
+                {pool.tiers.a.total > 0 ? (
+                  <PreviewTierChip tier="A" left={aLeft} total={pool.tiers.a.total} />
+                ) : null}
+                {pool.tiers.s.total === 0 && pool.tiers.a.total === 0 ? (
+                  <span>{remaining}</span>
+                ) : null}
+              </div>
             </div>
           )
         })}
@@ -70,14 +110,12 @@ function PressureBlock({ group }: { group: MapTopPickGroup }) {
   }
 
   const { s, a } = group.tierPressure
+  const sLeft = Math.max(0, s.total - s.gone)
+  const aLeft = Math.max(0, a.total - a.gone)
   return (
-    <div className="draft-preview-pressure">
-      <span>
-        S {s.gone}/{s.total}
-      </span>
-      <span>
-        A {a.gone}/{a.total}
-      </span>
+    <div className="draft-preview-pressure draft-preview-pressure-tiers">
+      {s.total > 0 ? <PreviewTierChip tier="S" left={sLeft} total={s.total} /> : null}
+      {a.total > 0 ? <PreviewTierChip tier="A" left={aLeft} total={a.total} /> : null}
     </div>
   )
 }

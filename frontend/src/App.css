@@ -1473,18 +1473,180 @@ select:focus {
 .civ-draft-tier-pressure {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  align-items: center;
+  gap: 0.2rem;
   font-size: 0.58rem;
   font-weight: 600;
   text-align: center;
 }
 
-.civ-draft-tier-pressure-tight span:last-child {
-  color: var(--laca-yellow);
+.civ-draft-tier-pressure-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.22rem;
 }
 
-.civ-draft-tier-pressure-critical span:last-child {
-  color: #ff8a7a;
+.civ-draft-tier-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12rem;
+  min-width: 1.55rem;
+  padding: 0.08rem 0.28rem;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
+}
+
+.civ-draft-tier-chip em {
+  font-style: normal;
+  font-size: 0.58rem;
+  font-weight: 800;
+  opacity: 0.92;
+}
+
+.civ-draft-tier-chip-gone {
+  opacity: 0.38;
+  filter: grayscale(0.35);
+}
+
+.civ-draft-tier-chip-tight {
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(255, 210, 90, 0.55);
+}
+
+.civ-draft-tier-pressure-tight .civ-draft-map-section-label,
+.civ-draft-tier-pressure-critical .civ-draft-map-section-label {
+  color: inherit;
+}
+
+.civ-draft-map-pool-tiers {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.22rem;
+  width: 100%;
+  padding: 0.15rem 0.1rem 0.05rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.civ-draft-map-pool-tiers > .civ-draft-map-section-label {
+  text-align: center;
+}
+
+.civ-draft-map-pool-tiers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  width: 100%;
+}
+
+.civ-draft-pool-tiers-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  column-gap: 0.22rem;
+  row-gap: 0.08rem;
+  min-width: 0;
+  padding: 0.12rem 0.18rem;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.civ-draft-pool-tiers-row-compact {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+}
+
+.civ-draft-pool-tiers-row-compact .civ-draft-pool-tiers-name {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.civ-draft-pool-tiers-row-compact .civ-draft-pool-tiers-chips {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-content: flex-start;
+}
+
+.civ-draft-pool-tiers-row-compact .civ-draft-pool-tiers-icon {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.civ-draft-pool-tiers-row-compact .civ-draft-pool-tiers-picks {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+}
+
+.civ-draft-pool-tiers-at-cap {
+  box-shadow: inset 0 0 0 1px rgba(255, 138, 122, 0.45);
+}
+
+.civ-draft-pool-tiers-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(0.5rem, 10cqi, 0.68rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.civ-draft-pool-tiers-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.14rem;
+}
+
+.civ-draft-pool-tiers-icon {
+  width: clamp(0.85rem, 18cqi, 1.2rem);
+  height: clamp(0.85rem, 18cqi, 1.2rem);
+  object-fit: contain;
+  border-radius: 3px;
+}
+
+.civ-draft-pool-tiers-picks {
+  font-size: clamp(0.55rem, 10cqi, 0.72rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #c5ccd8;
+  line-height: 1;
+}
+
+.civ-draft-pool-tiers-fallback {
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.civ-draft-map-pool-tiers-wide .civ-draft-pool-tiers-row {
+  grid-template-columns: minmax(3.5rem, 1fr) auto auto auto;
+  padding: 0.2rem 0.35rem;
+}
+
+.civ-draft-map-pool-tiers-wide .civ-draft-pool-tiers-name {
+  font-size: 0.72rem;
+}
+
+.civ-draft-map-pool-tiers-wide .civ-draft-pool-tiers-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.civ-draft-map-pool-tiers-wide .civ-draft-pool-tiers-picks {
+  font-size: 0.78rem;
 }
 
 .civ-draft-top-picks-stack {
@@ -7513,8 +7675,16 @@ td {
   color: var(--laca-text-muted);
 }
 
+.draft-preview-pressure-tiers {
+  align-items: center;
+}
+
 .draft-preview-pressure-pools {
   align-items: center;
+}
+
+.draft-preview-pressure-pool-tiers {
+  gap: 0.35rem;
 }
 
 .draft-preview-pool {
@@ -7543,6 +7713,37 @@ td {
 .draft-preview-pool.tone-ok {
   color: var(--laca-green);
   background: color-mix(in srgb, var(--laca-green) 12%, transparent);
+}
+
+.draft-preview-pool-tiers {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  border-radius: 6px;
+  padding: 0.18rem 0.4rem;
+}
+
+.draft-preview-pool-tiers img {
+  width: 18px;
+  height: 18px;
+}
+
+.draft-preview-pool-tiers-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18rem;
+}
+
+.draft-preview-pool-tiers.tone-critical {
+  background: color-mix(in srgb, var(--laca-red) 12%, transparent);
+}
+
+.draft-preview-pool-tiers.tone-tight {
+  background: color-mix(in srgb, #c47a1a 12%, transparent);
+}
+
+.draft-preview-pool-tiers.tone-ok {
+  background: color-mix(in srgb, var(--laca-green) 10%, transparent);
 }
 
 .draft-preview-explain {
@@ -8299,6 +8500,19 @@ td {
 
 [data-theme='light'] .civ-draft-pool-pressure-name {
   color: var(--laca-text);
+}
+
+[data-theme='light'] .civ-draft-map-pool-tiers {
+  background: rgba(30, 38, 48, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(30, 38, 48, 0.08);
+}
+
+[data-theme='light'] .civ-draft-pool-tiers-row {
+  background: rgba(30, 38, 48, 0.05);
+}
+
+[data-theme='light'] .civ-draft-pool-tiers-picks {
+  color: var(--laca-text-muted);
 }
 
 [data-theme='light'] .civ-draft-assign-slot-placeholder {
