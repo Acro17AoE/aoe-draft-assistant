@@ -27,10 +27,12 @@ from .liquipedia import (
 )
 from .map_analysis import analyze_map_draft_events
 from .name_utils import (
-    branches_compatible,
-    draft_seat_matches,
-    roster_display_name,
-    team_branch_key,
+    draft_label_matches_team,
+    identities_match,
+    org_bases_compatible,
+    resolve_team_identity,
+    seat_maps_to_opponent,
+    team_display_label,
     team_names_match,
 )
 from .pro_analysis import analyze_civ_draft_events
@@ -471,10 +473,10 @@ def _map_draft_seats_to_opponents(
     if not host_s and not guest_s:
         return None, None
 
-    host_left = bool(host_s and left and draft_seat_matches(host_s, left))
-    host_right = bool(host_s and right and draft_seat_matches(host_s, right))
-    guest_left = bool(guest_s and left and draft_seat_matches(guest_s, left))
-    guest_right = bool(guest_s and right and draft_seat_matches(guest_s, right))
+    host_left = bool(host_s and left and seat_maps_to_opponent(host_s, left))
+    host_right = bool(host_s and right and seat_maps_to_opponent(host_s, right))
+    guest_left = bool(guest_s and left and seat_maps_to_opponent(guest_s, left))
+    guest_right = bool(guest_s and right and seat_maps_to_opponent(guest_s, right))
 
     if host_left and guest_right and not (host_right or guest_left):
         return host_s, guest_s
@@ -489,7 +491,7 @@ def _map_draft_seats_to_opponents(
     if guest_right and not guest_left:
         return host_s, guest_s
 
-    # Ambiguous umbrella (both sides Onimaru): keep draft order as a best-effort hint.
+    # Ambiguous umbrella (both sides same LP org): keep draft order as a best-effort hint.
     if left and right and team_names_match(left, right):
         return host_s, guest_s
     return host_s, guest_s
@@ -510,12 +512,10 @@ def _apply_draft_seats_to_match(row: TournamentMatchRow, draft: dict[str, Any]) 
 
 
 def _team_label_for_side(row: TournamentMatchRow, side_index: int) -> str:
-    """Prefer aoe2cm sub-roster label over Liquipedia umbrella name."""
+    """Label for dropdown/analysis: seat branch splits Liquipedia umbrellas."""
     opp = str(row.opponent1 if side_index == 1 else row.opponent2 or "").strip()
     seat = str(row.seat1 if side_index == 1 else row.seat2 or "").strip()
-    if seat and team_branch_key(seat):
-        return roster_display_name(seat, opp)
-    return opp
+    return team_display_label(lp_name=opp, seat_name=seat)
 
 
 def ensure_dataset(db: Session, name: str) -> tuple[TournamentDataset, dict[str, Any]]:
@@ -1437,61 +1437,46 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
 
 
 def _team_matches_row(row: TournamentMatchRow, team_name: str) -> int | None:
-    """Return 1 or 2 if team matches opponent1/2 (or mapped aoe2cm seats), else None.
+    """Return 1 or 2 if that side's identity matches the selected team.
 
-    Branched needles (``Onimaru Vanguard``) match Liquipedia umbrellas only when the
-    stored aoe2cm seat on that side agrees with the branch.
+    Identity is ``(org, branch)`` from Liquipedia name + aoe2cm seat (seat wins for
+    branch). Main teams never absorb B/L/Vanguard seats; branched needles only match
+    their own branch — including under Liquipedia umbrellas.
     """
     needle = team_name.strip()
     if not needle:
         return None
-    needle_branch = team_branch_key(needle)
+    needle_id = resolve_team_identity(lp_name=needle, seat_name=needle)
 
     for idx in (1, 2):
         opp = str(row.opponent1 if idx == 1 else row.opponent2 or "").strip()
         seat = str(row.seat1 if idx == 1 else row.seat2 or "").strip()
-
-        if seat:
-            if team_names_match(seat, needle):
-                return idx
-            if draft_seat_matches(seat, needle) and (
-                not needle_branch
-                or branches_compatible(team_branch_key(seat), needle_branch)
-            ):
-                return idx
-
-        if not opp:
+        if not opp and not seat:
             continue
-
-        if team_names_match(opp, needle):
-            # Exact / same-branch LP match.
-            if needle_branch and not team_branch_key(opp):
-                # Needle is a sub-roster; LP name is an umbrella — require seat proof.
-                if seat and branches_compatible(team_branch_key(seat), needle_branch):
-                    return idx
-                continue
+        side_id = resolve_team_identity(lp_name=opp, seat_name=seat)
+        if identities_match(needle_id, side_id):
             return idx
-
-        # Branched needle vs Liquipedia umbrella (Onimaru_Esports) with matching seat.
-        if needle_branch and seat and draft_seat_matches(seat, opp) and draft_seat_matches(seat, needle):
-            if branches_compatible(team_branch_key(seat), needle_branch):
-                return idx
-
     return None
 
 
 def _cluster_team_labels(labels: list[str]) -> list[list[str]]:
-    """Group Liquipedia spellings that refer to the same org branch."""
+    """Group display labels that share the same ``(org, branch)`` identity."""
     clusters: list[list[str]] = []
+    cluster_ids: list = []
     for label in labels:
+        ident = resolve_team_identity(lp_name=label, seat_name=label)
         placed = False
-        for cluster in clusters:
-            if team_names_match(label, cluster[0]):
-                cluster.append(label)
+        for index, existing in enumerate(cluster_ids):
+            if identities_match(ident, existing):
+                clusters[index].append(label)
+                # Prefer longer org token as cluster representative identity.
+                if len(ident.org) > len(existing.org):
+                    cluster_ids[index] = ident
                 placed = True
                 break
         if not placed:
             clusters.append([label])
+            cluster_ids.append(ident)
     return clusters
 
 
@@ -1500,7 +1485,7 @@ def list_tournament_teams(db: Session, slug: str) -> dict[str, Any]:
     if not status.get("found"):
         return {"found": False, "slug": slug, "teams": [], "attribution": liquipedia_attribution()}
 
-    # Prefer aoe2cm sub-roster seats (Onimaru Vanguard) over Liquipedia umbrellas.
+    # Count by resolved identity; label from seat+LP so umbrellas split into sub-rosters.
     raw_counts: Counter[str] = Counter()
     for row in db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all():
         if not _match_has_result(row):
@@ -1513,12 +1498,10 @@ def list_tournament_teams(db: Session, slug: str) -> dict[str, Any]:
     teams: list[dict[str, Any]] = []
     for cluster in _cluster_team_labels(sorted(raw_counts.keys(), key=str.lower)):
         total = sum(raw_counts[name] for name in cluster)
-        # Prefer branched roster labels over umbrella spellings when clustered... 
-        # (clusters shouldn't mix umbrella with branch due to team_names_match)
         canonical = max(
             cluster,
             key=lambda name: (
-                1 if team_branch_key(name) else 0,
+                1 if resolve_team_identity(lp_name=name).branch else 0,
                 raw_counts[name],
                 len(name),
             ),
@@ -1543,8 +1526,8 @@ def _side_from_draft(
 ) -> str | None:
     host = (draft.get("nameHost") or "").strip()
     guest = (draft.get("nameGuest") or "").strip()
-    team_host = draft_seat_matches(host, team_name)
-    team_guest = draft_seat_matches(guest, team_name)
+    team_host = draft_label_matches_team(host, team_name)
+    team_guest = draft_label_matches_team(guest, team_name)
     if team_host and not team_guest:
         return "HOST"
     if team_guest and not team_host:
@@ -1552,13 +1535,12 @@ def _side_from_draft(
 
     foe = (foe_name or "").strip()
     if foe:
-        foe_host = draft_seat_matches(host, foe)
-        foe_guest = draft_seat_matches(guest, foe)
+        foe_host = draft_label_matches_team(host, foe)
+        foe_guest = draft_label_matches_team(guest, foe)
         if foe_host and not foe_guest:
             return "GUEST"
         if foe_guest and not foe_host:
             return "HOST"
-        # One seat is clearly the foe, the other is the analyzed team (even if tagged oddly).
         if foe_host and team_guest:
             return "GUEST"
         if foe_guest and team_host:
@@ -1724,20 +1706,30 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
 
     match_rows = []
     seats_dirty = False
+    needle_id = resolve_team_identity(lp_name=needle, seat_name=needle)
     for row in db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all():
         if not _match_has_result(row):
             continue
         if _team_matches_row(row, needle) is not None:
             match_rows.append(row)
             continue
-        # Branched needle vs Liquipedia umbrella: keep as candidate until seats are known.
-        needle_branch = team_branch_key(needle)
-        if not needle_branch:
+        # Branched selection vs Liquipedia umbrella: keep as candidate until seats resolve.
+        if not needle_id.branch:
             continue
         if not (row.map_draft_id or row.civ_draft_id):
             continue
         for opp in (row.opponent1, row.opponent2):
-            if opp and draft_seat_matches(needle, str(opp)):
+            if not opp:
+                continue
+            # Same org umbrella (unbranched LP) that could host this sub-roster.
+            opp_id = resolve_team_identity(lp_name=str(opp))
+            if (
+                not opp_id.branch
+                and org_bases_compatible(needle_id.org, opp_id.org)
+            ):
+                match_rows.append(row)
+                break
+            if seat_maps_to_opponent(needle, str(opp)):
                 match_rows.append(row)
                 break
 
