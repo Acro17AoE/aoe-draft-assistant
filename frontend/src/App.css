@@ -3128,6 +3128,44 @@ td {
   margin-bottom: 0.75rem;
 }
 
+.presets-main-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.preset-io-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.preset-io-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.preset-io-btn:hover,
+.preset-io-btn:focus-visible {
+  border-color: var(--laca-border);
+  color: var(--laca-yellow);
+  outline: none;
+}
+
+.preset-toolbar-below {
+  margin-top: 0.85rem;
+}
+
 .presets-main-header > div:first-child {
   display: flex;
   flex-wrap: wrap;

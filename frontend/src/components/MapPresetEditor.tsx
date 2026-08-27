@@ -317,6 +317,20 @@ export function MapPresetEditor({
 
   return (
     <div className="map-preset-editor">
+      <div className="preset-map-heading-row">
+        <MapNamePicker maps={tournamentMaps} selectedMap={selectedMap} onSelect={requestMapSwitch} />
+        <button type="button" className="add-btn" title="Add map" onClick={() => setShowAddMap(true)}>
+          +
+        </button>
+        {onRemoveMap ? (
+          <DeleteX
+            title={tournamentMaps.length <= 1 ? 'At least one map required' : `Remove ${selectedMap}`}
+            disabled={tournamentMaps.length <= 1}
+            onClick={requestRemoveMap}
+          />
+        ) : null}
+      </div>
+
       {onCopyFromMap && copySourceMaps.length > 0 ? (
         <div className="preset-map-import-row">
           <span className="preset-map-import-label">Import ratings from:</span>
@@ -336,29 +350,6 @@ export function MapPresetEditor({
           </button>
         </div>
       ) : null}
-
-      <div className="preset-toolbar">
-        <button type="button" onClick={save} disabled={!isDirty}>
-          Save
-        </button>
-        <button type="button" onClick={resetMap}>
-          Reset
-        </button>
-      </div>
-
-      <div className="preset-map-heading-row">
-        <MapNamePicker maps={tournamentMaps} selectedMap={selectedMap} onSelect={requestMapSwitch} />
-        <button type="button" className="add-btn" title="Add map" onClick={() => setShowAddMap(true)}>
-          +
-        </button>
-        {onRemoveMap ? (
-          <DeleteX
-            title={tournamentMaps.length <= 1 ? 'At least one map required' : `Remove ${selectedMap}`}
-            disabled={tournamentMaps.length <= 1}
-            onClick={requestRemoveMap}
-          />
-        ) : null}
-      </div>
 
       {status ? <p className="hint preset-status">{status}</p> : null}
       {isDirty ? <p className="hint preset-unsaved-hint">Unsaved changes for &quot;{selectedMap}&quot;.</p> : null}
@@ -460,6 +451,15 @@ export function MapPresetEditor({
           />
         }
       />
+
+      <div className="preset-toolbar preset-toolbar-below">
+        <button type="button" className="accent-btn" onClick={save} disabled={!isDirty}>
+          Save
+        </button>
+        <button type="button" onClick={resetMap}>
+          Reset
+        </button>
+      </div>
     </div>
   )
 }

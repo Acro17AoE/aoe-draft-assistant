@@ -288,15 +288,19 @@ export function PresetsTab({ store, onChange, onResultsChange }: PresetsTabProps
                 <span className="chip muted">{selected.presets.length} map presets</span>
                 {selected.resultsId ? <span className="chip muted">Linked to Results</span> : null}
               </div>
-              <DeleteX title="Delete tournament" onClick={() => setDeleteTarget({ id: selected.id, name: selected.name })} />
+              <div className="presets-main-header-actions">
+                <PresetExportImportPanel
+                  presets={selected.presets}
+                  customMaps={selected.customMaps}
+                  onChange={handlePresetChange}
+                  onStatus={setEditorStatus}
+                />
+                <DeleteX
+                  title="Delete tournament"
+                  onClick={() => setDeleteTarget({ id: selected.id, name: selected.name })}
+                />
+              </div>
             </div>
-
-            <PresetExportImportPanel
-              presets={selected.presets}
-              customMaps={selected.customMaps}
-              onChange={handlePresetChange}
-              onStatus={setEditorStatus}
-            />
 
             {otherTournaments.length > 0 ? (
               <details
