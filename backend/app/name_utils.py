@@ -62,12 +62,17 @@ def is_short_roster_seat(name: str) -> bool:
     return bool(_SHORT_ROSTER_SEAT_RE.match(name.strip()))
 
 
+def _team_tokens(name: str) -> list[str]:
+    return [token for token in re.split(r"[\s_.]+", name.strip()) if token]
+
+
 def team_branch_key(name: str) -> str:
     """Sub-team discriminator that must agree for two labels to be the same org branch.
 
     Examples:
     - ``Wonders B`` / ``Darkside L`` → ``b`` / ``l``
     - ``Onimaru Vanguard`` → ``vanguard``
+    - ``Oni.Barbetacos`` → ``barbetacos``
     - ``Nocturna eSports`` → ```` (eSports is an org suffix, not a branch)
     - ``NOC A`` → ```` (short roster seats have no branch)
     """
@@ -75,7 +80,7 @@ def team_branch_key(name: str) -> str:
     if not trimmed or is_short_roster_seat(trimmed):
         return ""
 
-    tokens = [token for token in re.split(r"[\s_]+", trimmed) if token]
+    tokens = _team_tokens(trimmed)
     if len(tokens) < 2:
         return ""
 
@@ -95,6 +100,35 @@ def team_branch_key(name: str) -> str:
     return compact_name(" ".join(branch_tokens))
 
 
+def team_org_base(name: str) -> str:
+    """Org identity with sub-team branch removed (``Onimaru Vanguard`` → ``onimaru``)."""
+    compact = team_core_compact(name)
+    branch = team_branch_key(name)
+    if branch and compact.endswith(branch):
+        base = compact[: -len(branch)]
+        return base or compact
+    return compact
+
+
+def _branches_compatible(left: str, right: str) -> bool:
+    if left == right:
+        return True
+    # Soft plural: Vanguard ≈ Vanguards
+    if len(left) >= 4 and len(right) >= 4 and left.rstrip("s") == right.rstrip("s"):
+        return True
+    return False
+
+
+def _org_bases_compatible(left: str, right: str) -> bool:
+    if not left or not right:
+        return False
+    if left == right:
+        return True
+    # Abbreviation prefix: Oni ↔ Onimaru (min 3 chars to avoid LY/DS false friends)
+    shorter, longer = (left, right) if len(left) <= len(right) else (right, left)
+    return len(shorter) >= 3 and longer.startswith(shorter)
+
+
 def team_names_match(left: str, right: str) -> bool:
     """Strict team identity for tournament filtering (no cross-branch merges)."""
     a = normalize_name(left)
@@ -110,12 +144,16 @@ def team_names_match(left: str, right: str) -> bool:
 
     core_a = team_core_compact(left)
     core_b = team_core_compact(right)
-    if not core_a or not core_b or core_a != core_b:
-        return False
+    if core_a and core_b and core_a == core_b:
+        return _branches_compatible(team_branch_key(left), team_branch_key(right))
 
-    # Same org core only counts as a match when sub-team branches agree.
-    # Keeps Onimaru Vanguard ≠ Onimaru Capybaras, Wonders ≠ Wonders B, etc.
-    return team_branch_key(left) == team_branch_key(right)
+    # Same org base after stripping branches (Onimaru Vanguard ≈ Onimaru Vanguards).
+    base_a = team_org_base(left)
+    base_b = team_org_base(right)
+    if base_a and base_b and _org_bases_compatible(base_a, base_b):
+        return _branches_compatible(team_branch_key(left), team_branch_key(right))
+
+    return False
 
 
 def strip_roster_tag(name: str) -> str:
@@ -131,8 +169,13 @@ def strip_roster_tag(name: str) -> str:
 def draft_seat_matches(seat: str, org_name: str) -> bool:
     """Match aoe2cm host/guest seats to Liquipedia org names.
 
-    Allows short captain-mode tags (``NOC A`` ↔ ``Nocturna eSports``) and
-    eSports/Gaming spelling variants, but does **not** merge distinct sub-teams
+    Allows:
+    - short captain-mode tags (``NOC A`` ↔ ``Nocturna eSports``)
+    - eSports/Gaming spelling variants
+    - Liquipedia org umbrellas vs aoe2cm sub-rosters
+      (``Onimaru_Esports`` ↔ ``Onimaru Vanguard`` / ``Oni.Barbetacos``)
+
+    Still does **not** merge distinct sub-teams when both sides are branched
     (``Onimaru Vanguard`` vs ``Onimaru Capybaras``, ``Wonders`` vs ``Wonders B``).
     """
     if team_names_match(seat, org_name):
@@ -147,12 +190,21 @@ def draft_seat_matches(seat: str, org_name: str) -> bool:
     # After short-roster strip only: NOC == nocturna core equality already handled above.
     if seat_core == org_core:
         # Still reject if the Liquipedia org is a branched sub-team and the seat isn't.
-        return team_branch_key(seat) == team_branch_key(org_name)
+        return _branches_compatible(team_branch_key(seat), team_branch_key(org_name))
 
     # Short captain-mode tags: NOC / NOC A → Nocturna_eSports (unbranched org only).
     if 3 <= len(seat_core) <= 4 and org_core.startswith(seat_core):
         if team_branch_key(org_name):
             return False
         return True
+
+    # Liquipedia umbrella (Onimaru_Esports) ↔ aoe2cm sub-roster (Onimaru Vanguard / Oni Vanguard).
+    seat_base = team_org_base(seat_label)
+    org_base = team_org_base(org_name)
+    if _org_bases_compatible(seat_base, org_base):
+        org_branch = team_branch_key(org_name)
+        if not org_branch:
+            return True
+        return _branches_compatible(team_branch_key(seat), org_branch)
 
     return False
