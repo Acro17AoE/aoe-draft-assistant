@@ -26,7 +26,13 @@ from .liquipedia import (
     validate_liquipedia_access,
 )
 from .map_analysis import analyze_map_draft_events
-from .name_utils import draft_seat_matches, team_names_match
+from .name_utils import (
+    branches_compatible,
+    draft_seat_matches,
+    roster_display_name,
+    team_branch_key,
+    team_names_match,
+)
 from .pro_analysis import analyze_civ_draft_events
 from .models import (
     TournamentCivDraftAgg,
@@ -451,6 +457,67 @@ def _match_key(match: dict[str, Any], stage: str) -> str:
     return base[:160]
 
 
+def _map_draft_seats_to_opponents(
+    opp1: str | None,
+    opp2: str | None,
+    host: str | None,
+    guest: str | None,
+) -> tuple[str | None, str | None]:
+    """Map aoe2cm host/guest onto Liquipedia opponent1/opponent2 slots."""
+    left = (opp1 or "").strip()
+    right = (opp2 or "").strip()
+    host_s = (host or "").strip() or None
+    guest_s = (guest or "").strip() or None
+    if not host_s and not guest_s:
+        return None, None
+
+    host_left = bool(host_s and left and draft_seat_matches(host_s, left))
+    host_right = bool(host_s and right and draft_seat_matches(host_s, right))
+    guest_left = bool(guest_s and left and draft_seat_matches(guest_s, left))
+    guest_right = bool(guest_s and right and draft_seat_matches(guest_s, right))
+
+    if host_left and guest_right and not (host_right or guest_left):
+        return host_s, guest_s
+    if host_right and guest_left and not (host_left or guest_right):
+        return guest_s, host_s
+    if host_left and not host_right:
+        return host_s, guest_s if not guest_left else None
+    if host_right and not host_left:
+        return guest_s if not guest_right else None, host_s
+    if guest_left and not guest_right:
+        return guest_s, host_s
+    if guest_right and not guest_left:
+        return host_s, guest_s
+
+    # Ambiguous umbrella (both sides Onimaru): keep draft order as a best-effort hint.
+    if left and right and team_names_match(left, right):
+        return host_s, guest_s
+    return host_s, guest_s
+
+
+def _apply_draft_seats_to_match(row: TournamentMatchRow, draft: dict[str, Any]) -> bool:
+    host = str(draft.get("nameHost") or "").strip()
+    guest = str(draft.get("nameGuest") or "").strip()
+    seat1, seat2 = _map_draft_seats_to_opponents(row.opponent1, row.opponent2, host, guest)
+    changed = False
+    if seat1 and seat1 != row.seat1:
+        row.seat1 = seat1[:160]
+        changed = True
+    if seat2 and seat2 != row.seat2:
+        row.seat2 = seat2[:160]
+        changed = True
+    return changed
+
+
+def _team_label_for_side(row: TournamentMatchRow, side_index: int) -> str:
+    """Prefer aoe2cm sub-roster label over Liquipedia umbrella name."""
+    opp = str(row.opponent1 if side_index == 1 else row.opponent2 or "").strip()
+    seat = str(row.seat1 if side_index == 1 else row.seat2 or "").strip()
+    if seat and team_branch_key(seat):
+        return roster_display_name(seat, opp)
+    return opp
+
+
 def ensure_dataset(db: Session, name: str) -> tuple[TournamentDataset, dict[str, Any]]:
     resolved = resolve_registry_entry(name)
     if not resolved:
@@ -629,8 +696,28 @@ async def sync_tournament_dataset(
                     if match_date and (latest_date is None or match_date > latest_date):
                         latest_date = match_date
                     opp1, opp2 = match_opponent_names(match)
+                    stage_name = to_pagename(str(match.get("parent") or stage))
+                    winner = str(match.get("winner") or "")[:16] or None
+                    games_json = json.dumps(games, ensure_ascii=True)
+                    raw_json = json.dumps(
+                        {
+                            k: match.get(k)
+                            for k in (
+                                "match2id",
+                                "parent",
+                                "tournament",
+                                "date",
+                                "extradata",
+                                "links",
+                            )
+                            if k in match
+                        },
+                        ensure_ascii=True,
+                        default=str,
+                    )
                     if key in existing_keys:
-                        # Backfill draft links if editors added them later / parser improved.
+                        # Refresh result / draft fields — unfinished rows must pick up winners
+                        # and newly linked |civdraft|/|mapdraft| after a force sync.
                         existing = db.scalars(
                             select(TournamentMatchRow).where(
                                 TournamentMatchRow.dataset_slug == dataset.slug,
@@ -638,45 +725,36 @@ async def sync_tournament_dataset(
                             )
                         ).first()
                         if existing:
-                            changed = False
-                            if civ_draft_id and not existing.civ_draft_id:
+                            existing.stage = stage_name
+                            existing.match_date = match_date or existing.match_date
+                            existing.opponent1 = (opp1 or "")[:160] or existing.opponent1
+                            existing.opponent2 = (opp2 or "")[:160] or existing.opponent2
+                            if force or winner:
+                                existing.winner = winner
+                            if force or games:
+                                existing.games_json = games_json
+                            if civ_draft_id and (force or not existing.civ_draft_id):
                                 existing.civ_draft_id = civ_draft_id
-                                changed = True
-                            if map_draft_id and not existing.map_draft_id:
+                            if map_draft_id and (force or not existing.map_draft_id):
                                 existing.map_draft_id = map_draft_id
-                                changed = True
-                            if changed:
-                                db.add(existing)
+                            if force:
+                                existing.raw_json = raw_json
+                            db.add(existing)
                         continue
                     db.add(
                         TournamentMatchRow(
                             id=new_id(),
                             dataset_slug=dataset.slug,
                             match_key=key,
-                            stage=to_pagename(str(match.get("parent") or stage)),
+                            stage=stage_name,
                             match_date=match_date,
                             opponent1=(opp1 or "")[:160] or None,
                             opponent2=(opp2 or "")[:160] or None,
-                            winner=str(match.get("winner") or "")[:16] or None,
-                            games_json=json.dumps(games, ensure_ascii=True),
+                            winner=winner,
+                            games_json=games_json,
                             civ_draft_id=civ_draft_id,
                             map_draft_id=map_draft_id,
-                            raw_json=json.dumps(
-                                {
-                                    k: match.get(k)
-                                    for k in (
-                                        "match2id",
-                                        "parent",
-                                        "tournament",
-                                        "date",
-                                        "extradata",
-                                        "links",
-                                    )
-                                    if k in match
-                                },
-                                ensure_ascii=True,
-                                default=str,
-                            ),
+                            raw_json=raw_json,
                         )
                     )
                     existing_keys.add(key)
@@ -690,9 +768,12 @@ async def sync_tournament_dataset(
 
         # Fetch all missing aoe2cm drafts (no Liquipedia quota cost).
         draft_ids: list[tuple[str, str]] = []
-        for row in db.scalars(
-            select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == dataset.slug)
-        ).all():
+        match_rows_for_seats = list(
+            db.scalars(
+                select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == dataset.slug)
+            ).all()
+        )
+        for row in match_rows_for_seats:
             if row.civ_draft_id:
                 draft_ids.append((extract_draft_id(row.civ_draft_id), "civ"))
             if row.map_draft_id:
@@ -723,12 +804,23 @@ async def sync_tournament_dataset(
                 elif (existing.ban_order_json or "{}") in ("{}", ""):
                     pending.append((did, dtype))
 
+        # Always refresh seats when matches lack seat labels (cheap aoe2cm reads).
+        seat_backfill_ids = {
+            extract_draft_id(row.map_draft_id or row.civ_draft_id or "")
+            for row in match_rows_for_seats
+            if (row.map_draft_id or row.civ_draft_id) and (not row.seat1 or not row.seat2)
+        }
+        seat_backfill_ids.discard("")
+
         dataset.status_detail = f"Fetching {len(pending)} aoe2cm draft(s)…"
         db.commit()
+
+        fetched_draft_payloads: dict[str, dict[str, Any]] = {}
 
         for draft_id, draft_type in pending:
             try:
                 draft = await fetch_draft(draft_id)
+                fetched_draft_payloads[draft_id] = draft
                 events = list(draft.get("events") or [])
                 option_labels = _option_labels_from_draft(draft)
                 pool = _pool_from_draft(draft) if draft_type == "map" else None
@@ -771,6 +863,33 @@ async def sync_tournament_dataset(
             except Exception as exc:
                 logger.warning("aoe2cm draft %s failed: %s", draft_id, exc)
                 errors.append(f"{draft_id}: {exc}")
+
+        # Seat backfill for matches still missing sub-roster labels.
+        need_seat_fetch = [
+            did for did in seat_backfill_ids if did not in fetched_draft_payloads
+        ]
+        if need_seat_fetch:
+            dataset.status_detail = f"Resolving {len(need_seat_fetch)} draft seat label(s)…"
+            db.commit()
+        for draft_id in need_seat_fetch:
+            try:
+                fetched_draft_payloads[draft_id] = await fetch_draft(draft_id)
+            except Exception as exc:
+                logger.warning("aoe2cm seat backfill %s failed: %s", draft_id, exc)
+
+        seats_updated = 0
+        for row in match_rows_for_seats:
+            draft_id = extract_draft_id(row.map_draft_id or "") or extract_draft_id(row.civ_draft_id or "")
+            if not draft_id:
+                continue
+            draft = fetched_draft_payloads.get(draft_id)
+            if not draft:
+                continue
+            if _apply_draft_seats_to_match(row, draft):
+                db.add(row)
+                seats_updated += 1
+        if seats_updated:
+            db.commit()
 
         recompute_aggregates(db, dataset.slug)
 
@@ -1318,11 +1437,46 @@ def meta_overview(db: Session, slug: str) -> dict[str, Any]:
 
 
 def _team_matches_row(row: TournamentMatchRow, team_name: str) -> int | None:
-    """Return 1 or 2 if team matches opponent1/2, else None (strict identity)."""
-    if team_names_match(str(row.opponent1 or ""), team_name):
-        return 1
-    if team_names_match(str(row.opponent2 or ""), team_name):
-        return 2
+    """Return 1 or 2 if team matches opponent1/2 (or mapped aoe2cm seats), else None.
+
+    Branched needles (``Onimaru Vanguard``) match Liquipedia umbrellas only when the
+    stored aoe2cm seat on that side agrees with the branch.
+    """
+    needle = team_name.strip()
+    if not needle:
+        return None
+    needle_branch = team_branch_key(needle)
+
+    for idx in (1, 2):
+        opp = str(row.opponent1 if idx == 1 else row.opponent2 or "").strip()
+        seat = str(row.seat1 if idx == 1 else row.seat2 or "").strip()
+
+        if seat:
+            if team_names_match(seat, needle):
+                return idx
+            if draft_seat_matches(seat, needle) and (
+                not needle_branch
+                or branches_compatible(team_branch_key(seat), needle_branch)
+            ):
+                return idx
+
+        if not opp:
+            continue
+
+        if team_names_match(opp, needle):
+            # Exact / same-branch LP match.
+            if needle_branch and not team_branch_key(opp):
+                # Needle is a sub-roster; LP name is an umbrella — require seat proof.
+                if seat and branches_compatible(team_branch_key(seat), needle_branch):
+                    return idx
+                continue
+            return idx
+
+        # Branched needle vs Liquipedia umbrella (Onimaru_Esports) with matching seat.
+        if needle_branch and seat and draft_seat_matches(seat, opp) and draft_seat_matches(seat, needle):
+            if branches_compatible(team_branch_key(seat), needle_branch):
+                return idx
+
     return None
 
 
@@ -1346,22 +1500,29 @@ def list_tournament_teams(db: Session, slug: str) -> dict[str, Any]:
     if not status.get("found"):
         return {"found": False, "slug": slug, "teams": [], "attribution": liquipedia_attribution()}
 
-    # Count played sets per raw Liquipedia spelling, then cluster equivalent spellings
-    # so "Nocturna eSports" / "Nocturna_eSports" appear once — while keeping
-    # "Wonders" vs "Wonders B" (and similar branches) separate.
+    # Prefer aoe2cm sub-roster seats (Onimaru Vanguard) over Liquipedia umbrellas.
     raw_counts: Counter[str] = Counter()
     for row in db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all():
         if not _match_has_result(row):
             continue
-        for name in (row.opponent1, row.opponent2):
-            label = str(name or "").strip()
+        for idx in (1, 2):
+            label = _team_label_for_side(row, idx)
             if label:
                 raw_counts[label] += 1
 
     teams: list[dict[str, Any]] = []
     for cluster in _cluster_team_labels(sorted(raw_counts.keys(), key=str.lower)):
         total = sum(raw_counts[name] for name in cluster)
-        canonical = max(cluster, key=lambda name: (raw_counts[name], len(name)))
+        # Prefer branched roster labels over umbrella spellings when clustered... 
+        # (clusters shouldn't mix umbrella with branch due to team_names_match)
+        canonical = max(
+            cluster,
+            key=lambda name: (
+                1 if team_branch_key(name) else 0,
+                raw_counts[name],
+                len(name),
+            ),
+        )
         teams.append({"name": canonical, "matchCount": total})
 
     teams.sort(key=lambda item: (-int(item["matchCount"]), str(item["name"]).lower()))
@@ -1561,11 +1722,24 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
             "status": status,
         }
 
-    match_rows = [
-        row
-        for row in db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all()
-        if _team_matches_row(row, needle) is not None and _match_has_result(row)
-    ]
+    match_rows = []
+    seats_dirty = False
+    for row in db.scalars(select(TournamentMatchRow).where(TournamentMatchRow.dataset_slug == slug)).all():
+        if not _match_has_result(row):
+            continue
+        if _team_matches_row(row, needle) is not None:
+            match_rows.append(row)
+            continue
+        # Branched needle vs Liquipedia umbrella: keep as candidate until seats are known.
+        needle_branch = team_branch_key(needle)
+        if not needle_branch:
+            continue
+        if not (row.map_draft_id or row.civ_draft_id):
+            continue
+        for opp in (row.opponent1, row.opponent2):
+            if opp and draft_seat_matches(needle, str(opp)):
+                match_rows.append(row)
+                break
 
     # Confirmed = actions by the analyzed team.
     map_pick_counts: Counter[str] = Counter()
@@ -1601,10 +1775,32 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
     civ_draft_n = 0
 
     for row in sorted(match_rows, key=lambda item: (item.match_date or "", item.match_key)):
+        map_draft_id = extract_draft_id(row.map_draft_id) if row.map_draft_id else None
+        civ_draft_id = extract_draft_id(row.civ_draft_id) if row.civ_draft_id else None
+        map_draft: dict[str, Any] | None = None
+        civ_draft: dict[str, Any] | None = None
+
+        if map_draft_id:
+            try:
+                map_draft = await fetch_draft(map_draft_id)
+            except Exception as exc:
+                logger.warning("map draft %s for team analysis failed: %s", map_draft_id, exc)
+
+        if civ_draft_id:
+            try:
+                civ_draft = await fetch_draft(civ_draft_id)
+            except Exception as exc:
+                logger.warning("civ draft %s for team analysis failed: %s", civ_draft_id, exc)
+
+        for draft in (map_draft, civ_draft):
+            if draft and _apply_draft_seats_to_match(row, draft):
+                db.add(row)
+                seats_dirty = True
+
         side_index = _team_matches_row(row, needle)
         if side_index is None:
             continue
-        foe = row.opponent2 if side_index == 1 else row.opponent1
+        foe = _team_label_for_side(row, 2 if side_index == 1 else 1)
         try:
             games = json.loads(row.games_json or "[]")
         except json.JSONDecodeError:
@@ -1641,23 +1837,7 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
 
         map_timeline: list[dict[str, Any]] = []
         civ_timeline: list[dict[str, Any]] = []
-        map_draft_id = extract_draft_id(row.map_draft_id) if row.map_draft_id else None
-        civ_draft_id = extract_draft_id(row.civ_draft_id) if row.civ_draft_id else None
-        map_draft: dict[str, Any] | None = None
-        civ_draft: dict[str, Any] | None = None
         foe_label = str(foe or "")
-
-        if map_draft_id:
-            try:
-                map_draft = await fetch_draft(map_draft_id)
-            except Exception as exc:
-                logger.warning("map draft %s for team analysis failed: %s", map_draft_id, exc)
-
-        if civ_draft_id:
-            try:
-                civ_draft = await fetch_draft(civ_draft_id)
-            except Exception as exc:
-                logger.warning("civ draft %s for team analysis failed: %s", civ_draft_id, exc)
 
         side = None
         for draft in (map_draft, civ_draft):
@@ -1847,11 +2027,17 @@ async def team_tournament_analysis(db: Session, slug: str, team_name: str) -> di
                 + ", ".join(f"{row['civ']} ({row['plays']})" for row in top)
             )
 
+    if seats_dirty:
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+
     return {
         "found": True,
         "slug": slug,
         "team": needle,
-        "matchCount": len(match_rows),
+        "matchCount": len(sets),
         "mapDraftCount": map_draft_n,
         "civDraftCount": civ_draft_n,
         "maps": {

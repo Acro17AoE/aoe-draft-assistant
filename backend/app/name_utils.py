@@ -110,13 +110,17 @@ def team_org_base(name: str) -> str:
     return compact
 
 
-def _branches_compatible(left: str, right: str) -> bool:
+def branches_compatible(left: str, right: str) -> bool:
     if left == right:
         return True
     # Soft plural: Vanguard ≈ Vanguards
     if len(left) >= 4 and len(right) >= 4 and left.rstrip("s") == right.rstrip("s"):
         return True
     return False
+
+
+def _branches_compatible(left: str, right: str) -> bool:
+    return branches_compatible(left, right)
 
 
 def _org_bases_compatible(left: str, right: str) -> bool:
@@ -164,6 +168,56 @@ def strip_roster_tag(name: str) -> str:
     if not is_short_roster_seat(trimmed):
         return trimmed
     return re.sub(r"[\s_]+[A-Za-z]$", "", trimmed).strip() or trimmed
+
+
+def roster_display_name(seat: str, lp_fallback: str = "") -> str:
+    """Canonical label for aoe2cm sub-rosters (Onimaru Vanguard, not Oni Vanguards)."""
+    seat_label = (seat or "").strip()
+    if not seat_label:
+        return (lp_fallback or "").strip()
+
+    branch = team_branch_key(seat_label)
+    base = team_org_base(seat_label)
+    if base in {"oni", "onimaru"}:
+        org = "Onimaru"
+    elif base:
+        org = base[:1].upper() + base[1:]
+    else:
+        org = ""
+
+    branch_norm = branch.rstrip("s") if len(branch) > 4 else branch
+    known = {
+        ("onimaru", "vanguard"): "Onimaru Vanguard",
+        ("oni", "vanguard"): "Onimaru Vanguard",
+        ("onimaru", "capybara"): "Onimaru Capybaras",
+        ("oni", "capybara"): "Onimaru Capybaras",
+        ("onimaru", "barbetaco"): "Onimaru Barbetacos",
+        ("oni", "barbetaco"): "Onimaru Barbetacos",
+    }
+    # Also accept full plural keys from team_branch_key before rstrip.
+    known_full = {
+        ("onimaru", "vanguards"): "Onimaru Vanguard",
+        ("oni", "vanguards"): "Onimaru Vanguard",
+        ("onimaru", "capybaras"): "Onimaru Capybaras",
+        ("oni", "capybaras"): "Onimaru Capybaras",
+        ("onimaru", "barbetacos"): "Onimaru Barbetacos",
+        ("oni", "barbetacos"): "Onimaru Barbetacos",
+    }
+    hit = known_full.get((base, branch)) or known.get((base, branch_norm))
+    if hit:
+        return hit
+
+    if branch and org:
+        pretty_branch = branch_norm[:1].upper() + branch_norm[1:] if branch_norm else branch
+        # Keep common plural display for Capybaras / Barbetacos.
+        if branch_norm in {"capybara", "barbetaco"}:
+            pretty_branch = branch_norm[:1].upper() + branch_norm[1:] + "s"
+        return f"{org} {pretty_branch}".strip()
+
+    if branch:
+        return seat_label.replace(".", " ").strip()
+
+    return (lp_fallback or seat_label).strip()
 
 
 def draft_seat_matches(seat: str, org_name: str) -> bool:

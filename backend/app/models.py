@@ -171,6 +171,9 @@ class TournamentMatchRow(Base):
     match_date: Mapped[str | None] = mapped_column(String(32), nullable=True)
     opponent1: Mapped[str | None] = mapped_column(String(160), nullable=True)
     opponent2: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    # aoe2cm host/guest seats mapped onto opponent1/opponent2 (sub-rosters like Onimaru Vanguard).
+    seat1: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    seat2: Mapped[str | None] = mapped_column(String(160), nullable=True)
     winner: Mapped[str | None] = mapped_column(String(16), nullable=True)
     games_json: Mapped[str] = mapped_column(Text, default="[]")
     civ_draft_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)

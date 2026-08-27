@@ -6,6 +6,7 @@ import unittest
 
 from app.name_utils import (
     draft_seat_matches,
+    roster_display_name,
     team_branch_key,
     team_names_match,
     team_org_base,
@@ -34,6 +35,14 @@ class TeamNamesMatchTests(unittest.TestCase):
 
     def test_plural_branch_compatible(self) -> None:
         self.assertTrue(team_names_match("Onimaru Vanguard", "Onimaru Vanguards"))
+
+
+class RosterDisplayTests(unittest.TestCase):
+    def test_onimaru_canonical(self) -> None:
+        self.assertEqual(roster_display_name("Oni Vanguard"), "Onimaru Vanguard")
+        self.assertEqual(roster_display_name("Onimaru Vanguards"), "Onimaru Vanguard")
+        self.assertEqual(roster_display_name("Onimaru Capybaras"), "Onimaru Capybaras")
+        self.assertEqual(roster_display_name("Oni.Barbetacos"), "Onimaru Barbetacos")
 
 
 class DraftSeatMatchTests(unittest.TestCase):
