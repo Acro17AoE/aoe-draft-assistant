@@ -1,4 +1,4 @@
-import { useMemo, useState, type DragEvent } from 'react'
+import { useMemo, useState, type CSSProperties, type DragEvent } from 'react'
 import type { CivBoardItem, MapPickDisplay, MapPriorityPreset } from '../types/draft'
 import { poolAvailabilityTone, poolIconUrl } from '../lib/pools'
 import {
