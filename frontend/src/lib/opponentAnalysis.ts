@@ -3,6 +3,7 @@ import {
   type LiquipediaAttribution,
   type TournamentStatsStatus,
 } from './tournamentStats'
+import { getAuthToken } from './cloudStorage'
 
 export interface OpponentNamedCount {
   name: string
@@ -107,8 +108,15 @@ async function readError(response: Response, fallback: string): Promise<string> 
   return fallback
 }
 
+function authHeaders(): HeadersInit {
+  const token = getAuthToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 export async function fetchTournamentTeams(slug: string): Promise<TournamentTeamsResponse> {
-  const response = await fetch(`/api/tournament-stats/${encodeURIComponent(slug)}/teams`)
+  const response = await fetch(`/api/tournament-stats/${encodeURIComponent(slug)}/teams`, {
+    headers: authHeaders(),
+  })
   if (!response.ok) throw new Error(await readError(response, 'Could not load teams'))
   return response.json() as Promise<TournamentTeamsResponse>
 }
@@ -119,6 +127,7 @@ export async function fetchOpponentTeamAnalysis(
 ): Promise<OpponentTeamAnalysis> {
   const response = await fetch(
     `/api/tournament-stats/${encodeURIComponent(slug)}/teams/${encodeURIComponent(teamName)}/analysis`,
+    { headers: authHeaders() },
   )
   if (!response.ok) throw new Error(await readError(response, 'Could not load opponent analysis'))
   return response.json() as Promise<OpponentTeamAnalysis>

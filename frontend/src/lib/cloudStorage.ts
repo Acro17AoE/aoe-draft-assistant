@@ -623,6 +623,7 @@ export interface AuthUser {
   email: string
   display_name: string
   is_admin?: boolean
+  can_opponent_analysis?: boolean
 }
 
 export interface AuthResponse {

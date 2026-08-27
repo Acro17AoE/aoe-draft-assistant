@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { DraftPreview } from '../components/DraftPreview'
 import { MapDraftBoard } from '../components/MapDraftBoard'
-/*
 import {
   mapHintsFromAnalysis,
   OpponentAnalysisPanel,
 } from '../components/OpponentAnalysisPanel'
-*/
 import { isMapSessionReady, getSessionMapPicks } from '../lib/mapSession'
 import { MapDraftSetup } from '../components/MapDraftSetup'
 import { SelectMapsPanel } from '../components/SelectMapsPanel'
@@ -27,13 +25,13 @@ import {
   sanitizeMapSessionForPresetPool,
 } from '../lib/mapDraftSession'
 import { loadMapSession, saveMapSession } from '../lib/presets'
-/*
 import {
   useOpponentTeamAnalysis,
   useOpponentTournamentTeams,
 } from '../lib/useOpponentAnalysis'
-*/
 import { trackMapDraftStarted } from '../lib/analytics'
+import { canUseOpponentAnalysis } from '../lib/admin'
+import { useAuth } from '../contexts/AuthProvider'
 import { extractDraftId } from '../lib/civs'
 import type { MapPriorityPreset, MapSessionConfig } from '../types/draft'
 import type { TournamentFormat } from '../types/results'
@@ -70,6 +68,8 @@ export function MapDraftAssistant({
   tournamentFormat,
   onOpenCivDraft,
 }: MapDraftAssistantProps) {
+  const { user } = useAuth()
+  const showOpponentAnalysis = canUseOpponentAnalysis(user)
   const [session, setSession] = useState<MapSessionConfig>(() => readMapSessionState(presetMaps))
   const presetIdRef = useRef<string | null>(activePresetId)
   const [error, setError] = useState<string | null>(null)
@@ -87,19 +87,22 @@ export function MapDraftAssistant({
     trackMapDraftStarted(mapDraftId)
   }, [ready, mode, session.mapDraftUrl])
 
-  /*
   const {
     status: opponentStatus,
     teams: opponentTeams,
     busy: opponentTeamsBusy,
     error: opponentTeamsError,
-  } = useOpponentTournamentTeams(presetTournamentName)
+  } = useOpponentTournamentTeams(showOpponentAnalysis ? presetTournamentName : undefined)
 
   const opponentSlug = opponentStatus?.found ? opponentStatus.slug : undefined
   const { analysis: opponentAnalysis, busy: opponentBusy, error: opponentError } =
-    useOpponentTeamAnalysis(opponentSlug, session.opponentTeamName)
+    useOpponentTeamAnalysis(
+      showOpponentAnalysis ? opponentSlug : undefined,
+      showOpponentAnalysis ? session.opponentTeamName : undefined,
+    )
 
   const opponentTeamsHint = useMemo(() => {
+    if (!showOpponentAnalysis) return null
     if (!presetTournamentName?.trim()) {
       return 'Set an active preset tournament that matches a tracked Liquipedia event.'
     }
@@ -114,6 +117,7 @@ export function MapDraftAssistant({
     if (!opponentTeams.length) return 'No teams found in synced matches yet.'
     return null
   }, [
+    showOpponentAnalysis,
     presetTournamentName,
     opponentTeamsBusy,
     opponentTeamsError,
@@ -121,8 +125,10 @@ export function MapDraftAssistant({
     opponentTeams.length,
   ])
 
-  const mapHints = useMemo(() => mapHintsFromAnalysis(opponentAnalysis), [opponentAnalysis])
-  */
+  const mapHints = useMemo(
+    () => (showOpponentAnalysis ? mapHintsFromAnalysis(opponentAnalysis) : undefined),
+    [showOpponentAnalysis, opponentAnalysis],
+  )
 
   useEffect(() => {
     if (streamError) setError(streamError)
@@ -191,7 +197,8 @@ export function MapDraftAssistant({
     return []
   }, [session, mode, mapDraft])
 
-  // const showOpponentReport = Boolean(session.opponentTeamName?.trim())
+  const showOpponentReport =
+    showOpponentAnalysis && Boolean(session.opponentTeamName?.trim())
 
   return (
     <main className="layout assistant-layout">
@@ -200,14 +207,12 @@ export function MapDraftAssistant({
         presetMaps={presetMaps}
         onChange={updateSession}
         error={error}
-        /*
+        showOpponentSelect={showOpponentAnalysis}
         opponentTeams={opponentTeams}
         opponentTeamsBusy={opponentTeamsBusy}
         opponentTeamsHint={opponentTeamsHint}
-        */
       />
 
-      {/*
       {showOpponentReport ? (
         <OpponentAnalysisPanel
           analysis={opponentAnalysis}
@@ -215,7 +220,6 @@ export function MapDraftAssistant({
           error={opponentError}
         />
       ) : null}
-      */}
 
       {ready && mode === 'standard' ? (
         <MapDraftBoard
@@ -223,7 +227,7 @@ export function MapDraftAssistant({
           nameHost={mapDraft?.nameHost}
           nameGuest={mapDraft?.nameGuest}
           draftStatus={draftStatus}
-          // mapHints={showOpponentReport ? mapHints : undefined}
+          mapHints={showOpponentReport ? mapHints : undefined}
         />
       ) : null}
 
@@ -251,24 +255,20 @@ export function MapDraftAssistant({
           tournamentFormat={tournamentFormat}
           showCivDraftHint
           onOpenCivDraft={onOpenCivDraft}
-          /*
-          opponentTeamName={session.opponentTeamName}
-          opponentAnalysis={opponentAnalysis}
-          opponentAnalysisBusy={opponentBusy}
-          opponentAnalysisError={opponentError}
-          */
+          opponentTeamName={showOpponentAnalysis ? session.opponentTeamName : undefined}
+          opponentAnalysis={showOpponentAnalysis ? opponentAnalysis : undefined}
+          opponentAnalysisBusy={showOpponentAnalysis ? opponentBusy : undefined}
+          opponentAnalysisError={showOpponentAnalysis ? opponentError : undefined}
         />
       ) : (
         <DraftPreview
           presets={presets}
           mapNames={[]}
           presetTournamentName={presetTournamentName}
-          /*
-          opponentTeamName={session.opponentTeamName}
-          opponentAnalysis={opponentAnalysis}
-          opponentAnalysisBusy={opponentBusy}
-          opponentAnalysisError={opponentError}
-          */
+          opponentTeamName={showOpponentAnalysis ? session.opponentTeamName : undefined}
+          opponentAnalysis={showOpponentAnalysis ? opponentAnalysis : undefined}
+          opponentAnalysisBusy={showOpponentAnalysis ? opponentBusy : undefined}
+          opponentAnalysisError={showOpponentAnalysis ? opponentError : undefined}
         />
       )}
     </main>

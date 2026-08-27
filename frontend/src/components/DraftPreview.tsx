@@ -9,14 +9,14 @@ import { useCivDraftSettings } from '../lib/useCivDraftSettings'
 import { useTournamentInsights } from '../lib/useTournamentInsights'
 import type { MapPriorityPreset, PriorityReasonPart } from '../types/draft'
 import type { MapTopPickGroup } from '../lib/priorities'
-// import type { OpponentTeamAnalysis } from '../lib/opponentAnalysis'
+import type { OpponentTeamAnalysis } from '../lib/opponentAnalysis'
 import {
   MapTournamentInsightStrip,
   TournamentInsightsPanel,
 } from './TournamentInsightsPanel'
-// import { OpponentSetDraftModal } from './OpponentSetDraftModal'
-// import { civIconUrl } from '../lib/civs'
-// import { resolveMapDisplay } from '../lib/maps'
+import { OpponentSetDraftModal } from './OpponentSetDraftModal'
+import { civIconUrl } from '../lib/civs'
+import { resolveMapDisplay } from '../lib/maps'
 
 interface DraftPreviewProps {
   presets: MapPriorityPreset[]
@@ -27,10 +27,10 @@ interface DraftPreviewProps {
   showCivDraftHint?: boolean
   onOpenCivDraft?: () => void
   compact?: boolean
-  // opponentTeamName?: string
-  // opponentAnalysis?: OpponentTeamAnalysis | null
-  // opponentAnalysisBusy?: boolean
-  // opponentAnalysisError?: string | null
+  opponentTeamName?: string
+  opponentAnalysis?: OpponentTeamAnalysis | null
+  opponentAnalysisBusy?: boolean
+  opponentAnalysisError?: string | null
 }
 
 function CivChip({
@@ -117,7 +117,6 @@ function ExplainPanel({
   )
 }
 
-/*
 function OpponentPrioritiesBlock({
   teamName,
   analysis,
@@ -240,7 +239,6 @@ function OpponentPrioritiesBlock({
     </div>
   )
 }
-*/
 
 export function DraftPreview({
   presets,
@@ -250,10 +248,10 @@ export function DraftPreview({
   showCivDraftHint = false,
   onOpenCivDraft,
   compact = false,
-  // opponentTeamName,
-  // opponentAnalysis,
-  // opponentAnalysisBusy,
-  // opponentAnalysisError,
+  opponentTeamName,
+  opponentAnalysis,
+  opponentAnalysisBusy,
+  opponentAnalysisError,
 }: DraftPreviewProps) {
   const { settings } = useCivDraftSettings()
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -264,7 +262,7 @@ export function DraftPreview({
     [presets, mapNames, settings],
   )
 
-  // const opponentLabel = opponentTeamName?.trim() || ''
+  const opponentLabel = opponentTeamName?.trim() || ''
 
   if (!mapNames.length) {
     return (
@@ -273,7 +271,6 @@ export function DraftPreview({
         <p className="draft-preview-sub">
           Set your team and maps above to see how civ priorities will look before bans start.
         </p>
-        {/*
         {opponentLabel ? (
           <OpponentPrioritiesBlock
             teamName={opponentLabel}
@@ -282,7 +279,6 @@ export function DraftPreview({
             error={opponentAnalysisError}
           />
         ) : null}
-        */}
       </section>
     )
   }
@@ -335,7 +331,6 @@ export function DraftPreview({
         </p>
       ) : null}
 
-      {/*
       {opponentLabel ? (
         <OpponentPrioritiesBlock
           teamName={opponentLabel}
@@ -344,7 +339,6 @@ export function DraftPreview({
           error={opponentAnalysisError}
         />
       ) : null}
-      */}
 
       {presetTournamentName ? (
         <TournamentInsightsPanel

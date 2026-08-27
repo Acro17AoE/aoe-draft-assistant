@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from ..admin_config import is_opponent_analysis_email
 from ..database import get_db
-from ..deps import get_optional_user
+from ..deps import get_current_user, get_optional_user
 from ..models import User
 from ..tournament_dataset import (
     draft_stats,
@@ -20,6 +21,15 @@ from ..tournament_dataset import (
 )
 
 router = APIRouter(prefix="/api/tournament-stats", tags=["tournament-stats"])
+
+
+def require_opponent_analysis(user: User = Depends(get_current_user)) -> User:
+    if not is_opponent_analysis_email(user.email):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Opponent analysis is not enabled for this account",
+        )
+    return user
 
 
 @router.get("/resolve")
@@ -88,12 +98,21 @@ def get_draft_stats_full(
 
 
 @router.get("/{slug}/teams")
-def get_tournament_teams(slug: str, db: Session = Depends(get_db)) -> dict:
+def get_tournament_teams(
+    slug: str,
+    db: Session = Depends(get_db),
+    _user: User = Depends(require_opponent_analysis),
+) -> dict:
     return list_tournament_teams(db, slug)
 
 
 @router.get("/{slug}/teams/{team_name}/analysis")
-async def get_team_analysis(slug: str, team_name: str, db: Session = Depends(get_db)) -> dict:
+async def get_team_analysis(
+    slug: str,
+    team_name: str,
+    db: Session = Depends(get_db),
+    _user: User = Depends(require_opponent_analysis),
+) -> dict:
     try:
         return await team_tournament_analysis(db, slug, team_name)
     except Exception as exc:

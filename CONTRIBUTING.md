@@ -17,6 +17,7 @@ Docker: `docker compose up --build` (reads the same `.env`).
 | `AUTH_SECRET` | JWT signing secret (required in production) |
 | `DATABASE_URL` | SQLite (default) or PostgreSQL |
 | `ADMIN_EMAIL` | Comma-separated emails for the Admin tab |
+| `OPPONENT_ANALYSIS_EMAILS` | Comma-separated emails for Opponent Analysis (dropdown + report) |
 | `LIQUIPEDIA_API_KEY` | Liquipedia LPDB v3 key (Pro Analysis enrichment) |
 | `LIQUIPEDIA_USER_AGENT` / `LIQUIPEDIA_CONTACT` | Identifying User-Agent (Liquipedia ToS) |
 

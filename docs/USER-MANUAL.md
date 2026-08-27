@@ -145,6 +145,10 @@ When the **active preset** name maps to a Liquipedia tournament (e.g. “The Lea
 
 Preset names that aren’t an exact wiki title still resolve when possible (CamelCase → underscores, registry aliases, Ongoing tournaments preferred). Large events may need several syncs because of the Liquipedia free quota. Name aliases live in `config/tournament-registry.json`.
 
+### 5.6 Opponent Analysis (allowlisted accounts)
+
+If your account is on the server allowlist (`OPPONENT_ANALYSIS_EMAILS`), Map Draft shows an **Opponent** dropdown for the active Liquipedia tournament. Selecting a team loads a report (priorities, bans/picks, sets) in Draft Preview / Map Draft. Requires login. Other accounts do not see this UI.
+
 #### Liquipedia API setup (operators)
 
 1. Request a free API key: [liquipedia.net/api](https://liquipedia.net/api).  

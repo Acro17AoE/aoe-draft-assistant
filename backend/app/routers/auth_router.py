@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from ..admin_config import is_admin_email
+from ..admin_config import is_admin_email, is_opponent_analysis_email
 from ..auth_utils import create_access_token, hash_password, new_id, verify_password
 from ..database import get_db
 from ..deps import get_current_user
@@ -33,6 +33,7 @@ class UserResponse(BaseModel):
     email: str
     display_name: str
     is_admin: bool = False
+    can_opponent_analysis: bool = False
 
 
 class AuthResponse(BaseModel):
@@ -51,6 +52,7 @@ def _user_response(user: User) -> UserResponse:
         email=user.email,
         display_name=user.display_name,
         is_admin=is_admin_email(user.email),
+        can_opponent_analysis=is_opponent_analysis_email(user.email),
     )
 
 
