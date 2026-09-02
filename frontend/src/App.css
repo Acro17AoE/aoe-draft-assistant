@@ -3682,6 +3682,30 @@ td {
   gap: 0.75rem;
 }
 
+.home-welcome-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1rem 1.35rem;
+}
+
+.home-welcome-logo {
+  width: clamp(5.25rem, 16vw, 7.25rem);
+  height: clamp(5.25rem, 16vw, 7.25rem);
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 16px rgba(245, 213, 71, 0.35);
+}
+
+.home-welcome-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.15rem;
+}
+
 .home-welcome-header {
   display: flex;
   flex-wrap: wrap;
@@ -8012,6 +8036,10 @@ td {
 }
 
 [data-theme='light'] .brand-logo {
+  box-shadow: 0 0 0 1px var(--laca-border);
+}
+
+[data-theme='light'] .home-welcome-logo {
   box-shadow: 0 0 0 1px var(--laca-border);
 }
 

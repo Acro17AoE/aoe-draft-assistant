@@ -7,11 +7,16 @@ export function HomeTab() {
   return (
     <div className="home-page">
       <section className="panel home-welcome" data-tour="nav-home">
-        <div className="home-welcome-header">
-          <h2 className="home-title">{PRODUCT_NAME}</h2>
-          <p className="home-expansion">{PRODUCT_EXPANSION}</p>
+        <div className="home-welcome-hero">
+          <img src="/draft-logo.png" alt="" className="home-welcome-logo" aria-hidden />
+          <div className="home-welcome-copy">
+            <div className="home-welcome-header">
+              <h2 className="home-title">{PRODUCT_NAME}</h2>
+              <p className="home-expansion">{PRODUCT_EXPANSION}</p>
+            </div>
+            <p className="home-tagline">{PRODUCT_TAGLINE}</p>
+          </div>
         </div>
-        <p className="home-tagline">{PRODUCT_TAGLINE}</p>
         <div className="home-intro">
           <p>
             <strong>DRAFT</strong> is a companion for Age of Empires II Captain's Mode on{' '}
