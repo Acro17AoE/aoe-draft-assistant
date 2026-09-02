@@ -137,7 +137,7 @@ function App() {
       ) : null}
       <header className="topbar">
         <div className="brand" data-tour="brand">
-          <img src="/laca-logo.png" alt="LACA Gaming" className="brand-logo" />
+          <img src="/draft-logo.png" alt="DRAFT" className="brand-logo" />
           <h1>{PRODUCT_NAME}</h1>
         </div>
         <nav className="tabs">
