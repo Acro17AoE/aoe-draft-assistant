@@ -122,6 +122,21 @@ export function primaryPoolId(
   return bestId
 }
 
+/**
+ * Which single pool an assignment should count toward.
+ * Uses an explicit choice when it is still a membership; otherwise the primary pool.
+ */
+export function resolveCountingPoolId(
+  pools: CivPoolDefinition[] | undefined,
+  entry: CivPriorityEntry,
+  chosenPoolId?: string | null,
+): string | undefined {
+  const membership = entryPoolIds(entry)
+  if (!membership.length) return undefined
+  if (chosenPoolId && membership.includes(chosenPoolId)) return chosenPoolId
+  return primaryPoolId(pools, entry)
+}
+
 export function civIdsForPool(entries: CivPriorityEntry[], poolId: string): string[] {
   return entries
     .filter((entry) => entryInPool(entry, poolId))

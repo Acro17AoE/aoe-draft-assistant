@@ -94,7 +94,7 @@ function App() {
 
   return (
     <div
-      className={`app-shell${tab === 'civ' && preferences.colorblindMode ? ' colorblind-mode' : ''}${tab === 'civ' ? ' civ-draft-tab' : ''}${preferences.whiteMode ? ' white-mode' : ''}`}
+      className={`app-shell${preferences.colorblindMode ? ' colorblind-mode' : ''}${tab === 'civ' ? ' civ-draft-tab' : ''}${preferences.whiteMode ? ' white-mode' : ''}`}
     >
       {pendingCollaborationSlug && !workspace ? (
         <div className="share-invite-banner">

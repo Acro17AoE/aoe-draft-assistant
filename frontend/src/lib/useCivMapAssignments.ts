@@ -15,6 +15,10 @@ function draftKey(civDraftUrl: string): string {
   return id || civDraftUrl.trim()
 }
 
+export type AssignMapOptions = {
+  countingPoolId?: string | null
+}
+
 export function useCivMapAssignments(
   civDraftUrl: string,
   maps: string[],
@@ -62,17 +66,26 @@ export function useCivMapAssignments(
   }, [reloadAssignments])
 
   const setOwnAssignment = useCallback(
-    (civId: string, target: MapAssignmentTarget) => {
+    (civId: string, target: MapAssignmentTarget, options?: AssignMapOptions) => {
       const base = loadCivMapAssignments(civDraftUrl)
       const resolved = assignMapTarget(target, maps)
       const next: CivMapAssignmentState = {
         ...base,
         own: { ...base.own },
+        ownCountingPool: { ...base.ownCountingPool },
       }
-      if (resolved == null) {
+      if (resolved == null || resolved === 'flex') {
         delete next.own[civId]
+        delete next.ownCountingPool[civId]
       } else {
         next.own[civId] = resolved
+        if (options && 'countingPoolId' in options) {
+          if (options.countingPoolId) {
+            next.ownCountingPool[civId] = options.countingPoolId
+          } else {
+            delete next.ownCountingPool[civId]
+          }
+        }
       }
       saveCivMapAssignments(civDraftUrl, next)
       setAssignments(next)
@@ -81,17 +94,26 @@ export function useCivMapAssignments(
   )
 
   const setOpponentAssignment = useCallback(
-    (civId: string, target: MapAssignmentTarget) => {
+    (civId: string, target: MapAssignmentTarget, options?: AssignMapOptions) => {
       const base = loadCivMapAssignments(civDraftUrl)
       const resolved = assignMapTarget(target, maps)
       const next: CivMapAssignmentState = {
         ...base,
         opponent: { ...base.opponent },
+        opponentCountingPool: { ...base.opponentCountingPool },
       }
-      if (resolved == null) {
+      if (resolved == null || resolved === 'flex') {
         delete next.opponent[civId]
+        delete next.opponentCountingPool[civId]
       } else {
         next.opponent[civId] = resolved
+        if (options && 'countingPoolId' in options) {
+          if (options.countingPoolId) {
+            next.opponentCountingPool[civId] = options.countingPoolId
+          } else {
+            delete next.opponentCountingPool[civId]
+          }
+        }
       }
       saveCivMapAssignments(civDraftUrl, next)
       setAssignments(next)

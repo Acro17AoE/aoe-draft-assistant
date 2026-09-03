@@ -228,8 +228,9 @@ export function CivDraftAssistant({
         civItems.filter((item) => item.status === 'own_pick'),
         assignments.own,
         assignmentKeys,
+        assignments.ownCountingPool,
       ),
-    [presets, mapPickDisplays, civItems, saturatedMaps, assignments.own, assignmentKeys],
+    [presets, mapPickDisplays, civItems, saturatedMaps, assignments.own, assignments.ownCountingPool, assignmentKeys],
   )
 
   const civDraftStatus = useMemo(

@@ -1413,6 +1413,122 @@ select:focus {
   background: rgba(0, 0, 0, 0.12);
 }
 
+.civ-draft-assign-slot-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+}
+
+.civ-draft-counting-pool-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18rem;
+  max-width: var(--civ-tile-size-sm);
+  padding: 0.08rem 0.22rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.45);
+  color: #e8ecf3;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: default;
+}
+
+.civ-draft-counting-pool-badge img {
+  width: 0.85rem;
+  height: 0.85rem;
+  object-fit: contain;
+}
+
+.civ-draft-counting-pool-badge span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.civ-draft-counting-pool-badge-multi {
+  cursor: pointer;
+}
+
+.civ-draft-counting-pool-badge-multi:hover {
+  border-color: var(--laca-yellow);
+}
+
+.civ-draft-counting-pool-badge-unset {
+  border-style: dashed;
+  color: var(--laca-yellow);
+}
+
+.pool-counting-chooser-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.pool-counting-chooser {
+  width: min(22rem, 100%);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pool-counting-chooser h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.pool-counting-chooser-options {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.pool-counting-chooser-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--laca-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  cursor: pointer;
+}
+
+.pool-counting-chooser-option img {
+  width: 1.6rem;
+  height: 1.6rem;
+  object-fit: contain;
+}
+
+.pool-counting-chooser-option span {
+  flex: 1;
+  font-weight: 700;
+}
+
+.pool-counting-chooser-option em {
+  font-style: normal;
+  font-size: 0.75rem;
+  color: var(--laca-text-muted);
+}
+
+.pool-counting-chooser-option:hover,
+.pool-counting-chooser-option.selected {
+  border-color: var(--laca-yellow);
+  background: rgba(245, 213, 71, 0.12);
+}
+
+.pool-counting-chooser-cancel {
+  justify-self: start;
+}
+
 .civ-draft-map-count {
   display: flex;
   flex-wrap: wrap;
@@ -4118,7 +4234,7 @@ td {
 .tier-maker-pool-heading-label,
 .tier-maker-pool-name-input {
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
 }
 
@@ -4406,6 +4522,34 @@ td {
   padding: 0.4rem;
   min-height: 3.25rem;
   background: rgba(0, 0, 0, 0.28);
+}
+
+.tier-maker-row-s .tier-maker-slots {
+  background: rgba(255, 127, 127, 0.22);
+}
+
+.tier-maker-row-a .tier-maker-slots {
+  background: rgba(255, 191, 127, 0.22);
+}
+
+.tier-maker-row-b .tier-maker-slots {
+  background: rgba(255, 223, 127, 0.22);
+}
+
+.tier-maker-row-c .tier-maker-slots {
+  background: rgba(255, 255, 127, 0.2);
+}
+
+.tier-maker-row-d .tier-maker-slots {
+  background: rgba(191, 255, 127, 0.2);
+}
+
+.tier-maker-row-f .tier-maker-slots {
+  background: rgba(191, 191, 191, 0.22);
+}
+
+.tier-maker-row-unranked .tier-maker-slots {
+  background: rgba(0, 0, 0, 0.22);
 }
 
 .tier-maker-row-dragover .tier-maker-slots {
@@ -4767,6 +4911,53 @@ td {
 .colorblind-mode .civ-card.priority-c .tier-tag { background: var(--cb-tier-c); }
 .colorblind-mode .civ-card.priority-d .tier-tag { background: var(--cb-tier-d); }
 .colorblind-mode .civ-card.priority-f .tier-tag { background: var(--cb-tier-f); }
+
+.colorblind-mode .tier-maker-row-s .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-s) 22%, transparent);
+}
+.colorblind-mode .tier-maker-row-a .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-a) 20%, transparent);
+}
+.colorblind-mode .tier-maker-row-b .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-b) 20%, transparent);
+}
+.colorblind-mode .tier-maker-row-c .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-c) 18%, transparent);
+}
+.colorblind-mode .tier-maker-row-d .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-d) 18%, transparent);
+}
+.colorblind-mode .tier-maker-row-f .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-f) 18%, transparent);
+}
+
+.colorblind-mode .tier-maker-row-s .tier-maker-label { background: var(--cb-tier-s); color: #0a0a0a; }
+.colorblind-mode .tier-maker-row-a .tier-maker-label { background: var(--cb-tier-a); color: #fff; }
+.colorblind-mode .tier-maker-row-b .tier-maker-label { background: var(--cb-tier-b); color: #fff; }
+.colorblind-mode .tier-maker-row-c .tier-maker-label { background: var(--cb-tier-c); color: #0a0a0a; }
+.colorblind-mode .tier-maker-row-d .tier-maker-label { background: var(--cb-tier-d); color: #fff; }
+.colorblind-mode .tier-maker-row-f .tier-maker-label { background: var(--cb-tier-f); color: #0a0a0a; }
+
+.colorblind-mode .map-badge {
+  background: rgba(102, 102, 102, 0.22);
+  border-color: var(--cb-admin);
+}
+
+.colorblind-mode .pick-column:first-child h4 {
+  color: var(--cb-own);
+}
+
+.colorblind-mode .pick-column:last-child h4 {
+  color: var(--cb-opp);
+}
+
+.colorblind-mode .pick-column-admin h4 {
+  color: var(--cb-admin);
+}
+
+.colorblind-mode .banned-section h3 {
+  color: var(--cb-banned);
+}
 
 .civ-map-tracker {
   display: grid;
@@ -8241,19 +8432,60 @@ td {
 }
 
 /* White mode: preset civ chips, civ-draft tier tags, New Here? tour */
-[data-theme='light'] .tier-maker-civ {
-  background: #ffffff;
+[data-theme='light'] .preset-copy-panel {
+  background: var(--surface-chip);
+  border-color: var(--surface-chip-border);
+}
+
+[data-theme='light'] .map-badge {
+  background: var(--surface-chip);
   border-color: var(--surface-chip-border);
   color: var(--laca-text);
-  box-shadow: 0 1px 2px rgba(23, 26, 31, 0.06);
+}
+
+[data-theme='light'] .tier-maker-civ {
+  background:
+    linear-gradient(165deg, #f7ecd4 0%, #ead7b0 48%, #dcc89a 100%);
+  border-color: #b89a62;
+  color: var(--laca-text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 230, 0.7),
+    inset 0 -1px 0 rgba(120, 90, 40, 0.16),
+    0 1px 2px rgba(23, 26, 31, 0.08);
 }
 
 [data-theme='light'] .tier-maker-civ span {
   color: var(--laca-text);
 }
 
+[data-theme='light'] .tier-maker-key-civ-badge,
+[data-theme='light'] .tier-maker-key-civ-star {
+  color: #e6b422;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.65), 0 1px 1px rgba(80, 55, 10, 0.35);
+}
+
+[data-theme='light'] .tier-maker-nemesis-badge,
+[data-theme='light'] .tier-maker-nemesis-skull {
+  color: #6b7280;
+  text-shadow: none;
+}
+
+[data-theme='light'] .tier-maker-civ-nemesis {
+  background:
+    linear-gradient(165deg, #efe4d0 0%, #dfceb0 48%, #d0bc98 100%);
+  border-color: #8a8f99;
+}
+
+[data-theme='light'] .tier-maker-civ-key {
+  border-color: rgba(184, 154, 98, 0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 230, 0.7),
+    0 0 0 1px rgba(230, 180, 34, 0.35),
+    0 1px 2px rgba(23, 26, 31, 0.08);
+}
+
 [data-theme='light'] .tier-maker-civ-pool-remove {
-  background: #fff;
+  background: rgba(255, 252, 245, 0.92);
   color: var(--laca-text-muted);
 }
 
@@ -8263,6 +8495,117 @@ td {
 
 [data-theme='light'] .tier-maker-empty {
   color: var(--laca-text-muted);
+}
+
+[data-theme='light'] .tier-maker-row-s .tier-maker-slots {
+  background: rgba(255, 127, 127, 0.18);
+}
+
+[data-theme='light'] .tier-maker-row-a .tier-maker-slots {
+  background: rgba(255, 191, 127, 0.18);
+}
+
+[data-theme='light'] .tier-maker-row-b .tier-maker-slots {
+  background: rgba(255, 223, 127, 0.18);
+}
+
+[data-theme='light'] .tier-maker-row-c .tier-maker-slots {
+  background: rgba(230, 210, 80, 0.16);
+}
+
+[data-theme='light'] .tier-maker-row-d .tier-maker-slots {
+  background: rgba(140, 200, 110, 0.16);
+}
+
+[data-theme='light'] .tier-maker-row-f .tier-maker-slots {
+  background: rgba(150, 150, 150, 0.16);
+}
+
+[data-theme='light'] .tier-maker-row-unranked .tier-maker-slots {
+  background: rgba(30, 38, 48, 0.06);
+}
+
+[data-theme='light'] .tier-maker-pool-icon-cell {
+  background: transparent;
+}
+
+[data-theme='light'] .tier-maker-pool-block-unassigned .tier-maker-slots {
+  background: rgba(30, 38, 48, 0.06);
+}
+
+[data-theme='light'] .tier-maker-pool-heading-label,
+[data-theme='light'] .tier-maker-pool-name-input {
+  font-weight: 800;
+}
+
+[data-theme='light'] .tier-maker-pool-block-color-1 .tier-maker-slots,
+[data-theme='light'] .tier-maker-pool-block-color-2 .tier-maker-slots,
+[data-theme='light'] .tier-maker-pool-block-color-3 .tier-maker-slots,
+[data-theme='light'] .tier-maker-pool-block-color-4 .tier-maker-slots {
+  background: color-mix(in srgb, var(--pool-color) 16%, transparent);
+}
+
+/* Restore draft status colors wiped by the generic light chip background. */
+[data-theme='light'] .status-own_pick,
+[data-theme='light'] .draft-card.status-own_pick,
+[data-theme='light'] .civ-card.status-own_pick,
+[data-theme='light'] .map-card.status-own_pick {
+  background: rgba(27, 107, 58, 0.16);
+  border-color: #1b6b3a;
+  color: var(--laca-text);
+}
+
+[data-theme='light'] .status-opponent_pick,
+[data-theme='light'] .draft-card.status-opponent_pick,
+[data-theme='light'] .civ-card.status-opponent_pick,
+[data-theme='light'] .map-card.status-opponent_pick {
+  background: rgba(180, 130, 20, 0.18);
+  border-color: #b8860b;
+  color: var(--laca-text);
+}
+
+[data-theme='light'] .status-banned,
+[data-theme='light'] .draft-card.status-banned,
+[data-theme='light'] .civ-card.status-banned,
+[data-theme='light'] .map-card.status-banned {
+  background: rgba(180, 35, 24, 0.14);
+  border-color: #b42318;
+  color: var(--laca-text);
+  opacity: 1;
+}
+
+[data-theme='light'] .status-admin_pick,
+[data-theme='light'] .draft-card.status-admin_pick,
+[data-theme='light'] .civ-card.status-admin_pick,
+[data-theme='light'] .map-card.status-admin_pick {
+  background: rgba(100, 110, 125, 0.14);
+  border-color: #64748b;
+  color: var(--laca-text);
+}
+
+[data-theme='light'] .pick-column:first-child h4 {
+  color: #1b6b3a;
+}
+
+[data-theme='light'] .pick-column:last-child h4 {
+  color: #b8860b;
+}
+
+[data-theme='light'] .pick-column-admin h4 {
+  color: #64748b;
+}
+
+[data-theme='light'] .banned-section h3 {
+  color: #b42318;
+}
+
+[data-theme='light'] .civ-card.civ-card-tile.status-available {
+  background:
+    linear-gradient(165deg, #f7ecd4 0%, #ead7b0 48%, #dcc89a 100%);
+  border-color: #b89a62;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 248, 230, 0.55),
+    0 1px 2px rgba(23, 26, 31, 0.06);
 }
 
 [data-theme='light'] .civ-card .tier-tag,
@@ -8653,5 +8996,91 @@ td {
 
 [data-theme='light'] .liquipedia-credit a {
   color: #9a6b00;
+}
+
+/* White + colorblind: keep draft status cues after light chip resets. */
+[data-theme='light'] .colorblind-mode .status-own_pick,
+[data-theme='light'] .colorblind-mode .draft-card.status-own_pick,
+[data-theme='light'] .colorblind-mode .civ-card.status-own_pick,
+[data-theme='light'] .colorblind-mode .map-card.status-own_pick {
+  background: rgba(0, 114, 178, 0.16);
+  border-color: var(--cb-own);
+  box-shadow: inset 4px 0 0 var(--cb-own);
+}
+
+[data-theme='light'] .colorblind-mode .status-opponent_pick,
+[data-theme='light'] .colorblind-mode .draft-card.status-opponent_pick,
+[data-theme='light'] .colorblind-mode .civ-card.status-opponent_pick,
+[data-theme='light'] .colorblind-mode .map-card.status-opponent_pick {
+  background: rgba(213, 94, 0, 0.14);
+  border-color: var(--cb-opp);
+  box-shadow: inset -4px 0 0 var(--cb-opp);
+}
+
+[data-theme='light'] .colorblind-mode .status-banned,
+[data-theme='light'] .colorblind-mode .draft-card.status-banned,
+[data-theme='light'] .colorblind-mode .civ-card.status-banned,
+[data-theme='light'] .colorblind-mode .map-card.status-banned {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      rgba(153, 153, 153, 0.1),
+      rgba(153, 153, 153, 0.1) 4px,
+      rgba(120, 120, 120, 0.16) 4px,
+      rgba(120, 120, 120, 0.16) 8px
+    );
+  border-color: var(--cb-banned);
+  opacity: 1;
+}
+
+[data-theme='light'] .colorblind-mode .map-badge {
+  background: rgba(102, 102, 102, 0.12);
+  border-color: var(--cb-admin);
+  color: var(--laca-text);
+}
+
+[data-theme='light'] .colorblind-mode .pick-column:first-child h4 {
+  color: var(--cb-own);
+}
+
+[data-theme='light'] .colorblind-mode .pick-column:last-child h4 {
+  color: var(--cb-opp);
+}
+
+[data-theme='light'] .colorblind-mode .banned-section h3 {
+  color: var(--cb-banned);
+}
+
+[data-theme='light'] .colorblind-mode .tier-maker-row-s .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-s) 16%, transparent);
+}
+[data-theme='light'] .colorblind-mode .tier-maker-row-a .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-a) 14%, transparent);
+}
+[data-theme='light'] .colorblind-mode .tier-maker-row-b .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-b) 14%, transparent);
+}
+[data-theme='light'] .colorblind-mode .tier-maker-row-c .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-c) 14%, transparent);
+}
+[data-theme='light'] .colorblind-mode .tier-maker-row-d .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-d) 14%, transparent);
+}
+[data-theme='light'] .colorblind-mode .tier-maker-row-f .tier-maker-slots {
+  background: color-mix(in srgb, var(--cb-tier-f) 14%, transparent);
+}
+
+[data-theme='light'] .civ-draft-counting-pool-badge {
+  background: rgba(255, 252, 245, 0.95);
+  border-color: var(--surface-chip-border);
+  color: var(--laca-text);
+}
+
+[data-theme='light'] .pool-counting-chooser-option {
+  background: #fff;
+}
+
+[data-theme='light'] .pool-counting-chooser-overlay {
+  background: rgba(23, 26, 31, 0.35);
 }
 

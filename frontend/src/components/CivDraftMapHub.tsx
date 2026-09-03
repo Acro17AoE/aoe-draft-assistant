@@ -1,7 +1,8 @@
 import { useMemo, useState, type CSSProperties, type DragEvent } from 'react'
-import type { CivBoardItem, MapPickDisplay, MapPriorityPreset } from '../types/draft'
+import type { CivBoardItem, CivPoolDefinition, MapPickDisplay, MapPriorityPreset } from '../types/draft'
 import { poolAvailabilityTone, poolIconUrl } from '../lib/pools'
 import {
+  entryPoolsForCivOnMap,
   getMapPoolPressure,
   getMapTierPressure,
   isMapAdvancedPreset,
@@ -15,14 +16,16 @@ import {
   mapAssignmentWithSlot,
   picksForMap,
   picksInFlex,
+  resolveAssignmentTarget,
   type MapAssignmentTarget,
 } from '../lib/civMapAssignments'
 import type { DraftStatus } from '../lib/draftStatus'
 import { useUiPreferences } from '../lib/useUiPreferences'
 import type { FullMapTopPicksMode } from '../lib/uiPreferences'
-import { normalizeMapName } from '../lib/maps'
+import { assignmentTargetMatches, normalizeMapName } from '../lib/maps'
 import { DraggableCivTile, MapDropZone, readDragPayload, type TrackerTeam } from './civMapDrag'
 import { PriorityReason } from './PriorityReason'
+import type { AssignMapOptions } from '../lib/useCivMapAssignments'
 
 export type CivMapHubVariant = 'own' | 'opponent'
 
@@ -36,10 +39,21 @@ interface CivDraftMapHubProps {
   presets?: MapPriorityPreset[]
   picks: CivBoardItem[]
   assignments: Record<string, MapAssignmentTarget>
+  countingPools?: Record<string, string>
   saturatedMaps: string[]
   draftStatus?: DraftStatus | null
-  onAssign: (civId: string, target: MapAssignmentTarget) => void
+  onAssign: (civId: string, target: MapAssignmentTarget, options?: AssignMapOptions) => void
   flexPanelLabel?: string
+}
+
+interface PendingPoolChoice {
+  civId: string
+  civName: string
+  target: MapAssignmentTarget
+  mapName: string
+  pools: CivPoolDefinition[]
+  /** Re-picking pool for an already assigned civ (target stays the same). */
+  reassignOnly?: boolean
 }
 
 interface MapColumnData {
@@ -115,6 +129,7 @@ export function CivDraftMapHub({
   presets = [],
   picks,
   assignments,
+  countingPools = {},
   saturatedMaps,
   draftStatus = null,
   onAssign,
@@ -122,6 +137,7 @@ export function CivDraftMapHub({
 }: CivDraftMapHubProps) {
   const { preferences } = useUiPreferences()
   const [dragOverKey, setDragOverKey] = useState<string | null>(null)
+  const [pendingPoolChoice, setPendingPoolChoice] = useState<PendingPoolChoice | null>(null)
   const team: TrackerTeam = variant === 'own' ? 'own' : 'opponent'
   const showTopPicksSection = variant === 'own'
   const draftFinished = draftStatus === 'finished'
@@ -141,14 +157,18 @@ export function CivDraftMapHub({
   const poolPressureContext = useMemo(
     () =>
       showSingleMapLayout
-        ? undefined
+        ? {
+            mode: 'draft-wide' as const,
+            countingPools,
+          }
         : {
             mode: 'map-assigned' as const,
             ownPicks: picks,
             assignments,
             mapNames,
+            countingPools,
           },
-    [showSingleMapLayout, picks, assignments, mapNames],
+    [showSingleMapLayout, picks, assignments, mapNames, countingPools],
   )
 
   const columns: MapColumnData[] = useMemo(
@@ -200,7 +220,73 @@ export function CivDraftMapHub({
       }
     }
 
-    onAssign(payload.civId, resolvedTarget)
+    requestAssign(payload.civId, resolvedTarget)
+  }
+
+  const mapDisplayForTarget = (target: MapAssignmentTarget): MapPickDisplay | null => {
+    if (target === 'flex') return null
+    const resolved = resolveAssignmentTarget(target, mapNames)
+    if (!resolved || resolved === 'flex') return null
+    return (
+      maps.find(
+        (map) =>
+          assignmentTargetMatches(map.id, resolved) ||
+          assignmentTargetMatches(map.name, resolved),
+      ) ?? null
+    )
+  }
+
+  const commitAssign = (
+    civId: string,
+    target: MapAssignmentTarget,
+    countingPoolId?: string | null,
+  ) => {
+    if (countingPoolId !== undefined) {
+      onAssign(civId, target, { countingPoolId })
+    } else {
+      onAssign(civId, target)
+    }
+  }
+
+  const requestAssign = (civId: string, target: MapAssignmentTarget) => {
+    if (target === 'flex') {
+      commitAssign(civId, 'flex', null)
+      return
+    }
+
+    const map = mapDisplayForTarget(target)
+    const pick = picks.find((item) => item.id === civId)
+    const pools = map
+      ? entryPoolsForCivOnMap(presets, map.name, civId, pick?.name)
+      : []
+
+    if (pools.length <= 1) {
+      commitAssign(civId, target, pools[0]?.id ?? null)
+      return
+    }
+
+    setPendingPoolChoice({
+      civId,
+      civName: pick?.name ?? civId,
+      target,
+      mapName: map?.name ?? '',
+      pools,
+    })
+  }
+
+  const openPoolReassign = (pick: CivBoardItem, map: MapPickDisplay) => {
+    const pools = entryPoolsForCivOnMap(presets, map.name, pick.id, pick.name)
+    if (pools.length <= 1) return
+    const currentTarget = assignments[pick.id]
+    if (!currentTarget || currentTarget === 'flex') return
+    setPendingPoolChoice({
+      civId: pick.id,
+      civName: pick.name,
+      target: currentTarget,
+      mapName: map.name,
+      pools,
+      reassignOnly: true,
+    })
   }
 
   const singleMapColumn = showSingleMapLayout ? columns[0]! : null
@@ -230,6 +316,17 @@ export function CivDraftMapHub({
     <div
       className={`section-block civ-draft-hub civ-draft-hub-${variant}${hasVisibleTopPicks ? '' : ' civ-draft-hub-compact'}${showSingleMapLayout ? ' civ-draft-hub-single-map' : ''}`}
     >
+      {pendingPoolChoice ? (
+        <PoolCountingChooser
+          choice={pendingPoolChoice}
+          selectedPoolId={countingPools[pendingPoolChoice.civId]}
+          onCancel={() => setPendingPoolChoice(null)}
+          onConfirm={(poolId) => {
+            commitAssign(pendingPoolChoice.civId, pendingPoolChoice.target, poolId)
+            setPendingPoolChoice(null)
+          }}
+        />
+      ) : null}
       <div className="civ-draft-hub-maps">
         {showSingleMapLayout && singleMapColumn ? (
           <div className="civ-draft-single-map-header">
@@ -313,12 +410,21 @@ export function CivDraftMapHub({
                               const payload = readDragPayload(event)
                               if (!payload || payload.team !== team) return
                               if (payload.civId !== pick.id) {
-                                onAssign(pick.id, 'flex')
+                                requestAssign(pick.id, 'flex')
                               }
                               handleDrop(slotTarget, event)
                             }}
                           >
-                            <DraggableCivTile pick={pick} team={team} size="sm" />
+                            <div className="civ-draft-assign-slot-tile">
+                              <DraggableCivTile pick={pick} team={team} size="sm" />
+                              <AssignedPoolBadge
+                                pick={pick}
+                                map={column.map}
+                                presets={presets}
+                                countingPoolId={countingPools[pick.id]}
+                                onClick={() => openPoolReassign(pick, column.map)}
+                              />
+                            </div>
                           </div>
                         )
                       }
@@ -594,6 +700,92 @@ function MapTierPressureHint({ pressure }: { pressure: MapTierPressure }) {
         {hasA ? <TierLeftChip tier="A" left={aRemaining} total={pressure.a.total} /> : null}
       </div>
     </div>
+  )
+}
+
+function PoolCountingChooser({
+  choice,
+  selectedPoolId,
+  onConfirm,
+  onCancel,
+}: {
+  choice: PendingPoolChoice
+  selectedPoolId?: string
+  onConfirm: (poolId: string) => void
+  onCancel: () => void
+}) {
+  return (
+    <div className="pool-counting-chooser-overlay" role="dialog" aria-modal="true">
+      <div className="pool-counting-chooser panel">
+        <h3>Count {choice.civName} as…</h3>
+        <p className="hint">
+          {choice.reassignOnly
+            ? `This civ belongs to multiple pools on ${choice.mapName}. Choose which pool it should fill.`
+            : `This civ belongs to multiple pools on ${choice.mapName}. Pick one pool for the pick limit.`}
+        </p>
+        <div className="pool-counting-chooser-options">
+          {choice.pools.map((pool) => (
+            <button
+              key={pool.id}
+              type="button"
+              className={`pool-counting-chooser-option${selectedPoolId === pool.id ? ' selected' : ''}`}
+              onClick={() => onConfirm(pool.id)}
+            >
+              <img src={poolIconUrl(pool.name)} alt="" />
+              <span>{pool.name}</span>
+              {pool.maxPicks != null ? <em>max {pool.maxPicks}</em> : null}
+            </button>
+          ))}
+        </div>
+        <button type="button" className="pool-counting-chooser-cancel" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function AssignedPoolBadge({
+  pick,
+  map,
+  presets,
+  countingPoolId,
+  onClick,
+}: {
+  pick: CivBoardItem
+  map: MapPickDisplay
+  presets: MapPriorityPreset[]
+  countingPoolId?: string
+  onClick: () => void
+}) {
+  const pools = entryPoolsForCivOnMap(presets, map.name, pick.id, pick.name)
+  if (pools.length === 0) return null
+  const active =
+    pools.find((pool) => pool.id === countingPoolId) ?? (pools.length === 1 ? pools[0] : null)
+  if (!active && pools.length < 2) return null
+
+  const label = active?.name ?? 'Pick pool'
+  const multi = pools.length > 1
+
+  return (
+    <button
+      type="button"
+      className={`civ-draft-counting-pool-badge${multi ? ' civ-draft-counting-pool-badge-multi' : ''}${!active ? ' civ-draft-counting-pool-badge-unset' : ''}`}
+      title={
+        multi
+          ? `Counts as ${label}. Click to change pool.`
+          : `Counts as ${label}`
+      }
+      onClick={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        if (multi) onClick()
+      }}
+      disabled={!multi}
+    >
+      <img src={poolIconUrl(active?.name ?? pools[0]!.name)} alt="" />
+      <span>{label}</span>
+    </button>
   )
 }
 

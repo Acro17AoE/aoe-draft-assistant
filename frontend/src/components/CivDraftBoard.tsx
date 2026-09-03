@@ -6,6 +6,7 @@ import type { DraftStatus } from '../lib/draftStatus'
 import type { MapPickDisplay } from '../types/draft'
 import type { CivMapAssignmentState, MapAssignmentTarget } from '../lib/civMapAssignments'
 import { getSaturatedMaps } from '../lib/civMapAssignments'
+import type { AssignMapOptions } from '../lib/useCivMapAssignments'
 import { flattenAvailableByRanking } from '../lib/draftState'
 import type { MapTopPickGroup } from '../lib/priorities'
 import { DraftStatusBadge } from './DraftStatusBadge'
@@ -23,8 +24,8 @@ interface CivDraftBoardProps {
   presets: MapPriorityPreset[]
   assignments: CivMapAssignmentState
   saturatedMaps: string[]
-  onAssignOwn: (civId: string, target: MapAssignmentTarget) => void
-  onAssignOpponent: (civId: string, target: MapAssignmentTarget) => void
+  onAssignOwn: (civId: string, target: MapAssignmentTarget, options?: AssignMapOptions) => void
+  onAssignOpponent: (civId: string, target: MapAssignmentTarget, options?: AssignMapOptions) => void
 }
 
 export function CivDraftBoard({
@@ -89,6 +90,7 @@ export function CivDraftBoard({
           presets={presets}
           picks={ownPicks}
           assignments={assignments.own}
+          countingPools={assignments.ownCountingPool}
           saturatedMaps={saturatedMaps}
           draftStatus={draftStatus}
           onAssign={onAssignOwn}
@@ -138,6 +140,7 @@ export function CivDraftBoard({
             presets={presets}
             picks={opponentPicks}
             assignments={assignments.opponent}
+            countingPools={assignments.opponentCountingPool}
             saturatedMaps={opponentSaturatedMaps}
             onAssign={onAssignOpponent}
             flexPanelLabel="Opponent picks"

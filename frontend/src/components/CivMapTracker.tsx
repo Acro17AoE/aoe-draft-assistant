@@ -18,8 +18,16 @@ interface CivMapTrackerProps {
   opponentPicks: CivBoardItem[]
   assignments: CivMapAssignmentState
   saturatedMaps: string[]
-  onAssignOwn: (civId: string, target: MapAssignmentTarget) => void
-  onAssignOpponent: (civId: string, target: MapAssignmentTarget) => void
+  onAssignOwn: (
+    civId: string,
+    target: MapAssignmentTarget,
+    options?: { countingPoolId?: string | null },
+  ) => void
+  onAssignOpponent: (
+    civId: string,
+    target: MapAssignmentTarget,
+    options?: { countingPoolId?: string | null },
+  ) => void
 }
 
 export function CivMapTracker({
@@ -94,7 +102,7 @@ function MapTrackerSide({
   team: TrackerTeam
   sideAssignments: CivMapAssignmentState['own']
   saturatedMaps: string[]
-  onAssign: (civId: string, target: MapAssignmentTarget) => void
+  onAssign: (civId: string, target: MapAssignmentTarget, options?: { countingPoolId?: string | null }) => void
   prediction?: boolean
 }) {
   const [dragOverKey, setDragOverKey] = useState<string | null>(null)

@@ -8,6 +8,10 @@ export type MapAssignmentTarget = string | 'flex'
 export interface CivMapAssignmentState {
   own: Record<string, MapAssignmentTarget>
   opponent: Record<string, MapAssignmentTarget>
+  /** Which pool a multi-pool civ counts toward for own map assignments. */
+  ownCountingPool: Record<string, string>
+  /** Which pool a multi-pool civ counts toward for opponent map assignments. */
+  opponentCountingPool: Record<string, string>
 }
 
 const STORAGE_KEY = 'aoe-draft-assistant.civ-map-assignments'
@@ -160,6 +164,14 @@ export function mergeCivMapAssignmentDocuments(
     merged[draftKey] = {
       own: { ...currentEntry.own, ...incomingEntry.own },
       opponent: { ...currentEntry.opponent, ...incomingEntry.opponent },
+      ownCountingPool: {
+        ...currentEntry.ownCountingPool,
+        ...incomingEntry.ownCountingPool,
+      },
+      opponentCountingPool: {
+        ...currentEntry.opponentCountingPool,
+        ...incomingEntry.opponentCountingPool,
+      },
     }
   }
 
@@ -182,25 +194,35 @@ export function pruneAssignments(
   const opponentIds = new Set(opponentPickIds)
   const own: Record<string, MapAssignmentTarget> = {}
   const opponent: Record<string, MapAssignmentTarget> = {}
+  const ownCountingPool: Record<string, string> = {}
+  const opponentCountingPool: Record<string, string> = {}
 
   for (const [civId, target] of Object.entries(state.own)) {
-    if (ownIds.has(civId)) own[civId] = target
+    if (!ownIds.has(civId)) continue
+    own[civId] = target
+    const poolId = state.ownCountingPool[civId]
+    if (poolId) ownCountingPool[civId] = poolId
   }
   for (const [civId, target] of Object.entries(state.opponent)) {
-    if (opponentIds.has(civId)) opponent[civId] = target
+    if (!opponentIds.has(civId)) continue
+    opponent[civId] = target
+    const poolId = state.opponentCountingPool[civId]
+    if (poolId) opponentCountingPool[civId] = poolId
   }
 
-  return { own, opponent }
+  return { own, opponent, ownCountingPool, opponentCountingPool }
 }
 
 function emptyAssignments(): CivMapAssignmentState {
-  return { own: {}, opponent: {} }
+  return { own: {}, opponent: {}, ownCountingPool: {}, opponentCountingPool: {} }
 }
 
 function normalizeAssignments(raw?: Partial<CivMapAssignmentState>): CivMapAssignmentState {
   return {
     own: sanitizeAssignmentMap(raw?.own),
     opponent: sanitizeAssignmentMap(raw?.opponent),
+    ownCountingPool: sanitizeStringMap(raw?.ownCountingPool),
+    opponentCountingPool: sanitizeStringMap(raw?.opponentCountingPool),
   }
 }
 
@@ -211,6 +233,15 @@ function sanitizeAssignmentMap(
   const result: Record<string, MapAssignmentTarget> = {}
   for (const [civId, target] of Object.entries(raw)) {
     if (typeof target === 'string') result[civId] = target
+  }
+  return result
+}
+
+function sanitizeStringMap(raw?: Record<string, unknown>): Record<string, string> {
+  if (!raw) return {}
+  const result: Record<string, string> = {}
+  for (const [civId, value] of Object.entries(raw)) {
+    if (typeof value === 'string' && value.trim()) result[civId] = value.trim()
   }
   return result
 }
