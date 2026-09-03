@@ -274,7 +274,7 @@ function TierCivChip({
     >
       {marker === 'key' ? (
         <span className="tier-maker-key-civ-badge" aria-label="Key civ">
-          ★
+          {'\u2605\uFE0E'}
         </span>
       ) : null}
       {marker === 'nemesis' ? (

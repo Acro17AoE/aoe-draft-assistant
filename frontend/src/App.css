@@ -8414,15 +8414,17 @@ td {
   color: var(--laca-text);
 }
 
-[data-theme='light'] .tier-maker-key-civ-badge,
+[data-theme='light'] .tier-maker-civ .tier-maker-key-civ-badge,
 [data-theme='light'] .tier-maker-key-civ-star {
   color: #e6b422;
+  -webkit-text-fill-color: #e6b422;
   text-shadow: 0 0 2px rgba(255, 255, 255, 0.65), 0 1px 1px rgba(80, 55, 10, 0.35);
 }
 
-[data-theme='light'] .tier-maker-nemesis-badge,
+[data-theme='light'] .tier-maker-civ .tier-maker-nemesis-badge,
 [data-theme='light'] .tier-maker-nemesis-skull {
   color: #6b7280;
+  -webkit-text-fill-color: #6b7280;
   text-shadow: none;
 }
 
