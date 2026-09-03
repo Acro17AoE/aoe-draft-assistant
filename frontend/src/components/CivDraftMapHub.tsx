@@ -274,21 +274,6 @@ export function CivDraftMapHub({
     })
   }
 
-  const openPoolReassign = (pick: CivBoardItem, map: MapPickDisplay) => {
-    const pools = entryPoolsForCivOnMap(presets, map.name, pick.id, pick.name)
-    if (pools.length <= 1) return
-    const currentTarget = assignments[pick.id]
-    if (!currentTarget || currentTarget === 'flex') return
-    setPendingPoolChoice({
-      civId: pick.id,
-      civName: pick.name,
-      target: currentTarget,
-      mapName: map.name,
-      pools,
-      reassignOnly: true,
-    })
-  }
-
   const singleMapColumn = showSingleMapLayout ? columns[0]! : null
   // One unique map: AVAILABLE ranking is enough; Top 3 per column is redundant.
   const showTopPicks = showTopPicksSection && !showSingleMapLayout
@@ -415,16 +400,7 @@ export function CivDraftMapHub({
                               handleDrop(slotTarget, event)
                             }}
                           >
-                            <div className="civ-draft-assign-slot-tile">
-                              <DraggableCivTile pick={pick} team={team} size="sm" />
-                              <AssignedPoolBadge
-                                pick={pick}
-                                map={column.map}
-                                presets={presets}
-                                countingPoolId={countingPools[pick.id]}
-                                onClick={() => openPoolReassign(pick, column.map)}
-                              />
-                            </div>
+                            <DraggableCivTile pick={pick} team={team} size="sm" />
                           </div>
                         )
                       }
@@ -742,50 +718,6 @@ function PoolCountingChooser({
         </button>
       </div>
     </div>
-  )
-}
-
-function AssignedPoolBadge({
-  pick,
-  map,
-  presets,
-  countingPoolId,
-  onClick,
-}: {
-  pick: CivBoardItem
-  map: MapPickDisplay
-  presets: MapPriorityPreset[]
-  countingPoolId?: string
-  onClick: () => void
-}) {
-  const pools = entryPoolsForCivOnMap(presets, map.name, pick.id, pick.name)
-  if (pools.length === 0) return null
-  const active =
-    pools.find((pool) => pool.id === countingPoolId) ?? (pools.length === 1 ? pools[0] : null)
-  if (!active && pools.length < 2) return null
-
-  const label = active?.name ?? 'Pick pool'
-  const multi = pools.length > 1
-
-  return (
-    <button
-      type="button"
-      className={`civ-draft-counting-pool-badge${multi ? ' civ-draft-counting-pool-badge-multi' : ''}${!active ? ' civ-draft-counting-pool-badge-unset' : ''}`}
-      title={
-        multi
-          ? `Counts as ${label}. Click to change pool.`
-          : `Counts as ${label}`
-      }
-      onClick={(event) => {
-        event.preventDefault()
-        event.stopPropagation()
-        if (multi) onClick()
-      }}
-      disabled={!multi}
-    >
-      <img src={poolIconUrl(active?.name ?? pools[0]!.name)} alt="" />
-      <span>{label}</span>
-    </button>
   )
 }
 
