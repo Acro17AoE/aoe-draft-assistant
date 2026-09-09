@@ -26,6 +26,14 @@ interface MapPresetEditorProps {
   onChange: (presets: MapPriorityPreset[], customMaps: string[]) => void
   onCopyFromMap?: (sourceMap: string, targetMap: string) => void
   onRemoveMap?: (mapName: string) => void
+  onOpenCommunity?: () => void
+  onShareCommunity?: (payload: {
+    mapName: string
+    entries: CivPriorityEntry[]
+    advancedMode: boolean
+    pools: CivPoolDefinition[]
+  }) => void
+  canShareCommunity?: boolean
 }
 
 function normalizeEntriesSnapshot(entries: CivPriorityEntry[]): string {
@@ -86,6 +94,9 @@ export function MapPresetEditor({
   onChange,
   onCopyFromMap,
   onRemoveMap,
+  onOpenCommunity,
+  onShareCommunity,
+  canShareCommunity = false,
 }: MapPresetEditorProps) {
   const tournamentMaps = useMemo(() => getTournamentMaps(customMaps, presets), [customMaps, presets])
   const [selectedMap, setSelectedMap] = useState(tournamentMaps[0] ?? 'Arabia')
@@ -348,6 +359,33 @@ export function MapPresetEditor({
           <button type="button" onClick={requestImport} disabled={!copyFromMap}>
             Insert
           </button>
+        </div>
+      ) : null}
+
+      {onOpenCommunity || onShareCommunity ? (
+        <div className="preset-community-row">
+          {onOpenCommunity ? (
+            <button type="button" onClick={onOpenCommunity}>
+              Community Browser
+            </button>
+          ) : null}
+          {onShareCommunity ? (
+            <button
+              type="button"
+              disabled={!canShareCommunity}
+              title={canShareCommunity ? 'Share this map tier list' : 'Log in to share'}
+              onClick={() =>
+                onShareCommunity({
+                  mapName: selectedMap,
+                  entries: stripPoolRanks(normalizeTierEntries(entries)).map(serializePresetEntry),
+                  advancedMode,
+                  pools: normalizePresetPools(pools),
+                })
+              }
+            >
+              Share to Community
+            </button>
+          ) : null}
         </div>
       ) : null}
 

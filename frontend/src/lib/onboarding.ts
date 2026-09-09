@@ -1,6 +1,6 @@
 import { readLocalKey, writeLocalKey } from './cloudStorage'
 
-export type TourTab = 'home' | 'presets' | 'map' | 'civ' | 'results' | 'analysis'
+export type TourTab = 'home' | 'tiermaker' | 'presets' | 'map' | 'civ' | 'results' | 'analysis'
 
 export interface TourStep {
   id: string
@@ -26,15 +26,28 @@ export const TOUR_STEPS: TourStep[] = [
     tab: 'home',
     target: 'nav-home',
     title: 'Home',
-    body: 'DRAFT works without an account — all data is saved in your browser. Log in here to sync across devices and create shared sessions with teammates.',
+    body: 'DRAFT works without an account — all data is saved in your browser. Log in here to sync across devices, share community presets, and create shared sessions with teammates.',
   },
-
+  {
+    id: 'nav-tiermaker',
+    tab: 'tiermaker',
+    target: 'nav-tiermaker',
+    title: 'TierMaker',
+    body: 'Quick standalone tier lists — no tournament setup. Rank civs, download a PNG, and optionally share to the Community Browser. This does not feed Map/Civ Draft (use Presets for that).',
+  },
+  {
+    id: 'tiermaker-editor',
+    tab: 'tiermaker',
+    target: 'tiermaker-editor',
+    title: 'Build & export',
+    body: 'Set a title and map, drag civs into S–F (left = stronger). Download PNG when you are happy. Logged-in users can Share to Community (yellow button) or browse samples from others.',
+  },
   {
     id: 'nav-presets',
     tab: 'presets',
     target: 'nav-presets',
     title: 'Presets',
-    body: 'Start here. Build map-specific civ tier lists that power recommendations in Civ Draft.',
+    body: 'Tournament-ready tier lists that power Civ Draft. Mark ★ Key and ☠ Nemesis civs, use Advanced pools, and keep one tournament ACTIVE.',
   },
   {
     id: 'presets-sidebar',
@@ -47,7 +60,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: 'presets-editor',
     tab: 'presets',
     target: 'presets-editor',
-    title: 'TierMaker editor',
+    title: 'Preset editor',
     body: 'Pick a map, then drag civs into S / A / B / C / D / F. Order within a tier matters (left = stronger). Optional Advanced mode adds pools (Halb SO, Paladin, Flank) and a Max picks limit per pool.',
   },
   {
@@ -108,9 +121,9 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     id: 'done',
-    tab: 'presets',
+    tab: 'tiermaker',
     title: 'You’re ready',
-    body: 'Typical flow: Presets (tiers, pools, Key/Nemesis) → Map Draft → Civ Draft (Prepared bans → Go). Start again anytime with New Here? in the top bar.',
+    body: 'Quick list? Use TierMaker + PNG. Playing a tournament draft? Presets (tiers, pools, Key/Nemesis) → Map Draft → Civ Draft. Browse Community samples anytime. Restart with New Here? in the top bar.',
   },
 ]
 

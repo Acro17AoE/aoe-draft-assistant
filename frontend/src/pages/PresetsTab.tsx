@@ -1,11 +1,18 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { CommunityPresetBrowser, PublishCommunityPresetModal } from '../components/CommunityPresetBrowser'
 import { MapPresetEditor } from '../components/MapPresetEditor'
 import { PresetExportImportPanel } from '../components/PresetExportImportPanel'
+import { useAuth } from '../contexts/AuthProvider'
 import { useWorkspace } from '../contexts/WorkspaceProvider'
 import { fetchAoe2cmPreset } from '../lib/api'
 import { fetchAoestatsPresetBundle, type AoestatsGrouping } from '../lib/aoestats'
+import type { CommunityPresetDetail } from '../lib/communityPresets'
 import { DEFAULT_MAPS, presetIdForMap } from '../lib/maps'
 import { extractPresetId, mapsFromAoe2cmPreset } from '../lib/mapDraftPresets'
+import {
+  addCustomMap,
+  upsertPresetForMap,
+} from '../lib/presets'
 import {
   copyMapPresetWithinTournament,
   copyMapPresetsBetweenTournaments,
@@ -17,7 +24,8 @@ import {
   removeMapFromTournament,
   updatePresetTournament,
 } from '../lib/presetTournaments'
-import type { MapPriorityPreset } from '../types/draft'
+import { normalizeTierEntries } from '../lib/tiers'
+import type { CivPoolDefinition, CivPriorityEntry, MapPriorityPreset } from '../types/draft'
 import { createTournament, loadTournaments, saveTournaments } from '../lib/results'
 import type { PresetTournament, PresetTournamentStore } from '../types/presetTournament'
 import type { Tournament, TournamentFormat } from '../types/results'
@@ -31,6 +39,7 @@ interface PresetsTabProps {
 }
 
 export function PresetsTab({ store, onChange, onResultsChange }: PresetsTabProps) {
+  const { user } = useAuth()
   const { workspace } = useWorkspace()
   const isSharedSession = Boolean(workspace)
   const activeId = store.activeTournamentId ?? store.tournaments[0]?.id ?? null
@@ -51,6 +60,14 @@ export function PresetsTab({ store, onChange, onResultsChange }: PresetsTabProps
   const [aoestatsBusy, setAoestatsBusy] = useState(false)
   const [aoestatsStatus, setAoestatsStatus] = useState<string | null>(null)
   const [editorStatus, setEditorStatus] = useState<string | null>(null)
+  const [communityOpen, setCommunityOpen] = useState(false)
+  const [publishOpen, setPublishOpen] = useState(false)
+  const [publishDraft, setPublishDraft] = useState<{
+    mapName: string
+    entries: CivPriorityEntry[]
+    advancedMode: boolean
+    pools: CivPoolDefinition[]
+  } | null>(null)
 
   useEffect(() => {
     if (!selected) return
@@ -166,6 +183,29 @@ export function PresetsTab({ store, onChange, onResultsChange }: PresetsTabProps
         customMaps,
       })),
     )
+  }
+
+  const handleLoadCommunity = (detail: CommunityPresetDetail) => {
+    if (!selected) {
+      setEditorStatus('Select a tournament first, then load a community preset.')
+      return
+    }
+    const mapName = detail.map_name.trim() || 'Arabia'
+    const entries = normalizeTierEntries(detail.payload.entries ?? [])
+    const nextPresets = upsertPresetForMap(selected.presets, mapName, {
+      entries,
+      advancedMode: detail.payload.advancedMode,
+      pools: detail.payload.pools,
+    })
+    const nextCustomMaps = addCustomMap(selected.customMaps, mapName)
+    onChange(
+      updatePresetTournament(store, selected.id, (tournament) => ({
+        ...tournament,
+        presets: nextPresets,
+        customMaps: nextCustomMaps,
+      })),
+    )
+    setEditorStatus(`Loaded “${detail.title}” into ${mapName}.`)
   }
 
   const copyFromTournament = copyAllMaps
@@ -363,10 +403,50 @@ export function PresetsTab({ store, onChange, onResultsChange }: PresetsTabProps
               onRemoveMap={(mapName) => {
                 onChange(removeMapFromTournament(store, selected.id, mapName))
               }}
+              onOpenCommunity={() => setCommunityOpen(true)}
+              canShareCommunity={Boolean(user)}
+              onShareCommunity={(payload) => {
+                if (!user) {
+                  setEditorStatus('Log in to share presets with the community.')
+                  return
+                }
+                setPublishDraft(payload)
+                setPublishOpen(true)
+              }}
             />
           </>
         )}
       </main>
+
+      <CommunityPresetBrowser
+        open={communityOpen}
+        onClose={() => setCommunityOpen(false)}
+        onLoad={handleLoadCommunity}
+        loadLabel="Load into active tournament"
+      />
+
+      {publishDraft ? (
+        <PublishCommunityPresetModal
+          open={publishOpen}
+          onClose={() => {
+            setPublishOpen(false)
+            setPublishDraft(null)
+          }}
+          defaultTitle={
+            selected
+              ? `${selected.name} – ${publishDraft.mapName}`
+              : `${publishDraft.mapName} tier list`
+          }
+          mapName={publishDraft.mapName}
+          format={selected?.format ?? '1v1'}
+          payload={{
+            entries: publishDraft.entries,
+            advancedMode: publishDraft.advancedMode,
+            pools: publishDraft.pools,
+          }}
+          onPublished={() => setEditorStatus('Shared to the community browser.')}
+        />
+      ) : null}
 
       {showNewTournament ? (
         <NewPresetTournamentModal

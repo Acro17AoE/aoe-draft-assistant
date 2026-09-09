@@ -17,9 +17,9 @@ load_dotenv(_ROOT / ".env")
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 from .aoe2cm import extract_draft_id, extract_preset_id, fetch_draft, fetch_preset
-from .database import init_db
+from .database import SessionLocal, init_db
+from .community_seed import seed_community_presets
 from .auth_utils import decode_access_token
-from .database import SessionLocal
 from .draft_stream import get_subscription
 from .models import User, WorkspaceMember
 from .workspace_stream import get_workspace_subscription
@@ -35,6 +35,8 @@ from .routers.pro_analysis_router import router as pro_analysis_router
 from .routers.replay_router import router as replay_router
 from .routers.tournament_stats_router import router as tournament_stats_router
 from .routers.workspaces import router as workspaces_router
+from .routers.community_presets import router as community_presets_router
+from .routers.assets_router import router as assets_router
 
 
 @asynccontextmanager
@@ -49,6 +51,11 @@ async def lifespan(_app: FastAPI):
         if db_dir:
             os.makedirs(db_dir, exist_ok=True)
     init_db()
+    db = SessionLocal()
+    try:
+        seed_community_presets(db)
+    finally:
+        db.close()
     yield
 
 
@@ -72,6 +79,8 @@ app.include_router(pro_analysis_router)
 app.include_router(replay_router)
 app.include_router(tournament_stats_router)
 app.include_router(workspaces_router)
+app.include_router(community_presets_router)
+app.include_router(assets_router)
 
 
 class MapAnalysisRequest(BaseModel):

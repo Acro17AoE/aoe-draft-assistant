@@ -17,10 +17,22 @@ function GitHubIcon() {
 interface AppFooterProps {
   whiteMode?: boolean
   onToggleWhiteMode?: () => void
+  hideResultsAnalysis?: boolean
+  onToggleResultsAnalysis?: () => void
+  hideAoeInData?: boolean
+  onToggleAoeInData?: () => void
   onOpenFaq?: () => void
 }
 
-export function AppFooter({ whiteMode = false, onToggleWhiteMode, onOpenFaq }: AppFooterProps) {
+export function AppFooter({
+  whiteMode = false,
+  onToggleWhiteMode,
+  hideResultsAnalysis = false,
+  onToggleResultsAnalysis,
+  hideAoeInData = false,
+  onToggleAoeInData,
+  onOpenFaq,
+}: AppFooterProps) {
   return (
     <footer className="app-footer">
       <div className="app-footer-tools">
@@ -38,6 +50,32 @@ export function AppFooter({ whiteMode = false, onToggleWhiteMode, onOpenFaq }: A
             title={whiteMode ? 'Switch to dark mode' : 'Switch to white mode'}
           >
             {whiteMode ? 'Dark mode' : 'White mode'}
+          </button>
+        ) : null}
+        {onToggleResultsAnalysis ? (
+          <button
+            type="button"
+            className={`app-footer-btn${hideResultsAnalysis ? ' active' : ''}`}
+            aria-pressed={hideResultsAnalysis}
+            onClick={onToggleResultsAnalysis}
+            title={
+              hideResultsAnalysis
+                ? 'Show Results and Analysis tabs'
+                : 'Hide Results and Analysis tabs'
+            }
+          >
+            {hideResultsAnalysis ? 'Show Results & Analysis' : 'Hide Results & Analysis'}
+          </button>
+        ) : null}
+        {onToggleAoeInData ? (
+          <button
+            type="button"
+            className={`app-footer-btn${hideAoeInData ? ' active' : ''}`}
+            aria-pressed={hideAoeInData}
+            onClick={onToggleAoeInData}
+            title={hideAoeInData ? 'Show AoE in Data tab' : 'Hide AoE in Data tab'}
+          >
+            {hideAoeInData ? 'Show AoE in Data' : 'Hide AoE in Data'}
           </button>
         ) : null}
       </div>

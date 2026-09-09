@@ -2,16 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CivDraftAssistant } from './pages/CivDraftAssistant'
 import { MapDraftAssistant } from './pages/MapDraftAssistant'
 import { PresetsTab } from './pages/PresetsTab'
+import { TierMakerTab } from './pages/TierMakerTab'
 // Pro Analysis tab disabled for now.
 // import { ProAnalysisTab } from './pages/ProAnalysisTab'
 import { AnalysisTab } from './pages/AnalysisTab'
 import { AoeDataTab } from './pages/AoeDataTab'
 import { ResultsTab, useResultsState } from './pages/ResultsTab'
 import { tournamentsWithResults } from './lib/results'
-import { HomeTab } from './pages/HomeTab'
+import { HomeTab, type HomeNavigateTarget } from './pages/HomeTab'
 import { PregameTab } from './pages/PregameTab'
 import { AdminTab } from './pages/AdminTab'
 import { AppFooter } from './components/AppFooter'
+import { CommunityPresetBrowser } from './components/CommunityPresetBrowser'
 import { FaqModal } from './components/FaqModal'
 import { OnboardingTour } from './components/OnboardingTour'
 import { UiPreferenceToggles } from './components/UiPreferenceToggles'
@@ -19,9 +21,19 @@ import { useAuth } from './contexts/AuthProvider'
 import { MemberList } from './components/SharePanel'
 import { useWorkspace } from './contexts/WorkspaceProvider'
 import { parseCollaborationSlugFromPath } from './lib/cloudStorage'
+import type { CommunityPresetDetail } from './lib/communityPresets'
 import { PRODUCT_NAME } from './lib/brand'
-import { getActivePresetTournament } from './lib/presetTournaments'
+import { addCustomMap, upsertPresetForMap } from './lib/presets'
+import { getActivePresetTournament, updatePresetTournament } from './lib/presetTournaments'
 import { usePresetTournamentState } from './lib/usePresetTournamentState'
+import { useTierMakerState } from './lib/useTierMakerState'
+import {
+  createEmptyTierMakerList,
+  getActiveTierMakerList,
+  stripMarkers,
+  upsertTierMakerList,
+} from './lib/tiermakerStore'
+import { normalizeTierEntries } from './lib/tiers'
 import { useUiPreferences } from './lib/useUiPreferences'
 import { isAdminUser, canUseOpponentAnalysis } from './lib/admin'
 import { trackPageViewOnce } from './lib/analytics'
@@ -31,12 +43,27 @@ import {
 } from './lib/onboarding'
 import './App.css'
 
-type AppTab = 'home' | 'presets' | 'pregame' | 'map' | 'civ' | 'results' | 'analysis' | 'aoedata' | 'pro' | 'settings' | 'admin'
+type AppTab =
+  | 'home'
+  | 'presets'
+  | 'tiermaker'
+  | 'pregame'
+  | 'map'
+  | 'civ'
+  | 'results'
+  | 'analysis'
+  | 'aoedata'
+  | 'pro'
+  | 'settings'
+  | 'admin'
+
 function App() {
   const [tab, setTab] = useState<AppTab>('home')
   const [tourOpen, setTourOpen] = useState(false)
   const [faqOpen, setFaqOpen] = useState(false)
+  const [homeCommunityOpen, setHomeCommunityOpen] = useState(false)
   const { store, setStore } = usePresetTournamentState()
+  const { store: tierMakerStore, setStore: setTierMakerStore } = useTierMakerState()
   const { tournaments, setTournaments } = useResultsState()
   const analysisTournaments = useMemo(() => tournamentsWithResults(tournaments), [tournaments])
 
@@ -66,6 +93,50 @@ function App() {
     setTab(next)
   }, [])
 
+  const handleHomeNavigate = useCallback((target: HomeNavigateTarget) => {
+    if (target === 'community') {
+      setHomeCommunityOpen(true)
+      return
+    }
+    setTab(target)
+  }, [])
+
+  const handleHomeCommunityLoad = useCallback(
+    (detail: CommunityPresetDetail) => {
+      const mapName = detail.map_name.trim() || 'Arabia'
+      const entries = normalizeTierEntries(detail.payload.entries ?? [])
+      if (activePresetTournament) {
+        const nextPresets = upsertPresetForMap(activePresetTournament.presets, mapName, {
+          entries,
+          advancedMode: detail.payload.advancedMode,
+          pools: detail.payload.pools,
+        })
+        const nextCustomMaps = addCustomMap(activePresetTournament.customMaps, mapName)
+        setStore(
+          updatePresetTournament(store, activePresetTournament.id, (tournament) => ({
+            ...tournament,
+            presets: nextPresets,
+            customMaps: nextCustomMaps,
+          })),
+        )
+        setTab('presets')
+        return
+      }
+      const activeList = getActiveTierMakerList(tierMakerStore)
+      const base = activeList ?? createEmptyTierMakerList({ title: detail.title, mapName })
+      setTierMakerStore(
+        upsertTierMakerList(tierMakerStore, {
+          ...base,
+          title: detail.title,
+          mapName,
+          entries: stripMarkers(entries),
+        }),
+      )
+      setTab('tiermaker')
+    },
+    [activePresetTournament, setStore, setTierMakerStore, store, tierMakerStore],
+  )
+
   useEffect(() => {
     trackPageViewOnce()
   }, [])
@@ -91,6 +162,19 @@ function App() {
   useEffect(() => {
     if (tab === 'pro' || tab === 'settings') setTab('home')
   }, [tab])
+
+  useEffect(() => {
+    if (preferences.hideResultsAnalysis && (tab === 'results' || tab === 'analysis')) {
+      setTab('home')
+    }
+  }, [preferences.hideResultsAnalysis, tab])
+
+  useEffect(() => {
+    if (preferences.hideAoeInData && tab === 'aoedata') setTab('home')
+  }, [preferences.hideAoeInData, tab])
+
+  const showResultsAnalysis = !preferences.hideResultsAnalysis
+  const showAoeInData = !preferences.hideAoeInData
 
   return (
     <div
@@ -151,6 +235,14 @@ function App() {
           </button>
           <button
             type="button"
+            data-tour="nav-tiermaker"
+            className={tab === 'tiermaker' ? 'active' : ''}
+            onClick={() => setTab('tiermaker')}
+          >
+            TierMaker
+          </button>
+          <button
+            type="button"
             data-tour="nav-presets"
             className={tab === 'presets' ? 'active' : ''}
             onClick={() => setTab('presets')}
@@ -183,30 +275,36 @@ function App() {
           >
             Civ Draft
           </button>
-          <button
-            type="button"
-            data-tour="nav-results"
-            className={tab === 'results' ? 'active' : ''}
-            onClick={() => setTab('results')}
-          >
-            Results
-          </button>
-          <button
-            type="button"
-            data-tour="nav-analysis"
-            className={tab === 'analysis' ? 'active' : ''}
-            onClick={() => setTab('analysis')}
-          >
-            Analysis
-          </button>
-          <button
-            type="button"
-            data-tour="nav-aoedata"
-            className={tab === 'aoedata' ? 'active' : ''}
-            onClick={() => setTab('aoedata')}
-          >
-            AoE in Data
-          </button>
+          {showResultsAnalysis ? (
+            <>
+              <button
+                type="button"
+                data-tour="nav-results"
+                className={tab === 'results' ? 'active' : ''}
+                onClick={() => setTab('results')}
+              >
+                Results
+              </button>
+              <button
+                type="button"
+                data-tour="nav-analysis"
+                className={tab === 'analysis' ? 'active' : ''}
+                onClick={() => setTab('analysis')}
+              >
+                Analysis
+              </button>
+            </>
+          ) : null}
+          {showAoeInData ? (
+            <button
+              type="button"
+              data-tour="nav-aoedata"
+              className={tab === 'aoedata' ? 'active' : ''}
+              onClick={() => setTab('aoedata')}
+            >
+              AoE in Data
+            </button>
+          ) : null}
           {showAdminTab ? (
             <button type="button" className={tab === 'admin' ? 'active' : ''} onClick={() => setTab('admin')}>
               Admin
@@ -225,7 +323,10 @@ function App() {
 
       <div className="tab-panels">
         <div className="tab-panel" hidden={tab !== 'home'}>
-          <HomeTab />
+          <HomeTab onNavigate={handleHomeNavigate} />
+        </div>
+        <div className="tab-panel" hidden={tab !== 'tiermaker'}>
+          <TierMakerTab store={tierMakerStore} onChange={setTierMakerStore} />
         </div>
         <div className="tab-panel" hidden={tab !== 'presets'}>
           <PresetsTab store={store} onChange={setStore} onResultsChange={setTournaments} />
@@ -255,15 +356,21 @@ function App() {
             presetTournamentName={activePresetTournament?.name}
           />
         </div>
-        <div className="tab-panel" hidden={tab !== 'results'}>
-          <ResultsTab tournaments={tournaments} onChange={setTournaments} />
-        </div>
-        <div className="tab-panel" hidden={tab !== 'analysis'}>
-          <AnalysisTab tournaments={analysisTournaments} />
-        </div>
-        <div className="tab-panel" hidden={tab !== 'aoedata'}>
-          <AoeDataTab />
-        </div>
+        {showResultsAnalysis ? (
+          <>
+            <div className="tab-panel" hidden={tab !== 'results'}>
+              <ResultsTab tournaments={tournaments} onChange={setTournaments} />
+            </div>
+            <div className="tab-panel" hidden={tab !== 'analysis'}>
+              <AnalysisTab tournaments={analysisTournaments} />
+            </div>
+          </>
+        ) : null}
+        {showAoeInData ? (
+          <div className="tab-panel" hidden={tab !== 'aoedata'}>
+            <AoeDataTab />
+          </div>
+        ) : null}
         {showAdminTab ? (
           <div className="tab-panel" hidden={tab !== 'admin'}>
             <AdminTab />
@@ -274,11 +381,23 @@ function App() {
       <AppFooter
         whiteMode={preferences.whiteMode}
         onToggleWhiteMode={() => setPreference('whiteMode', !preferences.whiteMode)}
+        hideResultsAnalysis={preferences.hideResultsAnalysis}
+        onToggleResultsAnalysis={() =>
+          setPreference('hideResultsAnalysis', !preferences.hideResultsAnalysis)
+        }
+        hideAoeInData={preferences.hideAoeInData}
+        onToggleAoeInData={() => setPreference('hideAoeInData', !preferences.hideAoeInData)}
         onOpenFaq={() => setFaqOpen(true)}
       />
       {tab === 'civ' ? <UiPreferenceToggles /> : null}
 
       <FaqModal open={faqOpen} onClose={() => setFaqOpen(false)} />
+      <CommunityPresetBrowser
+        open={homeCommunityOpen}
+        onClose={() => setHomeCommunityOpen(false)}
+        onLoad={handleHomeCommunityLoad}
+        loadLabel={activePresetTournament ? 'Load into active tournament' : 'Load into TierMaker'}
+      />
       <OnboardingTour
         open={tourOpen}
         currentTab={tab}

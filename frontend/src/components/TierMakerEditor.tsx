@@ -19,6 +19,8 @@ interface TierMakerEditorProps {
   advancedMode?: boolean
   onAdvancedToggle?: () => void
   advancedSection?: ReactNode
+  /** When false, hide Key/Nemesis legend and disable marker cycling. */
+  allowMarkers?: boolean
 }
 
 interface DragPayload {
@@ -31,6 +33,7 @@ export function TierMakerEditor({
   advancedMode = false,
   onAdvancedToggle,
   advancedSection,
+  allowMarkers = true,
 }: TierMakerEditorProps) {
   const [dragOverTier, setDragOverTier] = useState<PriorityTier | 'unranked' | null>(null)
   const [dragInsertIndex, setDragInsertIndex] = useState<number | null>(null)
@@ -58,17 +61,19 @@ export function TierMakerEditor({
 
   const markerByCiv = useMemo(() => {
     const map = new Map<string, CivMarker>()
+    if (!allowMarkers) return map
     for (const entry of entries) {
       map.set(entry.civId, civMarker(entry))
     }
     return map
-  }, [entries])
+  }, [allowMarkers, entries])
 
   const moveCiv = (civId: string, tier: PriorityTier | null, insertIndex?: number) => {
     onChange(moveCivInTierList(entries, civId, tier, insertIndex))
   }
 
   const handleCycleCivMarker = (civId: string) => {
+    if (!allowMarkers) return
     onChange(cycleCivMarker(entries, civId))
   }
 
@@ -86,26 +91,28 @@ export function TierMakerEditor({
       <div className="tier-maker-header">
         <p className="hint tier-maker-hint">
           Within each tier, left = strongest preference, right = weakest.
-          <span className="tier-maker-civ-legend" data-tour="presets-tier-markers">
-            <span
-              className="tier-maker-key-civ-hint"
-              title="Double click civ icon: none → key → nemesis"
-            >
-              <span className="tier-maker-key-civ-star" aria-hidden>
-                ★
+          {allowMarkers ? (
+            <span className="tier-maker-civ-legend" data-tour="presets-tier-markers">
+              <span
+                className="tier-maker-key-civ-hint"
+                title="Double click civ icon: none → key → nemesis"
+              >
+                <span className="tier-maker-key-civ-star" aria-hidden>
+                  ★
+                </span>
+                <span className="tier-maker-key-civ-label">= Key civ</span>
               </span>
-              <span className="tier-maker-key-civ-label">= Key civ</span>
-            </span>
-            <span
-              className="tier-maker-key-civ-hint"
-              title="Double click civ icon: none → key → nemesis"
-            >
-              <span className="tier-maker-nemesis-skull" aria-hidden>
-                ☠
+              <span
+                className="tier-maker-key-civ-hint"
+                title="Double click civ icon: none → key → nemesis"
+              >
+                <span className="tier-maker-nemesis-skull" aria-hidden>
+                  ☠
+                </span>
+                <span className="tier-maker-key-civ-label">= Nemesis civ</span>
               </span>
-              <span className="tier-maker-key-civ-label">= Nemesis civ</span>
             </span>
-          </span>
+          ) : null}
         </p>
         {onAdvancedToggle ? (
           <button
@@ -125,6 +132,7 @@ export function TierMakerEditor({
           tier={tier}
           civIds={civsByTier.get(tier) ?? []}
           markerByCiv={markerByCiv}
+          allowMarkers={allowMarkers}
           onCycleCivMarker={handleCycleCivMarker}
           dragOver={dragOverTier === tier}
           dragInsertIndex={dragOverTier === tier ? dragInsertIndex : null}
@@ -144,6 +152,7 @@ export function TierMakerEditor({
         label="Unranked"
         civIds={civsByTier.get('unranked') ?? []}
         markerByCiv={markerByCiv}
+        allowMarkers={allowMarkers}
         onCycleCivMarker={handleCycleCivMarker}
         dragOver={dragOverTier === 'unranked'}
         dragInsertIndex={dragOverTier === 'unranked' ? dragInsertIndex : null}
@@ -169,6 +178,7 @@ function TierRow({
   label,
   civIds,
   markerByCiv,
+  allowMarkers,
   onCycleCivMarker,
   dragOver,
   dragInsertIndex,
@@ -181,6 +191,7 @@ function TierRow({
   label?: string
   civIds: string[]
   markerByCiv: Map<string, CivMarker>
+  allowMarkers: boolean
   onCycleCivMarker: (civId: string) => void
   dragOver: boolean
   dragInsertIndex: number | null
@@ -210,6 +221,7 @@ function TierRow({
             <TierCivChip
               civId={civId}
               marker={markerByCiv.get(civId) ?? 'none'}
+              allowMarkers={allowMarkers}
               onCycleCivMarker={() => onCycleCivMarker(civId)}
               onDragOver={() => onDragOver(index)}
               onDrop={(event) => {
@@ -234,12 +246,14 @@ function TierRow({
 function TierCivChip({
   civId,
   marker,
+  allowMarkers,
   onCycleCivMarker,
   onDragOver,
   onDrop,
 }: {
   civId: string
   marker: CivMarker
+  allowMarkers: boolean
   onCycleCivMarker: () => void
   onDragOver: () => void
   onDrop: (event: DragEvent) => void
@@ -257,6 +271,7 @@ function TierCivChip({
         event.dataTransfer.effectAllowed = 'move'
       }}
       onDoubleClick={(event) => {
+        if (!allowMarkers) return
         event.preventDefault()
         event.stopPropagation()
         onCycleCivMarker()
@@ -272,12 +287,12 @@ function TierCivChip({
       role="button"
       tabIndex={0}
     >
-      {marker === 'key' ? (
+      {allowMarkers && marker === 'key' ? (
         <span className="tier-maker-key-civ-badge" aria-label="Key civ">
           {'\u2605\uFE0E'}
         </span>
       ) : null}
-      {marker === 'nemesis' ? (
+      {allowMarkers && marker === 'nemesis' ? (
         <span className="tier-maker-nemesis-badge" aria-label="Nemesis civ">
           ☠
         </span>

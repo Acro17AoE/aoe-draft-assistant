@@ -20,6 +20,7 @@ ALLOWED_DOC_KEYS = {
     "map-session",
     "civ-session",
     "civ-map-assignments",
+    "tiermaker-lists",
 }
 
 

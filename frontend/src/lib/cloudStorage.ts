@@ -13,6 +13,7 @@ export const DOC_KEYS = {
   CIV_SESSION: 'civ-session',
   CIV_MAP_ASSIGNMENTS: 'civ-map-assignments',
   PREPARED_BANS: 'prepared-bans',
+  TIERMAKER_LISTS: 'tiermaker-lists',
 } as const
 
 export type DocKey = (typeof DOC_KEYS)[keyof typeof DOC_KEYS]
@@ -27,6 +28,7 @@ export const LOCAL_STORAGE_KEYS = {
   CIV_SESSION: 'aoe-draft-assistant.civ-session',
   CIV_MAP_ASSIGNMENTS: 'aoe-draft-assistant.civ-map-assignments',
   PREPARED_BANS: 'aoe-draft-assistant.prepared-bans',
+  TIERMAKER_LISTS: 'aoe-draft-assistant.tiermaker-lists',
   AUTH_TOKEN: 'aoe-draft-assistant.auth-token',
   ACTIVE_WORKSPACE_SLUG: 'aoe-draft-assistant.active-workspace-slug',
 } as const
@@ -41,6 +43,7 @@ const LOCAL_TO_DOC: Record<string, DocKey> = {
   [LOCAL_STORAGE_KEYS.CIV_SESSION]: DOC_KEYS.CIV_SESSION,
   [LOCAL_STORAGE_KEYS.CIV_MAP_ASSIGNMENTS]: DOC_KEYS.CIV_MAP_ASSIGNMENTS,
   [LOCAL_STORAGE_KEYS.PREPARED_BANS]: DOC_KEYS.PREPARED_BANS,
+  [LOCAL_STORAGE_KEYS.TIERMAKER_LISTS]: DOC_KEYS.TIERMAKER_LISTS,
 }
 
 /** Draft session data synced in shared workspaces — kept separate from personal settings. */

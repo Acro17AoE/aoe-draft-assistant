@@ -94,8 +94,7 @@ export function mapNamesMatch(a: string, b: string): boolean {
   const left = normalizeMapName(a)
   const right = normalizeMapName(b)
   if (!left || !right) return false
-  if (left === right) return true
-  return left.includes(right) || right.includes(left)
+  return left === right
 }
 
 const MAP_INSTANCE_SEP = '::'
@@ -147,10 +146,15 @@ export function resolveMapImageUrl(mapName: string): string | null {
   const override = mapEmblemOverride(trimmed)
   if (override) return override
 
+  const key = normalizeMapName(trimmed)
   const known =
-    DEFAULT_MAPS.find((map) => mapNamesMatch(map, trimmed)) ??
-    THE_LEAGUE_MAPS.find((map) => mapNamesMatch(map, trimmed))
-  if (!known) return null
+    DEFAULT_MAPS.find((map) => normalizeMapName(map) === key) ??
+    THE_LEAGUE_MAPS.find((map) => normalizeMapName(map) === key)
+  if (!known) {
+    // Unknown custom map: still try aoe2cm slug directly.
+    const slug = trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')
+    return `https://aoe2cm.net/images/maps/${slug}.png`
+  }
   const slug = known.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')
   return `https://aoe2cm.net/images/maps/${slug}.png`
 }

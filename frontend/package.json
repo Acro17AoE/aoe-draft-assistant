@@ -11,6 +11,7 @@
     "download-civ-icons": "python scripts/download-civ-icons.py"
   },
   "dependencies": {
+    "html-to-image": "^1.11.13",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },

@@ -222,3 +222,41 @@ class TournamentCivDraftAgg(Base):
     bans: Mapped[int] = mapped_column(Integer, default=0)
     pick_order_sum: Mapped[float] = mapped_column(Float, default=0.0)
     pick_order_count: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class CommunityPreset(Base):
+    __tablename__ = "community_presets"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    author_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    map_name: Mapped[str] = mapped_column(String(120), index=True)
+    format: Mapped[str] = mapped_column(String(8), default="1v1")
+    payload_json: Mapped[str] = mapped_column(Text, default="{}")
+    score: Mapped[int] = mapped_column(Integer, default=0, index=True)
+    upvote_count: Mapped[int] = mapped_column(Integer, default=0)
+    downvote_count: Mapped[int] = mapped_column(Integer, default=0)
+    featured: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    author: Mapped[User] = relationship()
+    votes: Mapped[list["CommunityPresetVote"]] = relationship(
+        back_populates="preset",
+        cascade="all, delete-orphan",
+    )
+
+
+class CommunityPresetVote(Base):
+    __tablename__ = "community_preset_votes"
+    __table_args__ = (UniqueConstraint("preset_id", "user_id", name="uq_community_preset_vote"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    preset_id: Mapped[str] = mapped_column(ForeignKey("community_presets.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    value: Mapped[int] = mapped_column(Integer)  # +1 or -1
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    preset: Mapped[CommunityPreset] = relationship(back_populates="votes")
+    user: Mapped[User] = relationship()

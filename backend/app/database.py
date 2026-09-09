@@ -68,6 +68,13 @@ def _ensure_sqlite_columns() -> None:
             if "seat2" not in names:
                 conn.execute(text("ALTER TABLE tournament_match_rows ADD COLUMN seat2 VARCHAR(160)"))
 
+        if "community_presets" in tables:
+            names = {col["name"] for col in insp.get_columns("community_presets")}
+            if "featured" not in names:
+                conn.execute(
+                    text("ALTER TABLE community_presets ADD COLUMN featured BOOLEAN DEFAULT 0")
+                )
+
 
 def init_db() -> None:
     from . import models  # noqa: F401

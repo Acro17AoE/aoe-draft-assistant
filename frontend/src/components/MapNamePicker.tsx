@@ -4,9 +4,18 @@ interface MapNamePickerProps {
   maps: string[]
   selectedMap: string
   onSelect: (mapName: string) => void
+  /** When set, shows an “Add map…” action at the bottom of the menu. */
+  onRequestAdd?: () => void
+  addLabel?: string
 }
 
-export function MapNamePicker({ maps, selectedMap, onSelect }: MapNamePickerProps) {
+export function MapNamePicker({
+  maps,
+  selectedMap,
+  onSelect,
+  onRequestAdd,
+  addLabel = 'Add map…',
+}: MapNamePickerProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -50,6 +59,19 @@ export function MapNamePicker({ maps, selectedMap, onSelect }: MapNamePickerProp
               </button>
             </li>
           ))}
+          {onRequestAdd ? (
+            <li className="preset-map-name-menu-add">
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false)
+                  onRequestAdd()
+                }}
+              >
+                {addLabel}
+              </button>
+            </li>
+          ) : null}
         </ul>
       ) : null}
     </div>

@@ -3,7 +3,13 @@ import { SharePanel } from '../components/SharePanel'
 import { PRODUCT_EXPANSION, PRODUCT_NAME, PRODUCT_TAGLINE } from '../lib/brand'
 import { requestOnboardingStart } from '../lib/onboarding'
 
-export function HomeTab() {
+export type HomeNavigateTarget = 'presets' | 'tiermaker' | 'community'
+
+interface HomeTabProps {
+  onNavigate?: (target: HomeNavigateTarget) => void
+}
+
+export function HomeTab({ onNavigate }: HomeTabProps) {
   return (
     <div className="home-page">
       <section className="panel home-welcome" data-tour="nav-home">
@@ -19,7 +25,7 @@ export function HomeTab() {
         </div>
         <div className="home-intro">
           <p>
-            <strong>DRAFT</strong> is a companion for Age of Empires II Captain's Mode on{' '}
+            <strong>DRAFT</strong> is a companion for Age of Empires II Captain&apos;s Mode on{' '}
             <a href="https://aoe2cm.net" target="_blank" rel="noopener noreferrer">
               aoe2cm.net
             </a>
@@ -28,8 +34,12 @@ export function HomeTab() {
           </p>
           <ul className="home-feature-list">
             <li>
-              <strong>Presets</strong> — tier civs per map, mark ★ Key picks and ☠ Nemesis ban
-              targets
+              <strong>TierMaker</strong> — quick standalone tier lists, PNG export, no tournament
+              overhead
+            </li>
+            <li>
+              <strong>Presets</strong> — tournament-ready tier lists per map, with ★ Key and ☠
+              Nemesis markers
             </li>
             <li>
               <strong>Map Draft</strong> — follow a live map draft or set maps manually
@@ -46,13 +56,28 @@ export function HomeTab() {
               <strong>AoE in Data</strong> — civ/tech visualizations and meta charts
             </li>
           </ul>
-          <button
-            type="button"
-            className="accent-btn home-tour-btn"
-            onClick={requestOnboardingStart}
-          >
-            New Here? Start the guided tour →
-          </button>
+          <div className="home-quick-links">
+            {onNavigate ? (
+              <>
+                <button type="button" className="accent-btn" onClick={() => onNavigate('tiermaker')}>
+                  Open TierMaker
+                </button>
+                <button type="button" className="accent-btn" onClick={() => onNavigate('presets')}>
+                  Open Presets
+                </button>
+                <button type="button" onClick={() => onNavigate('community')}>
+                  Community Browser
+                </button>
+              </>
+            ) : null}
+            <button
+              type="button"
+              className="accent-btn home-tour-btn"
+              onClick={requestOnboardingStart}
+            >
+              New Here? Start the guided tour →
+            </button>
+          </div>
         </div>
       </section>
 
@@ -66,7 +91,7 @@ export function HomeTab() {
           </p>
           <p className="hint">
             Without login, data stays in this browser only. Clearing site data or switching devices
-            will lose it. Cloud sync and shared sessions with teammates require an account.
+            will lose it. Cloud sync, shared sessions, and community sharing require an account.
           </p>
         </div>
         <div className="home-account-benefits">
@@ -82,6 +107,13 @@ export function HomeTab() {
             <div>
               <strong>Shared sessions</strong>
               <p>Invite teammates to a shared workspace with a single draft board, synced live.</p>
+            </div>
+          </div>
+          <div className="home-account-benefit">
+            <span className="home-benefit-icon">★</span>
+            <div>
+              <strong>Community presets</strong>
+              <p>Share map tier lists, browse popular builds, and load them into your presets.</p>
             </div>
           </div>
         </div>

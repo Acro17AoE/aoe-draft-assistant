@@ -9,6 +9,10 @@ export interface UiPreferences {
   fullMapTopPicksMode: FullMapTopPicksMode
   /** Light / white UI theme. */
   whiteMode: boolean
+  /** Hide Results + Analysis tabs from the main nav. */
+  hideResultsAnalysis: boolean
+  /** Hide AoE in Data tab from the main nav. */
+  hideAoeInData: boolean
 }
 
 const STORAGE_KEY = 'aoe-draft-assistant.ui-preferences'
@@ -22,6 +26,8 @@ export const DEFAULT_UI_PREFERENCES: UiPreferences = {
   hideOpponentPrediction: false,
   fullMapTopPicksMode: 'hide',
   whiteMode: false,
+  hideResultsAnalysis: false,
+  hideAoeInData: false,
 }
 
 export function loadUiPreferences(): UiPreferences {
@@ -48,6 +54,8 @@ function normalizeUiPreferences(raw: Partial<UiPreferences>): UiPreferences {
     fullMapTopPicksMode:
       mode === 'show' || mode === 'dim' || mode === 'hide' ? mode : DEFAULT_UI_PREFERENCES.fullMapTopPicksMode,
     whiteMode: raw.whiteMode === true,
+    hideResultsAnalysis: raw.hideResultsAnalysis === true,
+    hideAoeInData: raw.hideAoeInData === true,
   }
 }
 
