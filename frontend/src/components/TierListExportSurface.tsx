@@ -1,6 +1,6 @@
 import type { RefObject } from 'react'
 import type { CivPriorityEntry } from '../types/draft'
-import { buildTierRowsForExport, exportMapImageUrl, localCivIconUrl } from '../lib/tierListExport'
+import { buildTierRowsForExport, exportMapArt, localCivIconUrl } from '../lib/tierListExport'
 
 export function TierListExportSurface({
   title,
@@ -14,7 +14,7 @@ export function TierListExportSurface({
   exportRef: RefObject<HTMLDivElement | null>
 }) {
   const rows = buildTierRowsForExport(entries)
-  const mapImageUrl = exportMapImageUrl(mapName)
+  const mapArt = exportMapArt(mapName)
 
   return (
     <div className="tierlist-export-host" aria-hidden>
@@ -23,20 +23,25 @@ export function TierListExportSurface({
           <div className="tierlist-export-heading">
             <h2 className="tierlist-export-title">{title.trim() || 'Tier list'}</h2>
           </div>
-          {mapImageUrl ? (
-            <div className="tierlist-export-map-block">
+          <div className="tierlist-export-map-block">
+            {mapArt.kind === 'image' ? (
               <img
-                key={mapName}
-                src={mapImageUrl}
+                key={`map-${mapName}`}
+                src={mapArt.src}
                 alt=""
                 className="tierlist-export-map-art"
                 data-map-name={mapName}
               />
-              <span className="tierlist-export-map-caption">{mapName}</span>
-            </div>
-          ) : (
-            <p className="tierlist-export-map">{mapName}</p>
-          )}
+            ) : (
+              <div
+                className="tierlist-export-map-art tierlist-export-map-placeholder"
+                data-map-name={mapName}
+              >
+                <img src={mapArt.src} alt="" className="tierlist-export-map-placeholder-icon" />
+              </div>
+            )}
+            <span className="tierlist-export-map-caption">{mapName}</span>
+          </div>
         </header>
 
         <div className="tier-maker tierlist-export-tiers">

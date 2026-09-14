@@ -1,5 +1,6 @@
 import type { CivPriorityEntry, PriorityTier } from '../types/draft'
 import { civSlug, resolveCivDisplayName } from './civs'
+import { localMapEmblemUrl, MAP_EMBLEM_PLACEHOLDER_URL } from './maps'
 import { PRIORITY_TIERS, civIdsForTier, isPriorityTier } from './tiers'
 
 function slugify(value: string): string {
@@ -17,12 +18,20 @@ export function localCivIconUrl(civName: string): string {
   return `/civs/${slug}.png`
 }
 
-/** Same-origin map emblem proxy for PNG export. */
+export type ExportMapArt =
+  | { kind: 'image'; src: string }
+  | { kind: 'placeholder'; src: string }
+
+/** Bundled map emblem, or "?" placeholder when the map has no local art. */
+export function exportMapArt(mapName: string): ExportMapArt {
+  const local = localMapEmblemUrl(mapName)
+  if (local) return { kind: 'image', src: local }
+  return { kind: 'placeholder', src: MAP_EMBLEM_PLACEHOLDER_URL }
+}
+
+/** @deprecated Prefer exportMapArt — kept for call sites that only need a URL. */
 export function exportMapImageUrl(mapName: string): string | null {
-  const trimmed = mapName.trim()
-  if (!trimmed) return null
-  // v=3 busts sticky caches from earlier wrong Arena/Arabia resolution.
-  return `/api/assets/map-image?name=${encodeURIComponent(trimmed)}&v=3`
+  return localMapEmblemUrl(mapName)
 }
 
 function sleep(ms: number): Promise<void> {
@@ -33,19 +42,26 @@ async function waitForMapArt(root: HTMLElement, mapName: string): Promise<void> 
   const trimmed = mapName.trim()
   if (!trimmed) return
 
-  const expected = encodeURIComponent(trimmed)
   const deadline = Date.now() + 8000
 
   while (Date.now() < deadline) {
     const img = root.querySelector<HTMLImageElement>('.tierlist-export-map-art')
     if (img) {
-      const src = img.getAttribute('src') ?? ''
-      if (src.includes(expected) && img.complete && img.naturalWidth > 0) {
+      const tagged = (img.getAttribute('data-map-name') ?? '').trim()
+      if (tagged === trimmed && img.complete && img.naturalWidth > 0) {
         try {
           await img.decode()
         } catch {
           // decode can reject for broken images; still attempt capture
         }
+        return
+      }
+    }
+    // Placeholder path: no img, but data attribute on the box
+    const box = root.querySelector<HTMLElement>('.tierlist-export-map-placeholder')
+    if (box && (box.getAttribute('data-map-name') ?? '').trim() === trimmed) {
+      const placeholderImg = box.querySelector('img')
+      if (!placeholderImg || (placeholderImg.complete && placeholderImg.naturalWidth > 0)) {
         return
       }
     }

@@ -45,6 +45,62 @@ export const THE_LEAGUE_MAPS = [
 
 export const THE_LEAGUE_AOE2CM_PRESET_ID = 'EivsT'
 
+/** Filename slug under /maps/emblems/{slug}.png */
+export function mapEmblemSlug(mapName: string): string {
+  return mapName
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[()]/g, '')
+}
+
+/**
+ * Bundled emblem files in frontend/public/maps/emblems.
+ * Keep in sync with scripts/download_map_emblems.py output.
+ */
+export const LOCAL_MAP_EMBLEM_SLUGS = new Set([
+  'acropolis',
+  'arabia',
+  'arena',
+  'black-forest',
+  'cape-of-storms',
+  'crescent',
+  'enemy-archipelago',
+  'fortified-clearing',
+  'fortress',
+  'fortress-regicide',
+  'frontline',
+  'gold-rush',
+  'grand-bara',
+  'hideout',
+  'islands',
+  'land-nomad',
+  'megarandom',
+  'menindee',
+  'migration',
+  'nomad',
+  'oasis',
+  'team-acropolis',
+  'team-islands',
+  'tres-leches',
+])
+
+/** Same-origin placeholder used when no emblem is bundled for a map. */
+export const MAP_EMBLEM_PLACEHOLDER_URL = '/units/question.svg'
+
+/** Local bundled emblem URL, or null if not available. */
+export function localMapEmblemUrl(mapName: string): string | null {
+  const trimmed = mapName.trim()
+  if (!trimmed) return null
+  const key = normalizeMapName(trimmed)
+  const known =
+    DEFAULT_MAPS.find((map) => normalizeMapName(map) === key) ??
+    THE_LEAGUE_MAPS.find((map) => normalizeMapName(map) === key)
+  const slug = mapEmblemSlug(known ?? trimmed)
+  if (!LOCAL_MAP_EMBLEM_SLUGS.has(slug)) return null
+  return `/maps/emblems/${slug}.png`
+}
+
 /**
  * Maps without working aoe2cm.net/images/maps/{slug}.png.
  * Emblem URLs from aoe2cm preset EivsT (The League).
@@ -80,9 +136,11 @@ export function mapIconUrl(option: MapDraftOption): string | undefined {
     if (fromDraft.startsWith('http')) return fromDraft
     return `https://aoe2cm.net${fromDraft}`
   }
+  const local = localMapEmblemUrl(option.name) ?? localMapEmblemUrl(option.id)
+  if (local) return local
   const override = mapEmblemOverride(option.name) ?? mapEmblemOverride(option.id)
   if (override) return override
-  const slug = (option.id || option.name).toLowerCase().replace(/\s+/g, '-')
+  const slug = mapEmblemSlug(option.id || option.name)
   return `https://aoe2cm.net/images/maps/${slug}.png`
 }
 
@@ -143,6 +201,9 @@ export function resolveMapImageUrl(mapName: string): string | null {
   const trimmed = mapName.trim()
   if (!trimmed) return null
 
+  const local = localMapEmblemUrl(trimmed)
+  if (local) return local
+
   const override = mapEmblemOverride(trimmed)
   if (override) return override
 
@@ -150,12 +211,8 @@ export function resolveMapImageUrl(mapName: string): string | null {
   const known =
     DEFAULT_MAPS.find((map) => normalizeMapName(map) === key) ??
     THE_LEAGUE_MAPS.find((map) => normalizeMapName(map) === key)
-  if (!known) {
-    // Unknown custom map: still try aoe2cm slug directly.
-    const slug = trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')
-    return `https://aoe2cm.net/images/maps/${slug}.png`
-  }
-  const slug = known.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')
+  if (!known) return null
+  const slug = mapEmblemSlug(known)
   return `https://aoe2cm.net/images/maps/${slug}.png`
 }
 
