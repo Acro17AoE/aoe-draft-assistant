@@ -59,6 +59,9 @@ export const CIV_ATLAS: CivAtlasEntry[] = [
   { civ: 'Byzantines', region: 'Europe', lat: 41.0, lon: 29.0 },
   { civ: 'Huns', region: 'Europe', lat: 47.0, lon: 28.0 },
   { civ: 'Cumans', region: 'Europe', lat: 48.0, lon: 35.0 },
+  { civ: 'Danes', region: 'Europe', lat: 55.7, lon: 12.5 },
+  { civ: 'Saxons', region: 'Europe', lat: 51.5, lon: 8.0 },
+  { civ: 'Varangians', region: 'Europe', lat: 58.5, lon: 31.3 },
 
   { civ: 'Georgians', region: 'Middle East', lat: 41.7, lon: 44.8 },
   { civ: 'Armenians', region: 'Middle East', lat: 40.2, lon: 44.5 },

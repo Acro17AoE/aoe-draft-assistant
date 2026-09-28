@@ -84,167 +84,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.084Z"
     },
     {
       "id": "map-arabia",
@@ -304,167 +316,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-arena",
@@ -524,167 +548,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-black-forest",
@@ -744,167 +780,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-cape-of-storms",
@@ -964,167 +1012,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-crescent",
@@ -1184,167 +1244,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-enemy-archipelago",
@@ -1404,167 +1476,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-fortified-clearing",
@@ -1624,167 +1708,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-fortress",
@@ -1844,167 +1940,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-frontline",
@@ -2064,167 +2172,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-gold-rush",
@@ -2284,167 +2404,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-grand-bara",
@@ -2504,167 +2636,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-hideout",
@@ -2724,167 +2868,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-islands",
@@ -2944,167 +3100,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-land-nomad",
@@ -3164,167 +3332,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-megarandom",
@@ -3384,167 +3564,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-menindee",
@@ -3604,167 +3796,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-migration",
@@ -3824,167 +4028,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-nomad",
@@ -4044,167 +4260,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-oasis",
@@ -4264,167 +4492,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-team-acropolis",
@@ -4484,167 +4724,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-team-islands",
@@ -4704,167 +4956,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     },
     {
       "id": "map-tres-leches",
@@ -4924,167 +5188,179 @@
           "tier": "S"
         },
         {
-          "civId": "Dravidians",
+          "civId": "Danes",
           "tier": "A"
+        },
+        {
+          "civId": "Dravidians",
+          "tier": "B"
         },
         {
           "civId": "Ethiopians",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Franks",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Georgians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Goths",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Gurjaras",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Hindustanis",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Huns",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Incas",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Italians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Japanese",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Jurchens",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Khmer",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Khitans",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Koreans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Lithuanians",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Magyars",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Malay",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Malians",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Mapuche",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Mayans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Mongols",
-          "tier": "D"
+          "tier": "F"
         },
         {
           "civId": "Muisca",
-          "tier": "F"
+          "tier": "S"
         },
         {
           "civId": "Persians",
-          "tier": "S"
+          "tier": "A"
         },
         {
           "civId": "Poles",
-          "tier": "A"
+          "tier": "B"
         },
         {
           "civId": "Portuguese",
-          "tier": "B"
+          "tier": "C"
         },
         {
           "civId": "Romans",
-          "tier": "C"
+          "tier": "D"
         },
         {
           "civId": "Saracens",
-          "tier": "D"
+          "tier": "F"
+        },
+        {
+          "civId": "Saxons",
+          "tier": "S"
         },
         {
           "civId": "Shu",
-          "tier": "F"
+          "tier": "A"
         },
         {
           "civId": "Sicilians",
-          "tier": "S"
+          "tier": "B"
         },
         {
           "civId": "Slavs",
-          "tier": "A"
+          "tier": "C"
         },
         {
           "civId": "Spanish",
-          "tier": "B"
+          "tier": "D"
         },
         {
           "civId": "Tatars",
-          "tier": "C"
-        },
-        {
-          "civId": "Teutons",
-          "tier": "D"
-        },
-        {
-          "civId": "Tupi",
           "tier": "F"
         },
         {
-          "civId": "Turks",
+          "civId": "Teutons",
           "tier": "S"
         },
         {
-          "civId": "Vietnamese",
+          "civId": "Tupi",
           "tier": "A"
         },
         {
-          "civId": "Vikings",
+          "civId": "Turks",
           "tier": "B"
         },
         {
-          "civId": "Wei",
+          "civId": "Varangians",
           "tier": "C"
         },
         {
-          "civId": "Wu",
+          "civId": "Vietnamese",
           "tier": "D"
+        },
+        {
+          "civId": "Vikings",
+          "tier": "F"
+        },
+        {
+          "civId": "Wei",
+          "tier": "S"
+        },
+        {
+          "civId": "Wu",
+          "tier": "A"
         }
       ],
-      "updatedAt": "2026-06-16T18:51:25.488Z"
+      "updatedAt": "2026-09-28T11:13:20.085Z"
     }
   ],
   "meta": {

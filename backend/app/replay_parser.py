@@ -63,6 +63,9 @@ CIV_NAME_ALIASES: dict[str, str] = {
     "teuton": "Teutons",
     "tatar": "Tatars",
     "cuman": "Cumans",
+    "dane": "Danes",
+    "saxon": "Saxons",
+    "varangian": "Varangians",
 }
 
 MAX_REPLAY_BYTES = 20 * 1024 * 1024

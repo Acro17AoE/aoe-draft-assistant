@@ -16,13 +16,13 @@ const MAPS = [
 
 const CIVS = [
   'Armenians', 'Aztecs', 'Bengalis', 'Berbers', 'Bohemians', 'Britons', 'Bulgarians',
-  'Burgundians', 'Burmese', 'Byzantines', 'Celts', 'Chinese', 'Cumans', 'Dravidians',
-  'Ethiopians', 'Franks', 'Georgians', 'Goths', 'Gurjaras', 'Hindustanis', 'Huns',
-  'Incas', 'Italians', 'Japanese', 'Jurchens', 'Khmer', 'Khitans', 'Koreans',
+  'Burgundians', 'Burmese', 'Byzantines', 'Celts', 'Chinese', 'Cumans', 'Danes',
+  'Dravidians', 'Ethiopians', 'Franks', 'Georgians', 'Goths', 'Gurjaras', 'Hindustanis',
+  'Huns', 'Incas', 'Italians', 'Japanese', 'Jurchens', 'Khmer', 'Khitans', 'Koreans',
   'Lithuanians', 'Magyars', 'Malay', 'Malians', 'Mapuche', 'Mayans', 'Mongols',
-  'Muisca', 'Persians', 'Poles', 'Portuguese', 'Romans', 'Saracens', 'Shu',
+  'Muisca', 'Persians', 'Poles', 'Portuguese', 'Romans', 'Saracens', 'Saxons', 'Shu',
   'Sicilians', 'Slavs', 'Spanish', 'Tatars', 'Teutons', 'Tupi', 'Turks',
-  'Vietnamese', 'Vikings', 'Wei', 'Wu',
+  'Varangians', 'Vietnamese', 'Vikings', 'Wei', 'Wu',
 ]
 
 const TIERS = ['S', 'A', 'B', 'C', 'D', 'F']
